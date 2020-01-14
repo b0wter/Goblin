@@ -1,0 +1,9 @@
+.dice-roll-button {
+	width: 100%;
+	min-width: 3em;
+	margin: 0.25em;
+}
+
+.no-wrap {
+	white-space: nowrap;
+}
