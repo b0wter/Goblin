@@ -25,7 +25,7 @@ type alias Model =
     , page : Page
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
-    , diceRolls : List (DieRoll)
+    , diceRolls : List DieRoll
     , lastSingleRoll : Maybe DieRoll
     }
 
@@ -52,14 +52,6 @@ main =
         , onUrlChange = UrlChange
         }
 
-testDiceResults =  [ {die = 6, result = 4}
-                   , {die = 12, result = 2 }
-                   , {die = 12, result = 2 }
-                   , {die = 12, result = 2 }
-                   , {die = 12, result = 2 }
-                   , {die = 12, result = 2 }
-                   , {die = 12, result = 2 }]
-
 init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
@@ -67,7 +59,7 @@ init flags url key =
             Navbar.initialState NavMsg
 
         ( model, urlCmd ) =
-            urlUpdate url { navKey = key, navState = navState, page = Home, modalVisibility= Modal.hidden, diceRolls = testDiceResults, lastSingleRoll = Nothing }
+            urlUpdate url { navKey = key, navState = navState, page = Home, modalVisibility= Modal.hidden, diceRolls = [], lastSingleRoll = Nothing }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
 
@@ -81,8 +73,10 @@ type Msg
     | CloseModal
     | ShowModal
     | ClearSingleDieResults
-    | NewSingleDieResult Int
+    | NewSingleDieResult DieRoll
+    | NewMultiDiceResult (List Int)
     | RollSingleDie Int
+    | RollMultiDice Int Int
 
 
 
@@ -126,13 +120,23 @@ update msg model =
             )
 
         NewSingleDieResult result ->
-            ( { model | lastSingleRoll = Just { die = 0, result = result }, diceRolls = { die = 0, result = result } :: model.diceRolls }
+            ( { model | lastSingleRoll = Just result, diceRolls = result :: model.diceRolls }
+            , Cmd.none
+            )
+
+        NewMultiDiceResult _ ->
+            ( model
             , Cmd.none
             )
 
         RollSingleDie faceCount ->
             ( model
-            , Random.generate NewSingleDieResult (Random.int 1 faceCount)
+            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (Random.int 1 faceCount))
+            )
+
+        RollMultiDice faceCount diceCount ->
+            ( model
+            , Random.generate NewMultiDiceResult (Random.list diceCount (Random.int 1 faceCount))
             )
         
 
@@ -299,10 +303,9 @@ diceCard model =
     Card.config [ Card.outlineInfo ]
         |> Card.headerH4 [] [ text "Roll single die" ]
         |> Card.footer [] 
-            [ span [ class "float-left"] 
-                   [ text "Click die type to roll." ]
-                   , span [ class "float-right"] 
-                   [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] ]
+            [ span [ class "float-right"] 
+                   [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] 
+            ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
                 [ Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  4), class "dice-roll-button" ] ] [ text "d4" ] ]
@@ -324,13 +327,13 @@ diceResultMsg model =
     if model.diceRolls |> List.isEmpty then
         Html.div [] [ text "No dice rolled."]
     else
-        Html.div [] (model.diceRolls |> List.map dieResultMsg) --  ] --|> List.foldl (++) "") ]
+        Html.div [] (model.diceRolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
 
-dieResultMsg: DieRoll -> Html Msg
-dieResultMsg roll =
-    Html.span [ class "no-wrap"] 
+dieResultMsg: Int -> DieRoll -> Html Msg
+dieResultMsg i roll =
+    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
     [ Html.span [] [ text "｢" ]
-    , Html.span [ class "text-muted font-italic" ] [ text ("d" ++ (roll.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
+    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (roll.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
     , Html.span [ class "font-weight-bold"] [ text (roll.result |> String.fromInt) ]
     , Html.span [] [ text "」"]
     ]

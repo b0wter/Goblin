@@ -5296,16 +5296,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$initialState = function (toMsg) {
 		state,
 		A2($rundis$elm_bootstrap$Bootstrap$Navbar$initWindowSize, toMsg, state));
 };
-var $author$project$Main$testDiceResults = _List_fromArray(
-	[
-		{die: 6, result: 4},
-		{die: 12, result: 2},
-		{die: 12, result: 2},
-		{die: 12, result: 2},
-		{die: 12, result: 2},
-		{die: 12, result: 2},
-		{die: 12, result: 2}
-	]);
 var $author$project$Main$NotFound = {$: 'NotFound'};
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
@@ -6095,7 +6085,7 @@ var $author$project$Main$init = F3(
 		var _v1 = A2(
 			$author$project$Main$urlUpdate,
 			url,
-			{diceRolls: $author$project$Main$testDiceResults, lastSingleRoll: $elm$core$Maybe$Nothing, modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden, navKey: key, navState: navState, page: $author$project$Main$Home});
+			{diceRolls: _List_Nil, lastSingleRoll: $elm$core$Maybe$Nothing, modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden, navKey: key, navState: navState, page: $author$project$Main$Home});
 		var model = _v1.a;
 		var urlCmd = _v1.b;
 		return _Utils_Tuple2(
@@ -6691,6 +6681,9 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions = F2(
 var $author$project$Main$subscriptions = function (model) {
 	return A2($rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions, model.navState, $author$project$Main$NavMsg);
 };
+var $author$project$Main$NewMultiDiceResult = function (a) {
+	return {$: 'NewMultiDiceResult', a: a};
+};
 var $author$project$Main$NewSingleDieResult = function (a) {
 	return {$: 'NewSingleDieResult', a: a};
 };
@@ -6839,6 +6832,36 @@ var $elm$random$Random$int = F2(
 				}
 			});
 	});
+var $elm$random$Random$listHelp = F4(
+	function (revList, n, gen, seed) {
+		listHelp:
+		while (true) {
+			if (n < 1) {
+				return _Utils_Tuple2(revList, seed);
+			} else {
+				var _v0 = gen(seed);
+				var value = _v0.a;
+				var newSeed = _v0.b;
+				var $temp$revList = A2($elm$core$List$cons, value, revList),
+					$temp$n = n - 1,
+					$temp$gen = gen,
+					$temp$seed = newSeed;
+				revList = $temp$revList;
+				n = $temp$n;
+				gen = $temp$gen;
+				seed = $temp$seed;
+				continue listHelp;
+			}
+		}
+	});
+var $elm$random$Random$list = F2(
+	function (n, _v0) {
+		var gen = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+			});
+	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $rundis$elm_bootstrap$Bootstrap$Modal$Show = {$: 'Show'};
@@ -6940,22 +6963,37 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							diceRolls: A2(
-								$elm$core$List$cons,
-								{die: 0, result: result},
-								model.diceRolls),
-							lastSingleRoll: $elm$core$Maybe$Just(
-								{die: 0, result: result})
+							diceRolls: A2($elm$core$List$cons, result, model.diceRolls),
+							lastSingleRoll: $elm$core$Maybe$Just(result)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'NewMultiDiceResult':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'RollSingleDie':
 				var faceCount = msg.a;
 				return _Utils_Tuple2(
 					model,
 					A2(
 						$elm$random$Random$generate,
 						$author$project$Main$NewSingleDieResult,
-						A2($elm$random$Random$int, 1, faceCount)));
+						A2(
+							$elm$random$Random$map,
+							function (n) {
+								return {die: faceCount, result: n};
+							},
+							A2($elm$random$Random$int, 1, faceCount))));
+			default:
+				var faceCount = msg.a;
+				var diceCount = msg.b;
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$random$Random$generate,
+						$author$project$Main$NewMultiDiceResult,
+						A2(
+							$elm$random$Random$list,
+							diceCount,
+							A2($elm$random$Random$int, 1, faceCount))));
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -7444,54 +7482,58 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$attrs = function (attrs_) {
 	return $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs(attrs_);
 };
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Main$dieResultMsg = function (roll) {
-	return A2(
-		$elm$html$Html$span,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('no-wrap')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$span,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('｢')
-					])),
-				A2(
-				$elm$html$Html$span,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('text-muted font-italic')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						'd' + ($elm$core$String$fromInt(roll.die) + ': '))
-					])),
-				A2(
-				$elm$html$Html$span,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('font-weight-bold')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$elm$core$String$fromInt(roll.result))
-					])),
-				A2(
-				$elm$html$Html$span,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('」')
-					]))
-			]));
-};
+var $author$project$Main$dieResultMsg = F2(
+	function (i, roll) {
+		return A2(
+			$elm$html$Html$span,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(
+					'no-wrap ' + ((!i) ? 'text-primary' : ''))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('｢')
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(
+							'font-italic ' + ((!(!i)) ? 'font-muted' : ''))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'd' + ($elm$core$String$fromInt(roll.die) + ': '))
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-weight-bold')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(roll.result))
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('」')
+						]))
+				]));
+	});
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
@@ -7509,7 +7551,7 @@ var $author$project$Main$diceResultMsg = function (model) {
 			])) : A2(
 		$elm$html$Html$div,
 		_List_Nil,
-		A2($elm$core$List$map, $author$project$Main$dieResultMsg, model.diceRolls));
+		A2($elm$core$List$indexedMap, $author$project$Main$dieResultMsg, model.diceRolls));
 };
 var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
 	return {$: 'Footer', a: a};
@@ -8733,16 +8775,6 @@ var $author$project$Main$diceCard = function (model) {
 						$elm$html$Html$span,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('float-left')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Click die type to roll.')
-							])),
-						A2(
-						$elm$html$Html$span,
-						_List_fromArray(
-							[
 								$elm$html$Html$Attributes$class('float-right')
 							]),
 						_List_fromArray(
@@ -9595,7 +9627,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$getOrInitDropdownStatus = F2(
 			$rundis$elm_bootstrap$Bootstrap$Navbar$Closed,
 			A2($elm$core$Dict$get, id, dropdowns));
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 'Custom', a: a};
 };
