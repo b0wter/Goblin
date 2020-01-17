@@ -26,12 +26,19 @@ type alias Model =
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
     , diceRolls : List DieRoll
+    , multiDiceRolls : List DiceRolls
     , lastSingleRoll : Maybe DieRoll
+    , lastMultiRoll : Maybe DiceRolls
     }
 
 type alias DieRoll =
     { die : Int
     , result: Int
+    }
+
+type alias DiceRolls =
+    { die: Int
+    , results: List Int
     }
 
 type Page
@@ -53,13 +60,20 @@ main =
         }
 
 init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init flags url key =
+init _ url key =
     let
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
 
         ( model, urlCmd ) =
-            urlUpdate url { navKey = key, navState = navState, page = Home, modalVisibility= Modal.hidden, diceRolls = [], lastSingleRoll = Nothing }
+            urlUpdate url { navKey = key
+                          , navState = navState
+                          , page = Home
+                          , modalVisibility = Modal.hidden
+                          , diceRolls = []
+                          , lastSingleRoll = Nothing
+                          , multiDiceRolls = []
+                          , lastMultiRoll = Nothing }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
 
@@ -73,6 +87,7 @@ type Msg
     | CloseModal
     | ShowModal
     | ClearSingleDieResults
+    | ClearMultiDiceResults
     | NewSingleDieResult DieRoll
     | NewMultiDiceResult (List Int)
     | RollSingleDie Int
@@ -119,26 +134,37 @@ update msg model =
             , Cmd.none
             )
 
+        ClearMultiDiceResults ->
+            ( { model | multiDiceRolls = [] }
+            , Cmd.none
+            )
+
         NewSingleDieResult result ->
             ( { model | lastSingleRoll = Just result, diceRolls = result :: model.diceRolls }
             , Cmd.none
             )
 
-        NewMultiDiceResult _ ->
-            ( model
+        NewMultiDiceResult result ->
+            ( { model | lastMultiRoll = Just { die = 0, results = result }, multiDiceRolls = { die = 0, results = result } :: model.multiDiceRolls } --result :: model.multiDiceRolls }
             , Cmd.none
             )
 
         RollSingleDie faceCount ->
             ( model
-            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (Random.int 1 faceCount))
+            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (singleRandomGenerator faceCount))
             )
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (Random.list diceCount (Random.int 1 faceCount))
+            , Random.generate NewMultiDiceResult (multiRandomGenerator faceCount diceCount) --(Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount))
             )
-        
+
+
+singleRandomGenerator: Int -> Random.Generator Int
+singleRandomGenerator faceCount = Random.int 1 faceCount
+
+multiRandomGenerator : Int -> Int -> Random.Generator (List Int)
+multiRandomGenerator faceCount diceCount = Random.list diceCount (Random.int 1 faceCount)
 
 
 
@@ -244,14 +270,18 @@ pageHome model =
             [
                 diceCard model
             ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md4 ]
+            [
+                multiDiceCard model
+            ]
         ]
     ]
 
 
 pageGettingStarted : Model -> List (Html Msg)
-pageGettingStarted model =
+pageGettingStarted _ =
     [ h2 [] [ text "Getting started" ]
-    , Button.button --:128
+    , Button.button
         [ Button.success
         , Button.large
         , Button.block
@@ -262,7 +292,7 @@ pageGettingStarted model =
 
 
 pageModules : Model -> List (Html Msg)
-pageModules model =
+pageModules _ =
     [ h1 [] [ text "Modules" ]
     , Listgroup.ul
         [ Listgroup.li [] [ text "Alert" ]
@@ -335,5 +365,45 @@ dieResultMsg i roll =
     [ Html.span [] [ text "｢" ]
     , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (roll.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
     , Html.span [ class "font-weight-bold"] [ text (roll.result |> String.fromInt) ]
+    , Html.span [] [ text "」"]
+    ]
+
+multiDiceCard: Model -> Html Msg
+multiDiceCard model =
+    Card.config [ Card.outlineInfo ]
+        |> Card.headerH4 [] [ text "Roll multiple dice" ]
+        |> Card.footer [] 
+            [ span [ class "float-right"] 
+                   [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
+            ]
+        |> Card.block [ Block.attrs [ class "text-center"] ]
+            [ Block.custom <| Grid.row [] 
+                [ Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  4 2), class "dice-roll-button" ] ] [ text "d4" ] ]
+                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  6 2), class "dice-roll-button" ] ] [ text "d6" ] ]
+                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  8 2), class "dice-roll-button" ] ] [ text "d8" ] ]
+                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 10 2), class "dice-roll-button" ] ] [ text "d10" ] ]
+                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 12 2), class "dice-roll-button" ] ] [ text "d12" ] ]
+                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 20 2), class "dice-roll-button" ] ] [ text "d20" ] ]
+                ]
+            , Block.custom <| Grid.row []
+                [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
+                  [ model |> multiDiceResultMsg ] 
+                ]
+            ]
+        |> Card.view
+
+multiDiceResultMsg: Model -> Html Msg
+multiDiceResultMsg model =
+    if model.multiDiceRolls |> List.isEmpty then
+        Html.div [] [ text "No dice rolled." ]
+    else
+        Html.div [] (model.multiDiceRolls |> List.indexedMap multiDieResultMsg)
+
+multiDieResultMsg: Int -> DiceRolls -> Html Msg
+multiDieResultMsg i rolls =
+    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
+    [ Html.span [] [ text "｢" ]
+    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (rolls.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
+    , Html.span [ class "font-weight-bold"] [ text (rolls.results |> List.map String.fromInt |> String.join ",") ]
     , Html.span [] [ text "」"]
     ]
