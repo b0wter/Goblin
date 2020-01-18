@@ -15,6 +15,7 @@ import Bootstrap.Card.Block as Block
 import Bootstrap.Button as Button
 import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
+import Bootstrap.Table as Table
 import Random
 
 type alias Flags =
@@ -374,14 +375,31 @@ dieResultMsg i roll =
     ]
 
 multiDieButton command faceCount dieCount =
-    Grid.col [] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount), class "dice-roll-button" ] ] [ text (dieCount |> String.fromInt) ] ]
+    Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount)] ] [ text (dieCount |> String.fromInt) ] ]
 
 multiDieButtonRow faceCount =
     let dieCounts = [ 2, 3, 4, 5, 6, 7, 8 ] in
-    Grid.row [] 
-    ( Grid.col [] [ text ("d" ++ (faceCount |> String.fromInt)) ] ::
+    Table.tr [] 
+    ( Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] ::
       (dieCounts |> List.map (\n -> multiDieButton RollMultiDice faceCount n) ) )
     
+
+multiDiceTable = 
+    Table.simpleTable
+        ( Table.simpleThead
+            {- [ Table.th [] [ text "Col 1" ]
+            , Table.th [] [ text "Col 2" ]
+            , Table.th [] [ text "Col 3" ]
+            ] -} []
+        , Table.tbody []
+            [ multiDieButtonRow 4
+            , multiDieButtonRow 6
+            , multiDieButtonRow 8
+            , multiDieButtonRow 10
+            , multiDieButtonRow 12
+            , multiDieButtonRow 20
+            ]
+        )
 
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
@@ -392,21 +410,7 @@ multiDiceCard model =
                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
-            [ Block.custom <| multiDieButtonRow 4 --Grid.row [] [ (multiDieButton RollMultiDice 4 2) ]
-            , Block.custom <| multiDieButtonRow 4
-            , Block.custom <| multiDieButtonRow 4
-            , Block.custom <| multiDieButtonRow 4
-            , Block.custom <| multiDieButtonRow 4
-            , Block.custom <| multiDieButtonRow 4
-                {-
-                [ Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  4 2), class "dice-roll-button" ] ] [ text "d4" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  6 2), class "dice-roll-button" ] ] [ text "d6" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  8 2), class "dice-roll-button" ] ] [ text "d8" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 10 2), class "dice-roll-button" ] ] [ text "d10" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 12 2), class "dice-roll-button" ] ] [ text "d12" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 20 2), class "dice-roll-button" ] ] [ text "d20" ] ]
-                ]
-                -}
+            [ Block.custom <| multiDiceTable
             , Block.custom <| Grid.row []
                 [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
                   [ model |> multiDiceResultMsg ] 
