@@ -386,7 +386,7 @@ multiDiceCard model =
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| multiDiceTable
             , Block.custom <| Grid.row []
-                [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
+                [ Grid.col [ ] 
                   [ model |> multiDiceResultMsg ] 
                 ]
             ]
@@ -401,9 +401,10 @@ multiDiceResultMsg model =
 
 multiDieResultMsg: Int -> DiceRolls -> Html Msg
 multiDieResultMsg i rolls =
-    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
-    [ Html.span [] [ text "｢" ]
-    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (rolls.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
-    , Html.span [ class "font-weight-bold"] [ text (rolls.result |> List.map String.fromInt |> String.join ",") ]
-    , Html.span [] [ text "」"]
-    ]
+    Html.div [] 
+    [ Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
+      [ Html.span [] [ text "｢" ]
+      , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (rolls.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
+      , Html.span [ class "font-weight-bold"] [ text (rolls.result |> List.map String.fromInt |> String.join ",") ]
+      , Html.span [] [ text "」"]
+    ] ]

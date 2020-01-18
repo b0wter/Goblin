@@ -8722,53 +8722,59 @@ var $author$project$Main$ClearMultiDiceResults = {$: 'ClearMultiDiceResults'};
 var $author$project$Main$multiDieResultMsg = F2(
 	function (i, rolls) {
 		return A2(
-			$elm$html$Html$span,
+			$elm$html$Html$div,
+			_List_Nil,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class(
-					'no-wrap ' + ((!i) ? 'text-primary' : ''))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$span,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text('｢')
-						])),
 					A2(
 					$elm$html$Html$span,
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class(
-							'font-italic ' + ((!(!i)) ? 'font-muted' : ''))
+							'no-wrap ' + ((!i) ? 'text-primary' : ''))
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text(
-							'd' + ($elm$core$String$fromInt(rolls.die) + ': '))
-						])),
-					A2(
-					$elm$html$Html$span,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('font-weight-bold')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
 							A2(
-								$elm$core$String$join,
-								',',
-								A2($elm$core$List$map, $elm$core$String$fromInt, rolls.result)))
-						])),
-					A2(
-					$elm$html$Html$span,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text('」')
+							$elm$html$Html$span,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('｢')
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class(
+									'font-italic ' + ((!(!i)) ? 'font-muted' : ''))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									'd' + ($elm$core$String$fromInt(rolls.die) + ': '))
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('font-weight-bold')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2(
+										$elm$core$String$join,
+										',',
+										A2($elm$core$List$map, $elm$core$String$fromInt, rolls.result)))
+								])),
+							A2(
+							$elm$html$Html$span,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('」')
+								]))
 						]))
 				]));
 	});
@@ -9439,14 +9445,7 @@ var $author$project$Main$multiDiceCard = function (model) {
 							[
 								A2(
 								$rundis$elm_bootstrap$Bootstrap$Grid$col,
-								_List_fromArray(
-									[
-										$rundis$elm_bootstrap$Bootstrap$Grid$Col$attrs(
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('mt-3')
-											]))
-									]),
+								_List_Nil,
 								_List_fromArray(
 									[
 										$author$project$Main$multiDiceResultMsg(model)
