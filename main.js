@@ -7291,6 +7291,30 @@ var $author$project$Main$pageGettingStarted = function (_v0) {
 				]))
 		]);
 };
+var $rundis$elm_bootstrap$Bootstrap$Grid$Column = function (a) {
+	return {$: 'Column', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Grid$col = F2(
+	function (options, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Grid$Column(
+			{children: children, options: options});
+	});
+var $author$project$Main$ClearSingleDieResults = {$: 'ClearSingleDieResults'};
+var $author$project$Main$RollSingleDie = function (a) {
+	return {$: 'RollSingleDie', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs = function (a) {
+	return {$: 'BlockAttrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$Block$attrs = function (attrs_) {
+	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs(attrs_);
+};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs = function (a) {
+	return {$: 'ColAttrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$attrs = function (attrs_) {
+	return $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs(attrs_);
+};
 var $rundis$elm_bootstrap$Bootstrap$Card$Config = function (a) {
 	return {$: 'Config', a: a};
 };
@@ -7474,14 +7498,6 @@ var $rundis$elm_bootstrap$Bootstrap$Card$block = F3(
 							]))
 				}));
 	});
-var $rundis$elm_bootstrap$Bootstrap$Grid$Column = function (a) {
-	return {$: 'Column', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Grid$col = F2(
-	function (options, children) {
-		return $rundis$elm_bootstrap$Bootstrap$Grid$Column(
-			{children: children, options: options});
-	});
 var $rundis$elm_bootstrap$Bootstrap$Card$config = function (options) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$Config(
 		{blocks: _List_Nil, footer: $elm$core$Maybe$Nothing, header: $elm$core$Maybe$Nothing, imgBottom: $elm$core$Maybe$Nothing, imgTop: $elm$core$Maybe$Nothing, options: options});
@@ -7491,22 +7507,6 @@ var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Card$Block$custom = function (element) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem(element);
-};
-var $author$project$Main$ClearSingleDieResults = {$: 'ClearSingleDieResults'};
-var $author$project$Main$RollSingleDie = function (a) {
-	return {$: 'RollSingleDie', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs = function (a) {
-	return {$: 'BlockAttrs', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$Block$attrs = function (attrs_) {
-	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs(attrs_);
-};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs = function (a) {
-	return {$: 'ColAttrs', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$attrs = function (attrs_) {
-	return $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs(attrs_);
 };
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$html$Html$span = _VirtualDom_node('span');
@@ -8715,32 +8715,7 @@ var $author$project$Main$diceCard = function (model) {
 							[$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo]))))));
 };
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $rundis$elm_bootstrap$Bootstrap$Button$linkButton = F2(
-	function (options, children) {
-		return A2(
-			$elm$html$Html$a,
-			A2(
-				$elm$core$List$cons,
-				A2($elm$html$Html$Attributes$attribute, 'role', 'button'),
-				$rundis$elm_bootstrap$Bootstrap$Internal$Button$buttonAttributes(options)),
-			children);
-	});
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
 var $author$project$Main$ClearMultiDiceResults = {$: 'ClearMultiDiceResults'};
@@ -8809,16 +8784,22 @@ var $author$project$Main$multiDiceResultMsg = function (model) {
 		_List_Nil,
 		A2($elm$core$List$indexedMap, $author$project$Main$multiDieResultMsg, model.multiDiceRolls));
 };
-var $author$project$Main$RollMultiDice = F2(
-	function (a, b) {
-		return {$: 'RollMultiDice', a: a, b: b};
-	});
 var $rundis$elm_bootstrap$Bootstrap$Table$CellAttr = function (a) {
 	return {$: 'CellAttr', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Table$cellAttr = function (attr_) {
 	return $rundis$elm_bootstrap$Bootstrap$Table$CellAttr(attr_);
 };
+var $elm$html$Html$Attributes$colspan = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'colspan',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$Main$RollMultiDice = F2(
+	function (a, b) {
+		return {$: 'RollMultiDice', a: a, b: b};
+	});
 var $rundis$elm_bootstrap$Bootstrap$Table$Td = function (a) {
 	return {$: 'Td', a: a};
 };
@@ -9394,9 +9375,35 @@ var $rundis$elm_bootstrap$Bootstrap$Table$tbody = F2(
 		return $rundis$elm_bootstrap$Bootstrap$Table$TBody(
 			{attributes: attributes, rows: rows});
 	});
+var $rundis$elm_bootstrap$Bootstrap$Table$th = F2(
+	function (options, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Table$Th(
+			{children: children, options: options});
+	});
 var $author$project$Main$multiDiceTable = $rundis$elm_bootstrap$Bootstrap$Table$simpleTable(
 	_Utils_Tuple2(
-		$rundis$elm_bootstrap$Bootstrap$Table$simpleThead(_List_Nil),
+		$rundis$elm_bootstrap$Bootstrap$Table$simpleThead(
+			_List_fromArray(
+				[
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Table$th,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('#')
+						])),
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Table$th,
+					_List_fromArray(
+						[
+							$rundis$elm_bootstrap$Bootstrap$Table$cellAttr(
+							$elm$html$Html$Attributes$colspan(8))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('dice count')
+						]))
+				])),
 		A2(
 			$rundis$elm_bootstrap$Bootstrap$Table$tbody,
 			_List_Nil,
@@ -9484,29 +9491,7 @@ var $author$project$Main$multiDiceCard = function (model) {
 						_List_fromArray(
 							[$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo]))))));
 };
-var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Danger = {$: 'Danger'};
-var $rundis$elm_bootstrap$Bootstrap$Card$outlineDanger = $rundis$elm_bootstrap$Bootstrap$Card$Internal$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Card$Internal$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Role$Danger));
-var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Primary = {$: 'Primary'};
-var $rundis$elm_bootstrap$Bootstrap$Card$outlinePrimary = $rundis$elm_bootstrap$Bootstrap$Card$Internal$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Card$Internal$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Role$Primary));
-var $rundis$elm_bootstrap$Bootstrap$Button$primary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$SM, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
-var $elm$html$Html$p = _VirtualDom_node('p');
-var $rundis$elm_bootstrap$Bootstrap$Card$Block$text = F2(
-	function (attributes, children) {
-		return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem(
-			A2(
-				$elm$html$Html$p,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('card-text')
-						]),
-					attributes),
-				children));
-	});
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
 var $author$project$Main$pageHome = function (model) {
@@ -9524,98 +9509,6 @@ var $author$project$Main$pageHome = function (model) {
 			_List_Nil,
 			_List_fromArray(
 				[
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Grid$col,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$rundis$elm_bootstrap$Bootstrap$Card$view(
-							A3(
-								$rundis$elm_bootstrap$Bootstrap$Card$block,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Card$Block$text,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Getting started is real easy. Just click the start button.')
-											])),
-										$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
-										A2(
-											$rundis$elm_bootstrap$Bootstrap$Button$linkButton,
-											_List_fromArray(
-												[
-													$rundis$elm_bootstrap$Bootstrap$Button$primary,
-													$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('#getting-started')
-														]))
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Start')
-												])))
-									]),
-								A3(
-									$rundis$elm_bootstrap$Bootstrap$Card$headerH4,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Getting started')
-										]),
-									$rundis$elm_bootstrap$Bootstrap$Card$config(
-										_List_fromArray(
-											[$rundis$elm_bootstrap$Bootstrap$Card$outlinePrimary])))))
-						])),
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Grid$col,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$rundis$elm_bootstrap$Bootstrap$Card$view(
-							A3(
-								$rundis$elm_bootstrap$Bootstrap$Card$block,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Card$Block$text,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text('Check out the modules overview')
-											])),
-										$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
-										A2(
-											$rundis$elm_bootstrap$Bootstrap$Button$linkButton,
-											_List_fromArray(
-												[
-													$rundis$elm_bootstrap$Bootstrap$Button$primary,
-													$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$href('#modules')
-														]))
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Module')
-												])))
-									]),
-								A3(
-									$rundis$elm_bootstrap$Bootstrap$Card$headerH4,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Modules')
-										]),
-									$rundis$elm_bootstrap$Bootstrap$Card$config(
-										_List_fromArray(
-											[$rundis$elm_bootstrap$Bootstrap$Card$outlineDanger])))))
-						])),
 					A2(
 					$rundis$elm_bootstrap$Bootstrap$Grid$col,
 					_List_fromArray(
@@ -9798,6 +9691,7 @@ var $author$project$Main$mainContent = function (model) {
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Brand = function (a) {
 	return {$: 'Brand', a: a};
 };
+var $elm$html$Html$a = _VirtualDom_node('a');
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Config = function (a) {
 	return {$: 'Config', a: a};
 };
@@ -9875,6 +9769,12 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$container = function (conf) {
 				{isContainer: true});
 		},
 		conf);
+};
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
 };
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Item = function (a) {
 	return {$: 'Item', a: a};
@@ -10745,6 +10645,14 @@ var $rundis$elm_bootstrap$Bootstrap$Modal$small = function (_v0) {
 					})
 			}));
 };
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $rundis$elm_bootstrap$Bootstrap$Modal$StartClose = {$: 'StartClose'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$getCloseMsg = function (config_) {
 	var _v0 = config_.withAnimation;
