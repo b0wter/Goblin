@@ -272,7 +272,7 @@ pageHome model =
             [
                 diceCard model
             ]
-        , Grid.col [ Col.xs12, Col.sm6, Col.md4 ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
             [
                 multiDiceCard model
             ]
@@ -332,6 +332,11 @@ modal model =
 
 diceCard: Model -> Html Msg
 diceCard model =
+    let button = \n -> Grid.col 
+                        [ Col.xs6, Col.md4, Col.lg3 ] 
+                        [ Button.button 
+                          [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button" ] ] 
+                          [ text ("d" ++ (n |> String.fromInt)) ] ] in
     Card.config [ Card.outlineInfo ]
         |> Card.headerH4 [] [ text "Roll single die" ]
         |> Card.footer [] 
@@ -340,13 +345,7 @@ diceCard model =
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
-                [ Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  4), class "dice-roll-button" ] ] [ text "d4" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  6), class "dice-roll-button" ] ] [ text "d6" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  8), class "dice-roll-button" ] ] [ text "d8" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie 10), class "dice-roll-button" ] ] [ text "d10" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie 12), class "dice-roll-button" ] ] [ text "d12" ] ]
-                , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie 20), class "dice-roll-button" ] ] [ text "d20" ] ]
-                ]
+                [ button 4, button 6, button 8, button 10, button 12, button 20 ]
             , Block.custom <| Grid.row []
                 [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
                   [ model |> diceResultMsg ] 
@@ -387,10 +386,7 @@ multiDieButtonRow faceCount =
 multiDiceTable = 
     Table.simpleTable
         ( Table.simpleThead
-            {- [ Table.th [] [ text "Col 1" ]
-            , Table.th [] [ text "Col 2" ]
-            , Table.th [] [ text "Col 3" ]
-            ] -} []
+            []
         , Table.tbody []
             [ multiDieButtonRow 4
             , multiDieButtonRow 6
