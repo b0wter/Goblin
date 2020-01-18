@@ -38,7 +38,7 @@ type alias DieRoll =
 
 type alias DiceRolls =
     { die: Int
-    , results: List Int
+    , result: List Int
     }
 
 type Page
@@ -89,7 +89,7 @@ type Msg
     | ClearSingleDieResults
     | ClearMultiDiceResults
     | NewSingleDieResult DieRoll
-    | NewMultiDiceResult (List Int)
+    | NewMultiDiceResult DiceRolls
     | RollSingleDie Int
     | RollMultiDice Int Int
 
@@ -145,7 +145,8 @@ update msg model =
             )
 
         NewMultiDiceResult result ->
-            ( { model | lastMultiRoll = Just { die = 0, results = result }, multiDiceRolls = { die = 0, results = result } :: model.multiDiceRolls } --result :: model.multiDiceRolls }
+            --Just { die = 0, result = result }, multiDiceRolls = { die = 0, result = result } :: model.multiDiceRolls } --result :: model.multiDiceRolls }
+            ( { model | lastMultiRoll = Just result, multiDiceRolls = result :: model.multiDiceRolls } 
             , Cmd.none
             )
 
@@ -156,7 +157,7 @@ update msg model =
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (multiRandomGenerator faceCount diceCount) --(Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount))
+            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount)) --(Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount))
             )
 
 
@@ -359,6 +360,10 @@ diceResultMsg model =
     else
         Html.div [] (model.diceRolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
 
+dieResultHtml: Int -> a -> (Int -> a -> Html Msg) -> Html Msg
+dieResultHtml index element formatter =
+    formatter index element 
+
 dieResultMsg: Int -> DieRoll -> Html Msg
 dieResultMsg i roll =
     Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
@@ -367,6 +372,16 @@ dieResultMsg i roll =
     , Html.span [ class "font-weight-bold"] [ text (roll.result |> String.fromInt) ]
     , Html.span [] [ text "」"]
     ]
+
+multiDieButton command faceCount dieCount =
+    Grid.col [] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount), class "dice-roll-button" ] ] [ text (dieCount |> String.fromInt) ] ]
+
+multiDieButtonRow faceCount =
+    let dieCounts = [ 2, 3, 4, 5, 6, 7, 8 ] in
+    Grid.row [] 
+    ( Grid.col [] [ text ("d" ++ (faceCount |> String.fromInt)) ] ::
+      (dieCounts |> List.map (\n -> multiDieButton RollMultiDice faceCount n) ) )
+    
 
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
@@ -377,7 +392,13 @@ multiDiceCard model =
                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
-            [ Block.custom <| Grid.row [] 
+            [ Block.custom <| multiDieButtonRow 4 --Grid.row [] [ (multiDieButton RollMultiDice 4 2) ]
+            , Block.custom <| multiDieButtonRow 4
+            , Block.custom <| multiDieButtonRow 4
+            , Block.custom <| multiDieButtonRow 4
+            , Block.custom <| multiDieButtonRow 4
+            , Block.custom <| multiDieButtonRow 4
+                {-
                 [ Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  4 2), class "dice-roll-button" ] ] [ text "d4" ] ]
                 , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  6 2), class "dice-roll-button" ] ] [ text "d6" ] ]
                 , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice  8 2), class "dice-roll-button" ] ] [ text "d8" ] ]
@@ -385,6 +406,7 @@ multiDiceCard model =
                 , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 12 2), class "dice-roll-button" ] ] [ text "d12" ] ]
                 , Grid.col [ Col.xs6, Col.md4, Col.lg3 ] [Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollMultiDice 20 2), class "dice-roll-button" ] ] [ text "d20" ] ]
                 ]
+                -}
             , Block.custom <| Grid.row []
                 [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
                   [ model |> multiDiceResultMsg ] 
@@ -404,6 +426,6 @@ multiDieResultMsg i rolls =
     Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
     [ Html.span [] [ text "｢" ]
     , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (rolls.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
-    , Html.span [ class "font-weight-bold"] [ text (rolls.results |> List.map String.fromInt |> String.join ",") ]
+    , Html.span [ class "font-weight-bold"] [ text (rolls.result |> List.map String.fromInt |> String.join ",") ]
     , Html.span [] [ text "」"]
     ]
