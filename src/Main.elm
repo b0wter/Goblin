@@ -16,6 +16,7 @@ import Bootstrap.Button as Button
 import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Table as Table
+import Bootstrap.Dropdown as Dropdown
 import Random
 
 type alias Flags =
@@ -30,6 +31,10 @@ type alias Model =
     , multiDiceRolls : List DiceRolls
     , lastSingleRoll : Maybe DieRoll
     , lastMultiRoll : Maybe DiceRolls
+    , singleRollMaxHistory : Int
+    , singleRollHistoryDropState : Dropdown.State
+    , multiRollMaxHistory : Int
+    , multiRollHistoryDropState : Dropdown.State
     }
 
 type alias DieRoll =
@@ -74,7 +79,12 @@ init _ url key =
                           , diceRolls = []
                           , lastSingleRoll = Nothing
                           , multiDiceRolls = []
-                          , lastMultiRoll = Nothing }
+                          , lastMultiRoll = Nothing 
+                          , singleRollMaxHistory = 4
+                          , singleRollHistoryDropState = Dropdown.initialState
+                          , multiRollMaxHistory = 4
+                          , multiRollHistoryDropState = Dropdown.initialState
+                          }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
 
@@ -93,12 +103,20 @@ type Msg
     | NewMultiDiceResult DiceRolls
     | RollSingleDie Int
     | RollMultiDice Int Int
+    | SingleRollDropStateChange Dropdown.State
+    | SingleRollNewValue Int
+    | MultiRollDropStateChange Dropdown.State
+    | MultiRollNewValue Int
 
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Navbar.subscriptions model.navState NavMsg
+    Sub.batch 
+        [ Navbar.subscriptions model.navState NavMsg
+        , Dropdown.subscriptions model.singleRollHistoryDropState SingleRollDropStateChange
+        , Dropdown.subscriptions model.multiRollHistoryDropState MultiRollDropStateChange
+        ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -141,13 +159,12 @@ update msg model =
             )
 
         NewSingleDieResult result ->
-            ( { model | lastSingleRoll = Just result, diceRolls = result :: model.diceRolls }
+            ( { model | lastSingleRoll = Just result, diceRolls = addToListAndDrop model.singleRollMaxHistory result model.diceRolls } --result :: model.diceRolls }
             , Cmd.none
             )
 
         NewMultiDiceResult result ->
-            --Just { die = 0, result = result }, multiDiceRolls = { die = 0, result = result } :: model.multiDiceRolls } --result :: model.multiDiceRolls }
-            ( { model | lastMultiRoll = Just result, multiDiceRolls = result :: model.multiDiceRolls } 
+            ( { model | lastMultiRoll = Just result, multiDiceRolls = addToListAndDrop model.multiRollMaxHistory result model.multiDiceRolls }
             , Cmd.none
             )
 
@@ -158,9 +175,24 @@ update msg model =
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount)) --(Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount))
+            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount)) 
             )
 
+        SingleRollDropStateChange new ->
+            ( { model | singleRollHistoryDropState = new }
+            , Cmd.none )
+
+        MultiRollDropStateChange new ->
+            ( { model | multiRollHistoryDropState = new }
+            , Cmd.none )
+
+        SingleRollNewValue new ->
+            ( { model | singleRollMaxHistory = new, diceRolls = model.diceRolls |> limitList (new + 1) }
+            , Cmd.none )
+
+        MultiRollNewValue new ->
+            ( { model | multiRollMaxHistory = new, multiDiceRolls = model.multiDiceRolls |> limitList (new + 1) }
+            , Cmd.none )
 
 singleRandomGenerator: Int -> Random.Generator Int
 singleRandomGenerator faceCount = Random.int 1 faceCount
@@ -318,6 +350,10 @@ diceCard model =
         |> Card.footer [] 
             [ span [ class "float-right"] 
                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] 
+            , span [ class "float-left"]
+                   [ singleRollMaxElementsDropdown model 
+                   , span [ class "text-muted ml-2" ] [ small [] [ text "History length" ] ]
+                   ] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
@@ -329,16 +365,21 @@ diceCard model =
             ]
         |> Card.view
 
+limitList: Int -> List a -> List a
+limitList max list =
+    if (list |> List.length) >= max then list |> List.take (max - 1) else list
+
+addToListAndDrop: Int -> a -> List a -> List a
+addToListAndDrop max element list =
+    element :: (list |> limitList max)
+
+
 diceResultMsg: Model -> Html Msg
 diceResultMsg model =
     if model.diceRolls |> List.isEmpty then
         Html.div [] [ text "No dice rolled."]
     else
         Html.div [] (model.diceRolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
-
-dieResultHtml: Int -> a -> (Int -> a -> Html Msg) -> Html Msg
-dieResultHtml index element formatter =
-    formatter index element 
 
 dieResultMsg: Int -> DieRoll -> Html Msg
 dieResultMsg i roll =
@@ -359,6 +400,7 @@ multiDieButtonRow faceCount =
       (dieCounts |> List.map (\n -> multiDieButton RollMultiDice faceCount n) ) )
     
 
+multiDiceTable: Html Msg
 multiDiceTable = 
     Table.simpleTable
         ( Table.simpleThead
@@ -408,3 +450,19 @@ multiDieResultMsg i rolls =
       , Html.span [ class "font-weight-bold"] [ text (rolls.result |> List.map String.fromInt |> String.join ",") ]
       , Html.span [] [ text "」"]
     ] ]
+
+singleRollMaxElementsDropdown : Model -> Html Msg
+singleRollMaxElementsDropdown model =
+    Dropdown.dropdown 
+        model.singleRollHistoryDropState
+        { options = [] 
+        , toggleMsg = SingleRollDropStateChange
+        , toggleButton =
+            Dropdown.toggle [ Button.primary, Button.small ] [ text (model.singleRollMaxHistory |> String.fromInt) ]
+        , items = 
+            [ Dropdown.buttonItem [ onClick (SingleRollNewValue 1) ] [ text "1" ]
+            , Dropdown.buttonItem [ onClick (SingleRollNewValue 2) ] [ text "2" ]
+            , Dropdown.buttonItem [ onClick (SingleRollNewValue 4) ] [ text "4" ]
+            , Dropdown.buttonItem [ onClick (SingleRollNewValue 6) ] [ text "6" ]
+            ] 
+        }
