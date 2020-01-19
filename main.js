@@ -9339,7 +9339,7 @@ var $author$project$Main$diceCard = function (model) {
 								[
 									$elm$html$Html$Events$onClick(
 									$author$project$Main$RollSingleDie(n)),
-									$elm$html$Html$Attributes$class('dice-roll-button')
+									$elm$html$Html$Attributes$class('dice-roll-button disable-dbl-tap-zoom')
 								]))
 						]),
 					_List_fromArray(
@@ -9582,7 +9582,8 @@ var $author$project$Main$multiDieButton = F3(
 							_List_fromArray(
 								[
 									$elm$html$Html$Events$onClick(
-									A2(command, faceCount, dieCount))
+									A2(command, faceCount, dieCount)),
+									$elm$html$Html$Attributes$class('disable-dbl-tap-zoom')
 								]))
 						]),
 					_List_fromArray(

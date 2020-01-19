@@ -343,7 +343,7 @@ diceCard model =
     let button = \n -> Grid.col 
                         [ Col.xs6, Col.md4, Col.lg3 ] 
                         [ Button.button 
-                          [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button" ] ] 
+                          [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button disable-dbl-tap-zoom" ] ] 
                           [ text ("d" ++ (n |> String.fromInt)) ] ] in
     Card.config [ Card.outlineInfo ]
         |> Card.headerH4 [] [ text "Roll single die" ]
@@ -391,7 +391,7 @@ dieResultMsg i roll =
     ]
 
 multiDieButton command faceCount dieCount =
-    Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount)] ] [ text (dieCount |> String.fromInt) ] ]
+    Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount), class "disable-dbl-tap-zoom"] ] [ text (dieCount |> String.fromInt) ] ]
 
 multiDieButtonRow faceCount =
     let dieCounts = [ 2, 3, 4, 5, 6, 7, 8 ] in
