@@ -424,6 +424,10 @@ multiDiceCard model =
         |> Card.footer [] 
             [ span [ class "float-right"] 
                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
+            , span [ class "float-left"]
+                   [ multiRollMaxElementsDropdown model 
+                   , span [ class "text-muted ml-2" ] [ small [] [ text "History length" ] ]
+                   ] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| multiDiceTable
@@ -451,18 +455,26 @@ multiDieResultMsg i rolls =
       , Html.span [] [ text "」"]
     ] ]
 
-singleRollMaxElementsDropdown : Model -> Html Msg
-singleRollMaxElementsDropdown model =
+rollMaxElementsDropdown : Dropdown.State -> Int -> (Int -> Msg) -> (Dropdown.State -> Msg) -> Html Msg
+rollMaxElementsDropdown dropDownState historySize msg dropDownStateMsg =
     Dropdown.dropdown 
-        model.singleRollHistoryDropState
+        dropDownState
         { options = [] 
-        , toggleMsg = SingleRollDropStateChange
+        , toggleMsg = dropDownStateMsg
         , toggleButton =
-            Dropdown.toggle [ Button.primary, Button.small ] [ text (model.singleRollMaxHistory |> String.fromInt) ]
+            Dropdown.toggle [ Button.primary, Button.small ] [ text (historySize |> String.fromInt) ]
         , items = 
-            [ Dropdown.buttonItem [ onClick (SingleRollNewValue 1) ] [ text "1" ]
-            , Dropdown.buttonItem [ onClick (SingleRollNewValue 2) ] [ text "2" ]
-            , Dropdown.buttonItem [ onClick (SingleRollNewValue 4) ] [ text "4" ]
-            , Dropdown.buttonItem [ onClick (SingleRollNewValue 6) ] [ text "6" ]
+            [ Dropdown.buttonItem [ onClick (1 |> msg) ] [ text "1" ]
+            , Dropdown.buttonItem [ onClick (2 |> msg) ] [ text "2" ]
+            , Dropdown.buttonItem [ onClick (4 |> msg) ] [ text "4" ]
+            , Dropdown.buttonItem [ onClick (6 |> msg) ] [ text "6" ]
             ] 
         }
+
+singleRollMaxElementsDropdown : Model -> Html Msg
+singleRollMaxElementsDropdown model =
+    rollMaxElementsDropdown model.singleRollHistoryDropState model.singleRollMaxHistory SingleRollNewValue SingleRollDropStateChange
+
+multiRollMaxElementsDropdown : Model -> Html Msg
+multiRollMaxElementsDropdown model =
+    rollMaxElementsDropdown model.multiRollHistoryDropState model.multiRollMaxHistory MultiRollNewValue MultiRollDropStateChange

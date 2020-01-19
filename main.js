@@ -9095,70 +9095,74 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$toggle = F2(
 		return $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle(
 			A2($rundis$elm_bootstrap$Bootstrap$Dropdown$togglePrivate, buttonOptions, children));
 	});
-var $author$project$Main$singleRollMaxElementsDropdown = function (model) {
-	return A2(
-		$rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown,
-		model.singleRollHistoryDropState,
-		{
-			items: _List_fromArray(
-				[
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$SingleRollNewValue(1))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('1')
-						])),
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$SingleRollNewValue(2))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('2')
-						])),
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$SingleRollNewValue(4))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('4')
-						])),
-					A2(
-					$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$SingleRollNewValue(6))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('6')
-						]))
-				]),
-			options: _List_Nil,
-			toggleButton: A2(
-				$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
-				_List_fromArray(
-					[$rundis$elm_bootstrap$Bootstrap$Button$primary, $rundis$elm_bootstrap$Bootstrap$Button$small]),
-				_List_fromArray(
+var $author$project$Main$rollMaxElementsDropdown = F4(
+	function (dropDownState, historySize, msg, dropDownStateMsg) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown,
+			dropDownState,
+			{
+				items: _List_fromArray(
 					[
-						$elm$html$Html$text(
-						$elm$core$String$fromInt(model.singleRollMaxHistory))
-					])),
-			toggleMsg: $author$project$Main$SingleRollDropStateChange
-		});
+						A2(
+						$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								msg(1))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('1')
+							])),
+						A2(
+						$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								msg(2))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('2')
+							])),
+						A2(
+						$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								msg(4))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('4')
+							])),
+						A2(
+						$rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								msg(6))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('6')
+							]))
+					]),
+				options: _List_Nil,
+				toggleButton: A2(
+					$rundis$elm_bootstrap$Bootstrap$Dropdown$toggle,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Button$primary, $rundis$elm_bootstrap$Bootstrap$Button$small]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(historySize))
+						])),
+				toggleMsg: dropDownStateMsg
+			});
+	});
+var $author$project$Main$singleRollMaxElementsDropdown = function (model) {
+	return A4($author$project$Main$rollMaxElementsDropdown, model.singleRollHistoryDropState, model.singleRollMaxHistory, $author$project$Main$SingleRollNewValue, $author$project$Main$SingleRollDropStateChange);
 };
 var $elm$html$Html$small = _VirtualDom_node('small');
 var $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier = F2(
@@ -10165,6 +10169,12 @@ var $author$project$Main$multiDiceTable = $rundis$elm_bootstrap$Bootstrap$Table$
 					$author$project$Main$multiDieButtonRow(12),
 					$author$project$Main$multiDieButtonRow(20)
 				]))));
+var $author$project$Main$MultiRollNewValue = function (a) {
+	return {$: 'MultiRollNewValue', a: a};
+};
+var $author$project$Main$multiRollMaxElementsDropdown = function (model) {
+	return A4($author$project$Main$rollMaxElementsDropdown, model.multiRollHistoryDropState, model.multiRollMaxHistory, $author$project$Main$MultiRollNewValue, $author$project$Main$MultiRollDropStateChange);
+};
 var $author$project$Main$multiDiceCard = function (model) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$view(
 		A3(
@@ -10219,6 +10229,32 @@ var $author$project$Main$multiDiceCard = function (model) {
 								_List_fromArray(
 									[
 										$elm$html$Html$text('Clear')
+									]))
+							])),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('float-left')
+							]),
+						_List_fromArray(
+							[
+								$author$project$Main$multiRollMaxElementsDropdown(model),
+								A2(
+								$elm$html$Html$span,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('text-muted ml-2')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$small,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('History length')
+											]))
 									]))
 							]))
 					]),
