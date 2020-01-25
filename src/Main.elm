@@ -20,6 +20,7 @@ import Bootstrap.Dropdown as Dropdown
 import Random
 
 import Roll
+import ListEx
 
 type alias Flags =
     {}
@@ -151,12 +152,12 @@ update msg model =
             )
 
         NewSingleDieResult result ->
-            ( { model | lastSingleRoll = Just result, diceRolls = addToListAndDrop model.singleRollMaxHistory result model.diceRolls } --result :: model.diceRolls }
+            ( { model | lastSingleRoll = Just result, diceRolls = ListEx.addAndDrop model.singleRollMaxHistory result model.diceRolls } --result :: model.diceRolls }
             , Cmd.none
             )
 
         NewMultiDiceResult result ->
-            ( { model | lastMultiRoll = Just result, multiDiceRolls = addToListAndDrop model.multiRollMaxHistory result model.multiDiceRolls }
+            ( { model | lastMultiRoll = Just result, multiDiceRolls = ListEx.addAndDrop model.multiRollMaxHistory result model.multiDiceRolls }
             , Cmd.none
             )
 
@@ -179,11 +180,11 @@ update msg model =
             , Cmd.none )
 
         SingleRollNewValue new ->
-            ( { model | singleRollMaxHistory = new, diceRolls = model.diceRolls |> limitList (new + 1) }
+            ( { model | singleRollMaxHistory = new, diceRolls = model.diceRolls |> ListEx.limit (new + 1) }
             , Cmd.none )
 
         MultiRollNewValue new ->
-            ( { model | multiRollMaxHistory = new, multiDiceRolls = model.multiDiceRolls |> limitList (new + 1) }
+            ( { model | multiRollMaxHistory = new, multiDiceRolls = model.multiDiceRolls |> ListEx.limit (new + 1) }
             , Cmd.none )
 
 singleRandomGenerator: Int -> Random.Generator Int
@@ -356,14 +357,6 @@ diceCard model =
                 ]
             ]
         |> Card.view
-
-limitList: Int -> List a -> List a
-limitList max list =
-    if (list |> List.length) >= max then list |> List.take (max - 1) else list
-
-addToListAndDrop: Int -> a -> List a -> List a
-addToListAndDrop max element list =
-    element :: (list |> limitList max)
 
 
 diceResultMsg: Model -> Html Msg

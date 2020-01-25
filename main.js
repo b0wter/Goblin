@@ -6868,18 +6868,18 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
-var $author$project$Main$limitList = F2(
+var $author$project$ListEx$limit = F2(
 	function (max, list) {
 		return (_Utils_cmp(
 			$elm$core$List$length(list),
 			max) > -1) ? A2($elm$core$List$take, max - 1, list) : list;
 	});
-var $author$project$Main$addToListAndDrop = F3(
+var $author$project$ListEx$addAndDrop = F3(
 	function (max, element, list) {
 		return A2(
 			$elm$core$List$cons,
 			element,
-			A2($author$project$Main$limitList, max, list));
+			A2($author$project$ListEx$limit, max, list));
 	});
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
@@ -7173,7 +7173,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							diceRolls: A3($author$project$Main$addToListAndDrop, model.singleRollMaxHistory, result, model.diceRolls),
+							diceRolls: A3($author$project$ListEx$addAndDrop, model.singleRollMaxHistory, result, model.diceRolls),
 							lastSingleRoll: $elm$core$Maybe$Just(result)
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7184,7 +7184,7 @@ var $author$project$Main$update = F2(
 						model,
 						{
 							lastMultiRoll: $elm$core$Maybe$Just(result),
-							multiDiceRolls: A3($author$project$Main$addToListAndDrop, model.multiRollMaxHistory, result, model.multiDiceRolls)
+							multiDiceRolls: A3($author$project$ListEx$addAndDrop, model.multiRollMaxHistory, result, model.multiDiceRolls)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'RollSingleDie':
@@ -7234,7 +7234,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							diceRolls: A2($author$project$Main$limitList, _new + 1, model.diceRolls),
+							diceRolls: A2($author$project$ListEx$limit, _new + 1, model.diceRolls),
 							singleRollMaxHistory: _new
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7244,7 +7244,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							multiDiceRolls: A2($author$project$Main$limitList, _new + 1, model.multiDiceRolls),
+							multiDiceRolls: A2($author$project$ListEx$limit, _new + 1, model.multiDiceRolls),
 							multiRollMaxHistory: _new
 						}),
 					$elm$core$Platform$Cmd$none);
