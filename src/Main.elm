@@ -19,6 +19,8 @@ import Bootstrap.Table as Table
 import Bootstrap.Dropdown as Dropdown
 import Random
 
+import Roll
+
 type alias Flags =
     {}
 
@@ -27,24 +29,14 @@ type alias Model =
     , page : Page
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
-    , diceRolls : List DieRoll
-    , multiDiceRolls : List DiceRolls
-    , lastSingleRoll : Maybe DieRoll
-    , lastMultiRoll : Maybe DiceRolls
+    , diceRolls : List Roll.Single
+    , multiDiceRolls : List Roll.Multi
+    , lastSingleRoll : Maybe Roll.Single
+    , lastMultiRoll : Maybe Roll.Multi
     , singleRollMaxHistory : Int
     , singleRollHistoryDropState : Dropdown.State
     , multiRollMaxHistory : Int
     , multiRollHistoryDropState : Dropdown.State
-    }
-
-type alias DieRoll =
-    { die : Int
-    , result: Int
-    }
-
-type alias DiceRolls =
-    { die: Int
-    , result: List Int
     }
 
 type Page
@@ -99,8 +91,8 @@ type Msg
     | ShowModal
     | ClearSingleDieResults
     | ClearMultiDiceResults
-    | NewSingleDieResult DieRoll
-    | NewMultiDiceResult DiceRolls
+    | NewSingleDieResult Roll.Single
+    | NewMultiDiceResult Roll.Multi
     | RollSingleDie Int
     | RollMultiDice Int Int
     | SingleRollDropStateChange Dropdown.State
@@ -381,7 +373,7 @@ diceResultMsg model =
     else
         Html.div [] (model.diceRolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
 
-dieResultMsg: Int -> DieRoll -> Html Msg
+dieResultMsg: Int -> Roll.Single -> Html Msg
 dieResultMsg i roll =
     Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
     [ Html.span [] [ text "｢" ]
@@ -445,7 +437,7 @@ multiDiceResultMsg model =
     else
         Html.div [] (model.multiDiceRolls |> List.indexedMap multiDieResultMsg)
 
-multiDieResultMsg: Int -> DiceRolls -> Html Msg
+multiDieResultMsg: Int -> Roll.Multi -> Html Msg
 multiDieResultMsg i rolls =
     Html.div [] 
     [ Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
