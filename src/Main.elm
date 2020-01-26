@@ -20,7 +20,7 @@ import Bootstrap.Dropdown as Dropdown
 import Random
 
 import Roll
-import ListEx
+import List.Extra as List
 
 type alias Flags =
     {}
@@ -152,12 +152,12 @@ update msg model =
             )
 
         NewSingleDieResult result ->
-            ( { model | lastSingleRoll = Just result, diceRolls = ListEx.addAndDrop model.singleRollMaxHistory result model.diceRolls } --result :: model.diceRolls }
+            ( { model | lastSingleRoll = Just result, diceRolls = List.addAndDrop model.singleRollMaxHistory result model.diceRolls } --result :: model.diceRolls }
             , Cmd.none
             )
 
         NewMultiDiceResult result ->
-            ( { model | lastMultiRoll = Just result, multiDiceRolls = ListEx.addAndDrop model.multiRollMaxHistory result model.multiDiceRolls }
+            ( { model | lastMultiRoll = Just result, multiDiceRolls = List.addAndDrop model.multiRollMaxHistory result model.multiDiceRolls }
             , Cmd.none
             )
 
@@ -180,11 +180,11 @@ update msg model =
             , Cmd.none )
 
         SingleRollNewValue new ->
-            ( { model | singleRollMaxHistory = new, diceRolls = model.diceRolls |> ListEx.limit (new + 1) }
+            ( { model | singleRollMaxHistory = new, diceRolls = model.diceRolls |> List.limit (new + 1) }
             , Cmd.none )
 
         MultiRollNewValue new ->
-            ( { model | multiRollMaxHistory = new, multiDiceRolls = model.multiDiceRolls |> ListEx.limit (new + 1) }
+            ( { model | multiRollMaxHistory = new, multiDiceRolls = model.multiDiceRolls |> List.limit (new + 1) }
             , Cmd.none )
 
 singleRandomGenerator: Int -> Random.Generator Int
