@@ -21,6 +21,7 @@ import Random
 
 import Roll
 import List.Extra as List
+import MultiDiceCard
 
 type alias Flags =
     {}
@@ -346,7 +347,7 @@ diceCard model =
             , span [ class "float-left"]
                    [ singleRollMaxElementsDropdown model 
                    , span [ class "text-muted ml-2" ] [ small [] [ text "History length" ] ]
-                   ] 
+                   ]
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
