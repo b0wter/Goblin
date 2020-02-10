@@ -339,7 +339,7 @@ diceCard model =
                         [ Button.button 
                           [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button disable-dbl-tap-zoom" ] ] 
                           [ text ("d" ++ (n |> String.fromInt)) ] ] in
-    Card.config [ Card.outlineInfo , Card.attrs [ Html.Attributes.class "mb-4" ]]
+    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
         |> Card.headerH4 [] [ text "Roll single die" ]
         |> Card.footer [] 
             [ span [ class "float-right"] 
@@ -407,7 +407,7 @@ multiDiceTable =
 
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
-    Card.config [ Card.outlineInfo, Card.attrs [ Html.Attributes.class "mb-4" ] ]
+    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ] ]
         |> Card.headerH4 [] [ text "Roll multiple dice" ]
         |> Card.footer [] 
             [ span [ class "float-right"] 
@@ -430,7 +430,7 @@ multiDiceCard model =
 
 explodeCheckbox: Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox val cmd =
-    Checkbox.checkbox [ Checkbox.id "explode", Checkbox.checked val, Checkbox.onCheck cmd ] "Explode"
+    Checkbox.advancedCustom [ Checkbox.id "explode", Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [] [ text "Explode"] ])
 
 multiDiceResultMsg: Model -> Html Msg
 multiDiceResultMsg model =

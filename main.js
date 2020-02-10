@@ -7907,6 +7907,7 @@ var $author$project$Main$diceResultMsg = function (model) {
 		_List_Nil,
 		A2($elm$core$List$indexedMap, $author$project$Main$dieResultMsg, model.singleDie.rolls));
 };
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Custom = {$: 'Custom'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Checkbox = function (a) {
 	return {$: 'Checkbox', a: a};
 };
@@ -7914,14 +7915,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$create = F2(
 	function (options, label_) {
 		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Checkbox(
 			{label: label_, options: options});
-	});
-var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Label = function (a) {
-	return {$: 'Label', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$label = F2(
-	function (attributes, children) {
-		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Label(
-			{attributes: attributes, children: children});
 	});
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$applyModifier = F2(
 	function (modifier, options) {
@@ -8117,19 +8110,13 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$view = function (_v0) {
 				label_.children)
 			]));
 };
-var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checkbox = F2(
-	function (options, labelText) {
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$advancedCustom = F2(
+	function (options, label_) {
 		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$view(
 			A2(
 				$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$create,
-				options,
-				A2(
-					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$label,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(labelText)
-						]))));
+				A2($elm$core$List$cons, $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Custom, options),
+				label_));
 	});
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$On = {$: 'On'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Value = function (a) {
@@ -8145,23 +8132,44 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Id = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id = function (theId) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Id(theId);
 };
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Label = function (a) {
+	return {$: 'Label', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$label = F2(
+	function (attributes, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Label(
+			{attributes: attributes, children: children});
+	});
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked = function (a) {
 	return {$: 'OnChecked', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck = function (toMsg) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked(toMsg);
 };
+var $elm$html$Html$small = _VirtualDom_node('small');
 var $author$project$Main$explodeCheckbox = F2(
 	function (val, cmd) {
 		return A2(
-			$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checkbox,
+			$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$advancedCustom,
 			_List_fromArray(
 				[
 					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id('explode'),
 					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checked(val),
 					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck(cmd)
 				]),
-			'Explode');
+			A2(
+				$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$label,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$small,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Explode')
+							]))
+					])));
 	});
 var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
 	return {$: 'Footer', a: a};
@@ -8245,15 +8253,6 @@ var $rundis$elm_bootstrap$Bootstrap$Button$onClick = function (message) {
 					_Utils_Tuple2(message, true)))
 			]));
 };
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$Coloring = function (a) {
-	return {$: 'Coloring', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Info = {$: 'Info'};
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$Outlined = function (a) {
-	return {$: 'Outlined', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$outlineInfo = $rundis$elm_bootstrap$Bootstrap$Card$Internal$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Card$Internal$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Role$Info));
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined = function (a) {
 	return {$: 'Outlined', a: a};
 };
@@ -9515,7 +9514,6 @@ var $author$project$Main$rollMaxElementsDropdown = F4(
 var $author$project$Main$singleRollMaxElementsDropdown = function (model) {
 	return A4($author$project$Main$rollMaxElementsDropdown, model.singleDie.historyDropState, model.singleDie.maxHistory, $author$project$Main$SingleRollNewValue, $author$project$Main$SingleRollDropStateChange);
 };
-var $elm$html$Html$small = _VirtualDom_node('small');
 var $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier = F2(
 	function (option, options) {
 		switch (option.$) {
@@ -9821,7 +9819,6 @@ var $author$project$Main$diceCard = function (model) {
 					$rundis$elm_bootstrap$Bootstrap$Card$config(
 						_List_fromArray(
 							[
-								$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo,
 								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
 								_List_fromArray(
 									[
@@ -10649,7 +10646,6 @@ var $author$project$Main$multiDiceCard = function (model) {
 					$rundis$elm_bootstrap$Bootstrap$Card$config(
 						_List_fromArray(
 							[
-								$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo,
 								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
 								_List_fromArray(
 									[
