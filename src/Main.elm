@@ -92,6 +92,13 @@ type Msg
     | MultiRollNewValue Int
     | ClearMultiDiceResults
     | SetMultiDiceExplode Bool
+    --
+    | NewMixedDiceResult Roll.Mixed
+    | RollMixedDice (List (Int, Int))
+    | MixedRollDropStateChange Dropdown.State
+    | MixedRollNewValue Int
+    | ClearMixedDiceResults
+    | SetMixedDiceExplode Bool
 
 
 subscriptions : Model -> Sub Msg
@@ -187,7 +194,12 @@ update msg model =
             ( { model | multiDice = new |> DiceModel.asExplode model.multiDice }
             , Cmd.none )
 
-
+        NewMixedDiceResult new -> (model, Cmd.none)
+        RollMixedDice result -> (model, Cmd.none)
+        MixedRollDropStateChange state -> (model, Cmd.none)
+        MixedRollNewValue new  -> (model, Cmd.none)
+        ClearMixedDiceResults -> (model, Cmd.none)
+        SetMixedDiceExplode new -> (model, Cmd.none)
 
 urlUpdate : Url -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =

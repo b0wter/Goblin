@@ -7330,7 +7330,7 @@ var $author$project$Main$update = F2(
 							singleDie: A2($author$project$DiceModel$asExplode, model.singleDie, _new)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'SetMultiDiceExplode':
 				var _new = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -7339,6 +7339,23 @@ var $author$project$Main$update = F2(
 							multiDice: A2($author$project$DiceModel$asExplode, model.multiDice, _new)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'NewMixedDiceResult':
+				var _new = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'RollMixedDice':
+				var result = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'MixedRollDropStateChange':
+				var state = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'MixedRollNewValue':
+				var _new = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'ClearMixedDiceResults':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			default:
+				var _new = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');

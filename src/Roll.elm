@@ -1,4 +1,4 @@
-module Roll exposing (Single, Multi, Combi, Roll, singleRandomGenerator, multiRandomGenerator)
+module Roll exposing (Single, Multi, Mixed, Roll, singleRandomGenerator, multiRandomGenerator)
 
 import Random
 
@@ -12,11 +12,11 @@ type alias Multi =
     , result: List Int
     }
 
+type alias Mixed = List Single
+
 type Roll
     = SingleRoll Single
     | MultiRoll Multi
-
-type alias Combi = List Single
 
 singleRandomGenerator: Int -> Random.Generator Int
 singleRandomGenerator faceCount = Random.int 1 faceCount
