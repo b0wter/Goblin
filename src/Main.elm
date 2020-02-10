@@ -21,7 +21,7 @@ import Random
 
 import Roll
 import List.Extra as List
-import MultiDiceCard
+import DiceModel
 
 type alias Flags =
     {}
@@ -31,14 +31,8 @@ type alias Model =
     , page : Page
     , navState : Navbar.State
     , modalVisibility : Modal.Visibility
-    , diceRolls : List Roll.Single
-    , multiDiceRolls : List Roll.Multi
-    , lastSingleRoll : Maybe Roll.Single
-    , lastMultiRoll : Maybe Roll.Multi
-    , singleRollMaxHistory : Int
-    , singleRollHistoryDropState : Dropdown.State
-    , multiRollMaxHistory : Int
-    , multiRollHistoryDropState : Dropdown.State
+    , singleDie : DiceModel.DiceModel Roll.Single
+    , multiDice : DiceModel.DiceModel Roll.Multi
     }
 
 type Page
@@ -70,19 +64,11 @@ init _ url key =
                           , navState = navState
                           , page = Home
                           , modalVisibility = Modal.hidden
-                          , diceRolls = []
-                          , lastSingleRoll = Nothing
-                          , multiDiceRolls = []
-                          , lastMultiRoll = Nothing 
-                          , singleRollMaxHistory = 4
-                          , singleRollHistoryDropState = Dropdown.initialState
-                          , multiRollMaxHistory = 4
-                          , multiRollHistoryDropState = Dropdown.initialState
+                          , singleDie = DiceModel.empty
+                          , multiDice = DiceModel.empty
                           }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
-
-
 
 
 type Msg
@@ -103,13 +89,12 @@ type Msg
     | MultiRollNewValue Int
 
 
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch 
         [ Navbar.subscriptions model.navState NavMsg
-        , Dropdown.subscriptions model.singleRollHistoryDropState SingleRollDropStateChange
-        , Dropdown.subscriptions model.multiRollHistoryDropState MultiRollDropStateChange
+        , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
+        , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange
         ]
 
 
@@ -143,22 +128,22 @@ update msg model =
             )
 
         ClearSingleDieResults ->
-            ( { model | diceRolls = [] }
+            ( { model | singleDie = model.singleDie |> DiceModel.clearHistory } -- [] |> DiceModel.with model.singleDie --{ model.singleDie | history = [] } }
             , Cmd.none
             )
 
         ClearMultiDiceResults ->
-            ( { model | multiDiceRolls = [] }
+            ( { model | multiDice = model.multiDice |> DiceModel.clearHistory }
             , Cmd.none
             )
 
         NewSingleDieResult result ->
-            ( { model | lastSingleRoll = Just result, diceRolls = List.addAndDrop model.singleRollMaxHistory result model.diceRolls } --result :: model.diceRolls }
-            , Cmd.none
+            ( { model | singleDie = model.singleDie |> DiceModel.addRoll result }
+            , Cmd.none                                            
             )
 
         NewMultiDiceResult result ->
-            ( { model | lastMultiRoll = Just result, multiDiceRolls = List.addAndDrop model.multiRollMaxHistory result model.multiDiceRolls }
+            ( { model | multiDice = model.multiDice |> DiceModel.addRoll result }
             , Cmd.none
             )
 
@@ -173,19 +158,19 @@ update msg model =
             )
 
         SingleRollDropStateChange new ->
-            ( { model | singleRollHistoryDropState = new }
+            ( { model | singleDie = model.singleDie |> DiceModel.setHistoryDropState new }
             , Cmd.none )
 
         MultiRollDropStateChange new ->
-            ( { model | multiRollHistoryDropState = new }
+            ( { model | multiDice = model.multiDice |> DiceModel.setHistoryDropState new }
             , Cmd.none )
 
         SingleRollNewValue new ->
-            ( { model | singleRollMaxHistory = new, diceRolls = model.diceRolls |> List.limit (new + 1) }
+            ( { model | singleDie = model.singleDie |> DiceModel.setHistorySize new }
             , Cmd.none )
 
         MultiRollNewValue new ->
-            ( { model | multiRollMaxHistory = new, multiDiceRolls = model.multiDiceRolls |> List.limit (new + 1) }
+            ( { model | multiDice = model.multiDice |> DiceModel.setHistorySize new }
             , Cmd.none )
 
 singleRandomGenerator: Int -> Random.Generator Int
@@ -362,10 +347,10 @@ diceCard model =
 
 diceResultMsg: Model -> Html Msg
 diceResultMsg model =
-    if model.diceRolls |> List.isEmpty then
+    if model.singleDie.rolls |> List.isEmpty then
         Html.div [] [ text "No dice rolled."]
     else
-        Html.div [] (model.diceRolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
+        Html.div [] (model.singleDie.rolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
 
 dieResultMsg: Int -> Roll.Single -> Html Msg
 dieResultMsg i roll =
@@ -426,10 +411,10 @@ multiDiceCard model =
 
 multiDiceResultMsg: Model -> Html Msg
 multiDiceResultMsg model =
-    if model.multiDiceRolls |> List.isEmpty then
+    if model.multiDice.rolls |> List.isEmpty then
         Html.div [] [ text "No dice rolled." ]
     else
-        Html.div [] (model.multiDiceRolls |> List.indexedMap multiDieResultMsg)
+        Html.div [] (model.multiDice.rolls |> List.indexedMap multiDieResultMsg)
 
 multiDieResultMsg: Int -> Roll.Multi -> Html Msg
 multiDieResultMsg i rolls =
@@ -459,8 +444,8 @@ rollMaxElementsDropdown dropDownState historySize msg dropDownStateMsg =
 
 singleRollMaxElementsDropdown : Model -> Html Msg
 singleRollMaxElementsDropdown model =
-    rollMaxElementsDropdown model.singleRollHistoryDropState model.singleRollMaxHistory SingleRollNewValue SingleRollDropStateChange
+    rollMaxElementsDropdown model.singleDie.historyDropState model.singleDie.maxHistory SingleRollNewValue SingleRollDropStateChange
 
 multiRollMaxElementsDropdown : Model -> Html Msg
 multiRollMaxElementsDropdown model =
-    rollMaxElementsDropdown model.multiRollHistoryDropState model.multiRollMaxHistory MultiRollNewValue MultiRollDropStateChange
+    rollMaxElementsDropdown model.multiDice.historyDropState model.multiDice.maxHistory MultiRollNewValue MultiRollDropStateChange

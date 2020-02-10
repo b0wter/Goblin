@@ -5255,8 +5255,6 @@ var $author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
-var $rundis$elm_bootstrap$Bootstrap$Modal$hidden = $rundis$elm_bootstrap$Bootstrap$Modal$Hide;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
 	function (top, left, width, height) {
 		return {height: height, left: left, top: top, width: width};
@@ -5271,6 +5269,9 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = $rundis$elm_bootstra
 		status: $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed,
 		toggleSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0)
 	});
+var $author$project$DiceModel$empty = {historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, rolls: _List_Nil};
+var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
+var $rundis$elm_bootstrap$Bootstrap$Modal$hidden = $rundis$elm_bootstrap$Bootstrap$Modal$Hide;
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Hidden = {$: 'Hidden'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$State = function (a) {
 	return {$: 'State', a: a};
@@ -6099,7 +6100,7 @@ var $author$project$Main$init = F3(
 		var _v2 = A2(
 			$author$project$Main$urlUpdate,
 			url,
-			{diceRolls: _List_Nil, lastMultiRoll: $elm$core$Maybe$Nothing, lastSingleRoll: $elm$core$Maybe$Nothing, modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden, multiDiceRolls: _List_Nil, multiRollHistoryDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, multiRollMaxHistory: 4, navKey: key, navState: navState, page: $author$project$Main$Home, singleRollHistoryDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, singleRollMaxHistory: 4});
+			{modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden, multiDice: $author$project$DiceModel$empty, navKey: key, navState: navState, page: $author$project$Main$Home, singleDie: $author$project$DiceModel$empty});
 		var model = _v2.a;
 		var urlCmd = _v2.b;
 		return _Utils_Tuple2(
@@ -6731,8 +6732,8 @@ var $author$project$Main$subscriptions = function (model) {
 		_List_fromArray(
 			[
 				A2($rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions, model.navState, $author$project$Main$NavMsg),
-				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.singleRollHistoryDropState, $author$project$Main$SingleRollDropStateChange),
-				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.multiRollHistoryDropState, $author$project$Main$MultiRollDropStateChange)
+				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.singleDie.historyDropState, $author$project$Main$SingleRollDropStateChange),
+				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.multiDice.historyDropState, $author$project$Main$MultiRollDropStateChange)
 			]));
 };
 var $author$project$Main$NewMultiDiceResult = function (a) {
@@ -6881,6 +6882,20 @@ var $author$project$List$Extra$addAndDrop = F3(
 			element,
 			A2($author$project$List$Extra$limit, max, list));
 	});
+var $author$project$DiceModel$addRoll = F2(
+	function (roll, model) {
+		return _Utils_update(
+			model,
+			{
+				lastRoll: $elm$core$Maybe$Just(roll),
+				rolls: A3($author$project$List$Extra$addAndDrop, model.maxHistory, roll, model.rolls)
+			});
+	});
+var $author$project$DiceModel$clearHistory = function (model) {
+	return _Utils_update(
+		model,
+		{rolls: _List_Nil});
+};
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -7065,6 +7080,21 @@ var $author$project$Main$multiRandomGenerator = F2(
 			A2($elm$random$Random$int, 1, faceCount));
 	});
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var $author$project$DiceModel$setHistoryDropState = F2(
+	function (state, model) {
+		return _Utils_update(
+			model,
+			{historyDropState: state});
+	});
+var $author$project$DiceModel$setHistorySize = F2(
+	function (newSize, model) {
+		return _Utils_update(
+			model,
+			{
+				maxHistory: newSize,
+				rolls: A2($author$project$List$Extra$limit, newSize + 1, model.rolls)
+			});
+	});
 var $rundis$elm_bootstrap$Bootstrap$Modal$Show = {$: 'Show'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$shown = $rundis$elm_bootstrap$Bootstrap$Modal$Show;
 var $author$project$Main$singleRandomGenerator = function (faceCount) {
@@ -7159,13 +7189,17 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{diceRolls: _List_Nil}),
+						{
+							singleDie: $author$project$DiceModel$clearHistory(model.singleDie)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ClearMultiDiceResults':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{multiDiceRolls: _List_Nil}),
+						{
+							multiDice: $author$project$DiceModel$clearHistory(model.multiDice)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'NewSingleDieResult':
 				var result = msg.a;
@@ -7173,8 +7207,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							diceRolls: A3($author$project$List$Extra$addAndDrop, model.singleRollMaxHistory, result, model.diceRolls),
-							lastSingleRoll: $elm$core$Maybe$Just(result)
+							singleDie: A2($author$project$DiceModel$addRoll, result, model.singleDie)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'NewMultiDiceResult':
@@ -7183,8 +7216,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							lastMultiRoll: $elm$core$Maybe$Just(result),
-							multiDiceRolls: A3($author$project$List$Extra$addAndDrop, model.multiRollMaxHistory, result, model.multiDiceRolls)
+							multiDice: A2($author$project$DiceModel$addRoll, result, model.multiDice)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'RollSingleDie':
@@ -7219,14 +7251,18 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{singleRollHistoryDropState: _new}),
+						{
+							singleDie: A2($author$project$DiceModel$setHistoryDropState, _new, model.singleDie)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MultiRollDropStateChange':
 				var _new = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{multiRollHistoryDropState: _new}),
+						{
+							multiDice: A2($author$project$DiceModel$setHistoryDropState, _new, model.multiDice)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'SingleRollNewValue':
 				var _new = msg.a;
@@ -7234,8 +7270,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							diceRolls: A2($author$project$List$Extra$limit, _new + 1, model.diceRolls),
-							singleRollMaxHistory: _new
+							singleDie: A2($author$project$DiceModel$setHistorySize, _new, model.singleDie)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -7244,8 +7279,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							multiDiceRolls: A2($author$project$List$Extra$limit, _new + 1, model.multiDiceRolls),
-							multiRollMaxHistory: _new
+							multiDice: A2($author$project$DiceModel$setHistorySize, _new, model.multiDice)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -7796,7 +7830,7 @@ var $elm$core$List$isEmpty = function (xs) {
 	}
 };
 var $author$project$Main$diceResultMsg = function (model) {
-	return $elm$core$List$isEmpty(model.diceRolls) ? A2(
+	return $elm$core$List$isEmpty(model.singleDie.rolls) ? A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
@@ -7805,7 +7839,7 @@ var $author$project$Main$diceResultMsg = function (model) {
 			])) : A2(
 		$elm$html$Html$div,
 		_List_Nil,
-		A2($elm$core$List$indexedMap, $author$project$Main$dieResultMsg, model.diceRolls));
+		A2($elm$core$List$indexedMap, $author$project$Main$dieResultMsg, model.singleDie.rolls));
 };
 var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
 	return {$: 'Footer', a: a};
@@ -9162,7 +9196,7 @@ var $author$project$Main$rollMaxElementsDropdown = F4(
 			});
 	});
 var $author$project$Main$singleRollMaxElementsDropdown = function (model) {
-	return A4($author$project$Main$rollMaxElementsDropdown, model.singleRollHistoryDropState, model.singleRollMaxHistory, $author$project$Main$SingleRollNewValue, $author$project$Main$SingleRollDropStateChange);
+	return A4($author$project$Main$rollMaxElementsDropdown, model.singleDie.historyDropState, model.singleDie.maxHistory, $author$project$Main$SingleRollNewValue, $author$project$Main$SingleRollDropStateChange);
 };
 var $elm$html$Html$small = _VirtualDom_node('small');
 var $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier = F2(
@@ -9526,7 +9560,7 @@ var $author$project$Main$multiDieResultMsg = F2(
 				]));
 	});
 var $author$project$Main$multiDiceResultMsg = function (model) {
-	return $elm$core$List$isEmpty(model.multiDiceRolls) ? A2(
+	return $elm$core$List$isEmpty(model.multiDice.rolls) ? A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
@@ -9535,7 +9569,7 @@ var $author$project$Main$multiDiceResultMsg = function (model) {
 			])) : A2(
 		$elm$html$Html$div,
 		_List_Nil,
-		A2($elm$core$List$indexedMap, $author$project$Main$multiDieResultMsg, model.multiDiceRolls));
+		A2($elm$core$List$indexedMap, $author$project$Main$multiDieResultMsg, model.multiDice.rolls));
 };
 var $rundis$elm_bootstrap$Bootstrap$Table$CellAttr = function (a) {
 	return {$: 'CellAttr', a: a};
@@ -10174,7 +10208,7 @@ var $author$project$Main$MultiRollNewValue = function (a) {
 	return {$: 'MultiRollNewValue', a: a};
 };
 var $author$project$Main$multiRollMaxElementsDropdown = function (model) {
-	return A4($author$project$Main$rollMaxElementsDropdown, model.multiRollHistoryDropState, model.multiRollMaxHistory, $author$project$Main$MultiRollNewValue, $author$project$Main$MultiRollDropStateChange);
+	return A4($author$project$Main$rollMaxElementsDropdown, model.multiDice.historyDropState, model.multiDice.maxHistory, $author$project$Main$MultiRollNewValue, $author$project$Main$MultiRollDropStateChange);
 };
 var $author$project$Main$multiDiceCard = function (model) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$view(
