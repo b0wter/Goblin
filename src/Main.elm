@@ -349,7 +349,7 @@ diceCard model =
                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
                    ]
             , span [ class "ml-2 float-left text-muted"]
-                   [ explodeCheckbox model.singleDie.explodes SetSingleDieExplode] 
+                   [ explodeCheckbox "single-explode" model.singleDie.explodes SetSingleDieExplode] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
@@ -417,7 +417,7 @@ multiDiceCard model =
                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
                    ]
             , span [ class "ml-2 float-left text-muted"]
-                   [ explodeCheckbox model.multiDice.explodes SetMultiDiceExplode] 
+                   [ explodeCheckbox "multi-explode" model.multiDice.explodes SetMultiDiceExplode] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| multiDiceTable
@@ -428,9 +428,9 @@ multiDiceCard model =
             ]
         |> Card.view
 
-explodeCheckbox: Bool -> (Bool -> Msg) -> Html Msg
-explodeCheckbox val cmd =
-    Checkbox.advancedCustom [ Checkbox.id "explode", Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [] [ text "Explode"] ])
+explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
+explodeCheckbox id val cmd =
+    Checkbox.advancedCustom [ Checkbox.id id, Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [] [ text "Explode"] ])
 
 multiDiceResultMsg: Model -> Html Msg
 multiDiceResultMsg model =

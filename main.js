@@ -8147,13 +8147,13 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck = function (toMsg) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked(toMsg);
 };
 var $elm$html$Html$small = _VirtualDom_node('small');
-var $author$project$Main$explodeCheckbox = F2(
-	function (val, cmd) {
+var $author$project$Main$explodeCheckbox = F3(
+	function (id, val, cmd) {
 		return A2(
 			$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$advancedCustom,
 			_List_fromArray(
 				[
-					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id('explode'),
+					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id(id),
 					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checked(val),
 					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck(cmd)
 				]),
@@ -9806,7 +9806,7 @@ var $author$project$Main$diceCard = function (model) {
 							]),
 						_List_fromArray(
 							[
-								A2($author$project$Main$explodeCheckbox, model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
+								A3($author$project$Main$explodeCheckbox, 'single-explode', model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
 							]))
 					]),
 				A3(
@@ -10633,7 +10633,7 @@ var $author$project$Main$multiDiceCard = function (model) {
 							]),
 						_List_fromArray(
 							[
-								A2($author$project$Main$explodeCheckbox, model.multiDice.explodes, $author$project$Main$SetMultiDiceExplode)
+								A3($author$project$Main$explodeCheckbox, 'multi-explode', model.multiDice.explodes, $author$project$Main$SetMultiDiceExplode)
 							]))
 					]),
 				A3(
