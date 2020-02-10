@@ -5269,7 +5269,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = $rundis$elm_bootstra
 		status: $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed,
 		toggleSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0)
 	});
-var $author$project$DiceModel$empty = {historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, rolls: _List_Nil};
+var $author$project$DiceModel$empty = {explodes: false, historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, rolls: _List_Nil};
 var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$hidden = $rundis$elm_bootstrap$Bootstrap$Modal$Hide;
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Hidden = {$: 'Hidden'};
@@ -6891,13 +6891,47 @@ var $author$project$DiceModel$addRoll = F2(
 				rolls: A3($author$project$List$Extra$addAndDrop, model.maxHistory, roll, model.rolls)
 			});
 	});
+var $pilatch$flip$Flip$flip = F3(
+	function (_function, argB, argA) {
+		return A2(_function, argA, argB);
+	});
+var $author$project$DiceModel$setExplode = F2(
+	function (state, model) {
+		return _Utils_update(
+			model,
+			{explodes: state});
+	});
+var $author$project$DiceModel$asExplode = $pilatch$flip$Flip$flip($author$project$DiceModel$setExplode);
 var $author$project$DiceModel$clearHistory = function (model) {
 	return _Utils_update(
 		model,
 		{rolls: _List_Nil});
 };
-var $elm$random$Random$Generate = function (a) {
-	return {$: 'Generate', a: a};
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$andThen = F2(
+	function (callback, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				var _v1 = genA(seed);
+				var result = _v1.a;
+				var newSeed = _v1.b;
+				var _v2 = callback(result);
+				var genB = _v2.a;
+				return genB(newSeed);
+			});
+	});
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
+};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
 };
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -6908,6 +6942,59 @@ var $elm$random$Random$next = function (_v0) {
 	var state0 = _v0.a;
 	var incr = _v0.b;
 	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $author$project$Roll$singleRandomGenerator = function (faceCount) {
+	return A2($elm$random$Random$int, 1, faceCount);
+};
+var $author$project$Main$createNewSingleDieResult = F3(
+	function (explode, faceCount, previous) {
+		return A2(
+			$elm$random$Random$andThen,
+			function (n) {
+				return (_Utils_eq(n, faceCount) && explode) ? A3($author$project$Main$createNewSingleDieResult, explode, faceCount, previous + n) : $elm$random$Random$constant(previous + n);
+			},
+			$author$project$Roll$singleRandomGenerator(faceCount));
+	});
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
 };
 var $elm$random$Random$initialSeed = function (x) {
 	var _v0 = $elm$random$Random$next(
@@ -6969,9 +7056,6 @@ var $elm$random$Random$onSelfMsg = F3(
 	function (_v0, _v1, seed) {
 		return $elm$core$Task$succeed(seed);
 	});
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
 var $elm$random$Random$map = F2(
 	function (func, _v0) {
 		var genA = _v0.a;
@@ -7000,48 +7084,6 @@ var $elm$random$Random$generate = F2(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Bitwise$xor = _Bitwise_xor;
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
 var $elm$random$Random$listHelp = F4(
 	function (revList, n, gen, seed) {
 		listHelp:
@@ -7072,7 +7114,7 @@ var $elm$random$Random$list = F2(
 				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
 			});
 	});
-var $author$project$Main$multiRandomGenerator = F2(
+var $author$project$Roll$multiRandomGenerator = F2(
 	function (faceCount, diceCount) {
 		return A2(
 			$elm$random$Random$list,
@@ -7097,9 +7139,6 @@ var $author$project$DiceModel$setHistorySize = F2(
 	});
 var $rundis$elm_bootstrap$Bootstrap$Modal$Show = {$: 'Show'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$shown = $rundis$elm_bootstrap$Bootstrap$Modal$Show;
-var $author$project$Main$singleRandomGenerator = function (faceCount) {
-	return A2($elm$random$Random$int, 1, faceCount);
-};
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
 		if (maybePort.$ === 'Nothing') {
@@ -7231,7 +7270,7 @@ var $author$project$Main$update = F2(
 							function (n) {
 								return {die: faceCount, result: n};
 							},
-							$author$project$Main$singleRandomGenerator(faceCount))));
+							A3($author$project$Main$createNewSingleDieResult, model.singleDie.explodes, faceCount, 0))));
 			case 'RollMultiDice':
 				var faceCount = msg.a;
 				var diceCount = msg.b;
@@ -7245,7 +7284,7 @@ var $author$project$Main$update = F2(
 							function (n) {
 								return {die: faceCount, result: n};
 							},
-							A2($author$project$Main$multiRandomGenerator, faceCount, diceCount))));
+							A2($author$project$Roll$multiRandomGenerator, faceCount, diceCount))));
 			case 'SingleRollDropStateChange':
 				var _new = msg.a;
 				return _Utils_Tuple2(
@@ -7273,13 +7312,31 @@ var $author$project$Main$update = F2(
 							singleDie: A2($author$project$DiceModel$setHistorySize, _new, model.singleDie)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'MultiRollNewValue':
 				var _new = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							multiDice: A2($author$project$DiceModel$setHistorySize, _new, model.multiDice)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'SetSingleDieExplode':
+				var _new = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							singleDie: A2($author$project$DiceModel$asExplode, model.singleDie, _new)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var _new = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							multiDice: A2($author$project$DiceModel$asExplode, model.multiDice, _new)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -7565,6 +7622,15 @@ var $author$project$Main$ClearSingleDieResults = {$: 'ClearSingleDieResults'};
 var $author$project$Main$RollSingleDie = function (a) {
 	return {$: 'RollSingleDie', a: a};
 };
+var $author$project$Main$SetSingleDieExplode = function (a) {
+	return {$: 'SetSingleDieExplode', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$Internal$Attrs = function (a) {
+	return {$: 'Attrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$attrs = function (attrs_) {
+	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$Attrs(attrs_);
+};
 var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs = function (a) {
 	return {$: 'BlockAttrs', a: a};
 };
@@ -7841,6 +7907,262 @@ var $author$project$Main$diceResultMsg = function (model) {
 		_List_Nil,
 		A2($elm$core$List$indexedMap, $author$project$Main$dieResultMsg, model.singleDie.rolls));
 };
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Checkbox = function (a) {
+	return {$: 'Checkbox', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$create = F2(
+	function (options, label_) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Checkbox(
+			{label: label_, options: options});
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Label = function (a) {
+	return {$: 'Label', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$label = F2(
+	function (attributes, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Label(
+			{attributes: attributes, children: children});
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$applyModifier = F2(
+	function (modifier, options) {
+		switch (modifier.$) {
+			case 'Id':
+				var val = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						id: $elm$core$Maybe$Just(val)
+					});
+			case 'Value':
+				var val = modifier.a;
+				return _Utils_update(
+					options,
+					{state: val});
+			case 'Inline':
+				return _Utils_update(
+					options,
+					{inline: true});
+			case 'OnChecked':
+				var toMsg = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						onChecked: $elm$core$Maybe$Just(toMsg)
+					});
+			case 'Custom':
+				return _Utils_update(
+					options,
+					{custom: true});
+			case 'Disabled':
+				var val = modifier.a;
+				return _Utils_update(
+					options,
+					{disabled: val});
+			case 'Validation':
+				var validation = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						validation: $elm$core$Maybe$Just(validation)
+					});
+			default:
+				var attrs_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						attributes: _Utils_ap(options.attributes, attrs_)
+					});
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off = {$: 'Off'};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$defaultOptions = {attributes: _List_Nil, custom: false, disabled: false, id: $elm$core$Maybe$Nothing, inline: false, onChecked: $elm$core$Maybe$Nothing, state: $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off, validation: $elm$core$Maybe$Nothing};
+var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $elm$core$Basics$not = _Basics_not;
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$html$Html$Events$targetChecked = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'checked']),
+	$elm$json$Json$Decode$bool);
+var $elm$html$Html$Events$onCheck = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'change',
+		A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetChecked));
+};
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$stateAttribute = function (state) {
+	switch (state.$) {
+		case 'On':
+			return $elm$html$Html$Attributes$checked(true);
+		case 'Off':
+			return $elm$html$Html$Attributes$checked(false);
+		default:
+			return A2($elm$html$Html$Attributes$attribute, 'indeterminate', 'true');
+	}
+};
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$validationToString = function (validation) {
+	if (validation.$ === 'Success') {
+		return 'is-valid';
+	} else {
+		return 'is-invalid';
+	}
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$toAttributes = function (options) {
+	return _Utils_ap(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$classList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('form-check-input', !options.custom),
+						_Utils_Tuple2('custom-control-input', options.custom)
+					])),
+				$elm$html$Html$Attributes$type_('checkbox'),
+				$elm$html$Html$Attributes$disabled(options.disabled),
+				$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$stateAttribute(options.state)
+			]),
+		_Utils_ap(
+			A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				_List_fromArray(
+					[
+						A2($elm$core$Maybe$map, $elm$html$Html$Events$onCheck, options.onChecked),
+						A2($elm$core$Maybe$map, $elm$html$Html$Attributes$id, options.id)
+					])),
+			_Utils_ap(
+				function () {
+					var _v0 = options.validation;
+					if (_v0.$ === 'Just') {
+						var v = _v0.a;
+						return _List_fromArray(
+							[
+								$elm$html$Html$Attributes$class(
+								$rundis$elm_bootstrap$Bootstrap$Form$FormInternal$validationToString(v))
+							]);
+					} else {
+						return _List_Nil;
+					}
+				}(),
+				options.attributes)));
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$view = function (_v0) {
+	var chk = _v0.a;
+	var opts = A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$applyModifier, $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$defaultOptions, chk.options);
+	var _v1 = chk.label;
+	var label_ = _v1.a;
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$classList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('form-check', !opts.custom),
+						_Utils_Tuple2('form-check-inline', (!opts.custom) && opts.inline),
+						_Utils_Tuple2('custom-control', opts.custom),
+						_Utils_Tuple2('custom-checkbox', opts.custom),
+						_Utils_Tuple2('custom-control-inline', opts.inline && opts.custom)
+					]))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$input,
+				$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$toAttributes(opts),
+				_List_Nil),
+				A2(
+				$elm$html$Html$label,
+				_Utils_ap(
+					label_.attributes,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('form-check-label', !opts.custom),
+										_Utils_Tuple2('custom-control-label', opts.custom)
+									]))
+							]),
+						function () {
+							var _v2 = opts.id;
+							if (_v2.$ === 'Just') {
+								var v = _v2.a;
+								return _List_fromArray(
+									[
+										$elm$html$Html$Attributes$for(v)
+									]);
+							} else {
+								return _List_Nil;
+							}
+						}())),
+				label_.children)
+			]));
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checkbox = F2(
+	function (options, labelText) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$view(
+			A2(
+				$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$create,
+				options,
+				A2(
+					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$label,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(labelText)
+						]))));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$On = {$: 'On'};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Value = function (a) {
+	return {$: 'Value', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checked = function (isCheck) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Value(
+		isCheck ? $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$On : $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off);
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Id = function (a) {
+	return {$: 'Id', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id = function (theId) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Id(theId);
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked = function (a) {
+	return {$: 'OnChecked', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck = function (toMsg) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked(toMsg);
+};
+var $author$project$Main$explodeCheckbox = F2(
+	function (val, cmd) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checkbox,
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$id('explode'),
+					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$checked(val),
+					$rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck(cmd)
+				]),
+			'Explode');
+	});
 var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
 	return {$: 'Footer', a: a};
 };
@@ -8710,7 +9032,6 @@ var $author$project$Main$SingleRollNewValue = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem = function (a) {
 	return {$: 'DropdownItem', a: a};
 };
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$buttonItem = F2(
 	function (attributes, children) {
 		return $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownItem(
@@ -9010,10 +9331,6 @@ var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea = A4(
 	A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, 0, 0),
 	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth,
 	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight);
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode = function (idx) {
 	return $elm$json$Json$Decode$at(
 		_List_fromArray(
@@ -9479,9 +9796,19 @@ var $author$project$Main$diceCard = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('History length')
+												$elm$html$Html$text('History')
 											]))
 									]))
+							])),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('ml-2 float-left text-muted')
+							]),
+						_List_fromArray(
+							[
+								A2($author$project$Main$explodeCheckbox, model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
 							]))
 					]),
 				A3(
@@ -9493,7 +9820,14 @@ var $author$project$Main$diceCard = function (model) {
 						]),
 					$rundis$elm_bootstrap$Bootstrap$Card$config(
 						_List_fromArray(
-							[$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo]))))));
+							[
+								$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo,
+								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('mb-4')
+									]))
+							]))))));
 };
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
@@ -9857,7 +10191,6 @@ var $rundis$elm_bootstrap$Bootstrap$Table$maybeWrapResponsive = F2(
 			_List_fromArray(
 				[table_])) : table_;
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $elm$html$Html$Attributes$scope = $elm$html$Html$Attributes$stringProperty('scope');
 var $rundis$elm_bootstrap$Bootstrap$Table$addScopeIfTh = function (cell) {
 	if (cell.$ === 'Th') {
@@ -10288,9 +10621,19 @@ var $author$project$Main$multiDiceCard = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('History length')
+												$elm$html$Html$text('History')
 											]))
 									]))
+							])),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('ml-2 float-left text-muted')
+							]),
+						_List_fromArray(
+							[
+								A2($author$project$Main$explodeCheckbox, model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
 							]))
 					]),
 				A3(
@@ -10302,7 +10645,14 @@ var $author$project$Main$multiDiceCard = function (model) {
 						]),
 					$rundis$elm_bootstrap$Bootstrap$Card$config(
 						_List_fromArray(
-							[$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo]))))));
+							[
+								$rundis$elm_bootstrap$Bootstrap$Card$outlineInfo,
+								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('mb-4')
+									]))
+							]))))));
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$SM, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
@@ -11445,14 +11795,6 @@ var $rundis$elm_bootstrap$Bootstrap$Modal$small = function (_v0) {
 					})
 			}));
 };
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $rundis$elm_bootstrap$Bootstrap$Modal$StartClose = {$: 'StartClose'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$getCloseMsg = function (config_) {
 	var _v0 = config_.withAnimation;

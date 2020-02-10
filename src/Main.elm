@@ -17,6 +17,7 @@ import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Table as Table
 import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Form.Checkbox as Checkbox
 import Random
 
 import Roll
@@ -77,16 +78,20 @@ type Msg
     | NavMsg Navbar.State
     | CloseModal
     | ShowModal
-    | ClearSingleDieResults
-    | ClearMultiDiceResults
+    --
     | NewSingleDieResult Roll.Single
-    | NewMultiDiceResult Roll.Multi
     | RollSingleDie Int
-    | RollMultiDice Int Int
     | SingleRollDropStateChange Dropdown.State
     | SingleRollNewValue Int
+    | ClearSingleDieResults
+    | SetSingleDieExplode Bool
+    --
+    | NewMultiDiceResult Roll.Multi
+    | RollMultiDice Int Int
     | MultiRollDropStateChange Dropdown.State
     | MultiRollNewValue Int
+    | ClearMultiDiceResults
+    | SetMultiDiceExplode Bool
 
 
 subscriptions : Model -> Sub Msg
@@ -149,12 +154,13 @@ update msg model =
 
         RollSingleDie faceCount ->
             ( model
-            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (singleRandomGenerator faceCount))
+            --, Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (Roll.singleRandomGenerator faceCount))
+            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (createNewSingleDieResult model.singleDie.explodes faceCount 0))
             )
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiRandomGenerator faceCount diceCount)) 
+            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (Roll.multiRandomGenerator faceCount diceCount)) 
             )
 
         SingleRollDropStateChange new ->
@@ -173,12 +179,13 @@ update msg model =
             ( { model | multiDice = model.multiDice |> DiceModel.setHistorySize new }
             , Cmd.none )
 
-singleRandomGenerator: Int -> Random.Generator Int
-singleRandomGenerator faceCount = Random.int 1 faceCount
+        SetSingleDieExplode new ->
+            ( { model | singleDie = new |> DiceModel.asExplode model.singleDie }
+            , Cmd.none )
 
-multiRandomGenerator : Int -> Int -> Random.Generator (List Int)
-multiRandomGenerator faceCount diceCount = Random.list diceCount (Random.int 1 faceCount)
-
+        SetMultiDiceExplode new ->
+            ( { model | multiDice = new |> DiceModel.asExplode model.multiDice }
+            , Cmd.none )
 
 
 
@@ -317,6 +324,11 @@ modal model =
             ]
         |> Modal.view model.modalVisibility
 
+createNewSingleDieResult : Bool -> Int -> Int -> Random.Generator Int
+createNewSingleDieResult explode faceCount previous =
+    Random.andThen (\n -> if (n == faceCount) && explode then createNewSingleDieResult explode faceCount (previous + n) else Random.constant (previous + n)) (Roll.singleRandomGenerator faceCount)
+    --Random.andThen (\n -> if n /= faceCount then Random.constant (previous + n) else createNewSingleDieResult faceCount (previous + n)) (Roll.singleRandomGenerator faceCount)
+
 diceCard: Model -> Html Msg
 diceCard model =
     let button = \n -> Grid.col 
@@ -324,15 +336,17 @@ diceCard model =
                         [ Button.button 
                           [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button disable-dbl-tap-zoom" ] ] 
                           [ text ("d" ++ (n |> String.fromInt)) ] ] in
-    Card.config [ Card.outlineInfo ]
+    Card.config [ Card.outlineInfo , Card.attrs [ Html.Attributes.class "mb-4" ]]
         |> Card.headerH4 [] [ text "Roll single die" ]
         |> Card.footer [] 
             [ span [ class "float-right"] 
                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] 
             , span [ class "float-left"]
                    [ singleRollMaxElementsDropdown model 
-                   , span [ class "text-muted ml-2" ] [ small [] [ text "History length" ] ]
+                   , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
                    ]
+            , span [ class "ml-2 float-left text-muted"]
+                   [ explodeCheckbox model.singleDie.explodes SetSingleDieExplode] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
@@ -390,15 +404,17 @@ multiDiceTable =
 
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
-    Card.config [ Card.outlineInfo ]
+    Card.config [ Card.outlineInfo, Card.attrs [ Html.Attributes.class "mb-4" ] ]
         |> Card.headerH4 [] [ text "Roll multiple dice" ]
         |> Card.footer [] 
             [ span [ class "float-right"] 
                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
             , span [ class "float-left"]
                    [ multiRollMaxElementsDropdown model 
-                   , span [ class "text-muted ml-2" ] [ small [] [ text "History length" ] ]
-                   ] 
+                   , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
+                   ]
+            , span [ class "ml-2 float-left text-muted"]
+                   [ explodeCheckbox model.singleDie.explodes SetSingleDieExplode] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| multiDiceTable
@@ -408,6 +424,10 @@ multiDiceCard model =
                 ]
             ]
         |> Card.view
+
+explodeCheckbox: Bool -> (Bool -> Msg) -> Html Msg
+explodeCheckbox val cmd =
+    Checkbox.checkbox [ Checkbox.id "explode", Checkbox.checked val, Checkbox.onCheck cmd ] "Explode"
 
 multiDiceResultMsg: Model -> Html Msg
 multiDiceResultMsg model =
