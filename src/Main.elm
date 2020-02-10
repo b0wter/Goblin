@@ -378,9 +378,11 @@ dieResultMsg i roll =
     , Html.span [] [ text "」"]
     ]
 
+multiDieButton : (Int -> Int -> Msg) -> Int -> Int -> Table.Cell Msg
 multiDieButton command faceCount dieCount =
     Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount), class "disable-dbl-tap-zoom"] ] [ text (dieCount |> String.fromInt) ] ]
 
+multiDieButtonRow : Int -> Table.Row Msg
 multiDieButtonRow faceCount =
     let dieCounts = [ 2, 3, 4, 5, 6, 7, 8 ] in
     Table.tr [] 
@@ -428,10 +430,6 @@ multiDiceCard model =
             ]
         |> Card.view
 
-explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
-explodeCheckbox id val cmd =
-    Checkbox.advancedCustom [ Checkbox.id id, Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [] [ text "Explode"] ])
-
 multiDiceResultMsg: Model -> Html Msg
 multiDiceResultMsg model =
     if model.multiDice.rolls |> List.isEmpty then
@@ -472,3 +470,7 @@ singleRollMaxElementsDropdown model =
 multiRollMaxElementsDropdown : Model -> Html Msg
 multiRollMaxElementsDropdown model =
     rollMaxElementsDropdown model.multiDice.historyDropState model.multiDice.maxHistory MultiRollNewValue MultiRollDropStateChange
+
+explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
+explodeCheckbox id val cmd =
+    Checkbox.advancedCustom [ Checkbox.id id, Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [] [ text "Explode"] ])
