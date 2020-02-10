@@ -133,7 +133,7 @@ update msg model =
             )
 
         ClearSingleDieResults ->
-            ( { model | singleDie = model.singleDie |> DiceModel.clearHistory } -- [] |> DiceModel.with model.singleDie --{ model.singleDie | history = [] } }
+            ( { model | singleDie = model.singleDie |> DiceModel.clearHistory }
             , Cmd.none
             )
 
@@ -160,7 +160,7 @@ update msg model =
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (Roll.multiRandomGenerator faceCount diceCount)) 
+            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (createNewMultiDiceResult model.multiDice.explodes faceCount diceCount)) --Roll.multiRandomGenerator faceCount diceCount)) 
             )
 
         SingleRollDropStateChange new ->
@@ -327,7 +327,10 @@ modal model =
 createNewSingleDieResult : Bool -> Int -> Int -> Random.Generator Int
 createNewSingleDieResult explode faceCount previous =
     Random.andThen (\n -> if (n == faceCount) && explode then createNewSingleDieResult explode faceCount (previous + n) else Random.constant (previous + n)) (Roll.singleRandomGenerator faceCount)
-    --Random.andThen (\n -> if n /= faceCount then Random.constant (previous + n) else createNewSingleDieResult faceCount (previous + n)) (Roll.singleRandomGenerator faceCount)
+
+createNewMultiDiceResult : Bool -> Int -> Int -> Random.Generator (List Int)
+createNewMultiDiceResult explode faceCount diceCount =
+    Random.list diceCount (createNewSingleDieResult explode faceCount 0)
 
 diceCard: Model -> Html Msg
 diceCard model =
@@ -414,7 +417,7 @@ multiDiceCard model =
                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
                    ]
             , span [ class "ml-2 float-left text-muted"]
-                   [ explodeCheckbox model.singleDie.explodes SetSingleDieExplode] 
+                   [ explodeCheckbox model.multiDice.explodes SetMultiDiceExplode] 
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| multiDiceTable

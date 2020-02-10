@@ -6993,6 +6993,43 @@ var $author$project$Main$createNewSingleDieResult = F3(
 			},
 			$author$project$Roll$singleRandomGenerator(faceCount));
 	});
+var $elm$random$Random$listHelp = F4(
+	function (revList, n, gen, seed) {
+		listHelp:
+		while (true) {
+			if (n < 1) {
+				return _Utils_Tuple2(revList, seed);
+			} else {
+				var _v0 = gen(seed);
+				var value = _v0.a;
+				var newSeed = _v0.b;
+				var $temp$revList = A2($elm$core$List$cons, value, revList),
+					$temp$n = n - 1,
+					$temp$gen = gen,
+					$temp$seed = newSeed;
+				revList = $temp$revList;
+				n = $temp$n;
+				gen = $temp$gen;
+				seed = $temp$seed;
+				continue listHelp;
+			}
+		}
+	});
+var $elm$random$Random$list = F2(
+	function (n, _v0) {
+		var gen = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+			});
+	});
+var $author$project$Main$createNewMultiDiceResult = F3(
+	function (explode, faceCount, diceCount) {
+		return A2(
+			$elm$random$Random$list,
+			diceCount,
+			A3($author$project$Main$createNewSingleDieResult, explode, faceCount, 0));
+	});
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -7084,43 +7121,6 @@ var $elm$random$Random$generate = F2(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$random$Random$listHelp = F4(
-	function (revList, n, gen, seed) {
-		listHelp:
-		while (true) {
-			if (n < 1) {
-				return _Utils_Tuple2(revList, seed);
-			} else {
-				var _v0 = gen(seed);
-				var value = _v0.a;
-				var newSeed = _v0.b;
-				var $temp$revList = A2($elm$core$List$cons, value, revList),
-					$temp$n = n - 1,
-					$temp$gen = gen,
-					$temp$seed = newSeed;
-				revList = $temp$revList;
-				n = $temp$n;
-				gen = $temp$gen;
-				seed = $temp$seed;
-				continue listHelp;
-			}
-		}
-	});
-var $elm$random$Random$list = F2(
-	function (n, _v0) {
-		var gen = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
-			});
-	});
-var $author$project$Roll$multiRandomGenerator = F2(
-	function (faceCount, diceCount) {
-		return A2(
-			$elm$random$Random$list,
-			diceCount,
-			A2($elm$random$Random$int, 1, faceCount));
-	});
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
@@ -7284,7 +7284,7 @@ var $author$project$Main$update = F2(
 							function (n) {
 								return {die: faceCount, result: n};
 							},
-							A2($author$project$Roll$multiRandomGenerator, faceCount, diceCount))));
+							A3($author$project$Main$createNewMultiDiceResult, model.multiDice.explodes, faceCount, diceCount))));
 			case 'SingleRollDropStateChange':
 				var _new = msg.a;
 				return _Utils_Tuple2(
@@ -9834,6 +9834,9 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Boot
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
 var $author$project$Main$ClearMultiDiceResults = {$: 'ClearMultiDiceResults'};
+var $author$project$Main$SetMultiDiceExplode = function (a) {
+	return {$: 'SetMultiDiceExplode', a: a};
+};
 var $author$project$Main$multiDieResultMsg = F2(
 	function (i, rolls) {
 		return A2(
@@ -10633,7 +10636,7 @@ var $author$project$Main$multiDiceCard = function (model) {
 							]),
 						_List_fromArray(
 							[
-								A2($author$project$Main$explodeCheckbox, model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
+								A2($author$project$Main$explodeCheckbox, model.multiDice.explodes, $author$project$Main$SetMultiDiceExplode)
 							]))
 					]),
 				A3(
