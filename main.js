@@ -8181,7 +8181,10 @@ var $author$project$Main$explodeCheckbox = F3(
 					[
 						A2(
 						$elm$html$Html$small,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('text-muted')
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Explode')
@@ -9769,61 +9772,70 @@ var $author$project$Main$diceCard = function (model) {
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$span,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('float-right')
+								$elm$html$Html$Attributes$class('d-flex justify-content-between')
 							]),
 						_List_fromArray(
 							[
 								A2(
-								$rundis$elm_bootstrap$Bootstrap$Button$button,
+								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$rundis$elm_bootstrap$Bootstrap$Button$secondary,
-										$rundis$elm_bootstrap$Bootstrap$Button$small,
-										$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Main$ClearSingleDieResults)
+										$elm$html$Html$Attributes$class('')
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Clear')
-									]))
-							])),
-						A2(
-						$elm$html$Html$span,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('float-left')
-							]),
-						_List_fromArray(
-							[
-								$author$project$Main$singleRollMaxElementsDropdown(model),
+										$author$project$Main$singleRollMaxElementsDropdown(model),
+										A2(
+										$elm$html$Html$span,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('text-muted ml-2')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$small,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('History')
+													]))
+											]))
+									])),
 								A2(
-								$elm$html$Html$span,
+								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('text-muted ml-2')
+										$elm$html$Html$Attributes$class('mb-auto mt-auto')
+									]),
+								_List_fromArray(
+									[
+										A3($author$project$Main$explodeCheckbox, 'single-explode', model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('')
 									]),
 								_List_fromArray(
 									[
 										A2(
-										$elm$html$Html$small,
-										_List_Nil,
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('History')
+												$rundis$elm_bootstrap$Bootstrap$Button$secondary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Main$ClearSingleDieResults)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Clear')
 											]))
 									]))
-							])),
-						A2(
-						$elm$html$Html$span,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('ml-2 float-left text-muted')
-							]),
-						_List_fromArray(
-							[
-								A3($author$project$Main$explodeCheckbox, 'single-explode', model.singleDie.explodes, $author$project$Main$SetSingleDieExplode)
 							]))
 					]),
 				A3(
@@ -10596,61 +10608,70 @@ var $author$project$Main$multiDiceCard = function (model) {
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$span,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('float-right')
+								$elm$html$Html$Attributes$class('d-flex justify-content-between')
 							]),
 						_List_fromArray(
 							[
 								A2(
-								$rundis$elm_bootstrap$Bootstrap$Button$button,
+								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$rundis$elm_bootstrap$Bootstrap$Button$secondary,
-										$rundis$elm_bootstrap$Bootstrap$Button$small,
-										$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Main$ClearMultiDiceResults)
+										$elm$html$Html$Attributes$class('')
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Clear')
-									]))
-							])),
-						A2(
-						$elm$html$Html$span,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('float-left')
-							]),
-						_List_fromArray(
-							[
-								$author$project$Main$multiRollMaxElementsDropdown(model),
+										$author$project$Main$multiRollMaxElementsDropdown(model),
+										A2(
+										$elm$html$Html$span,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('text-muted ml-2')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$small,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('History')
+													]))
+											]))
+									])),
 								A2(
-								$elm$html$Html$span,
+								$elm$html$Html$div,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$class('text-muted ml-2')
+										$elm$html$Html$Attributes$class('mb-auto mt-auto')
+									]),
+								_List_fromArray(
+									[
+										A3($author$project$Main$explodeCheckbox, 'multi-explode', model.multiDice.explodes, $author$project$Main$SetMultiDiceExplode)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('')
 									]),
 								_List_fromArray(
 									[
 										A2(
-										$elm$html$Html$small,
-										_List_Nil,
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('History')
+												$rundis$elm_bootstrap$Bootstrap$Button$secondary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Main$ClearMultiDiceResults)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Clear')
 											]))
 									]))
-							])),
-						A2(
-						$elm$html$Html$span,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('ml-2 float-left text-muted')
-							]),
-						_List_fromArray(
-							[
-								A3($author$project$Main$explodeCheckbox, 'multi-explode', model.multiDice.explodes, $author$project$Main$SetMultiDiceExplode)
 							]))
 					]),
 				A3(

@@ -354,14 +354,16 @@ diceCard model =
     Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
         |> Card.headerH4 [] [ text "Roll single die" ]
         |> Card.footer [] 
-            [ span [ class "float-right"] 
-                   [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] 
-            , span [ class "float-left"]
-                   [ singleRollMaxElementsDropdown model 
-                   , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
-                   ]
-            , span [ class "ml-2 float-left text-muted"]
-                   [ explodeCheckbox "single-explode" model.singleDie.explodes SetSingleDieExplode] 
+            [ div [ class "d-flex justify-content-between"] 
+                [ div [ class ""]
+                    [ singleRollMaxElementsDropdown model 
+                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
+                    ]
+                , div [ class "mb-auto mt-auto"]
+                    [ explodeCheckbox "single-explode" model.singleDie.explodes SetSingleDieExplode] 
+                , div [ class ""] 
+                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] 
+                ]
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| Grid.row [] 
@@ -424,14 +426,16 @@ multiDiceCard model =
     Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ] ]
         |> Card.headerH4 [] [ text "Roll multiple dice" ]
         |> Card.footer [] 
-            [ span [ class "float-right"] 
-                   [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
-            , span [ class "float-left"]
-                   [ multiRollMaxElementsDropdown model 
-                   , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
-                   ]
-            , span [ class "ml-2 float-left text-muted"]
-                   [ explodeCheckbox "multi-explode" model.multiDice.explodes SetMultiDiceExplode] 
+            [ div [ class "d-flex justify-content-between"] 
+                [ div [ class ""]
+                    [ multiRollMaxElementsDropdown model 
+                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
+                    ]
+                , div [ class "mb-auto mt-auto"]
+                    [ explodeCheckbox "multi-explode" model.multiDice.explodes SetMultiDiceExplode] 
+                , div [ class ""] 
+                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
+                ]
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| multiDiceTable
@@ -485,4 +489,4 @@ multiRollMaxElementsDropdown model =
 
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =
-    Checkbox.advancedCustom [ Checkbox.id id, Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [] [ text "Explode"] ])
+    Checkbox.advancedCustom [ Checkbox.id id, Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [ class "text-muted" ] [ text "Explode"] ])
