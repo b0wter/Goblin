@@ -1,7 +1,9 @@
 module DiceModel exposing ( DiceModel
                           , addRoll, withAddedRoll
-                          , withHistorySize, setHistorySize
-                          , withHistoryDropState, setHistoryDropState
+                          , asHistorySize, setHistorySize
+                          , asHistoryDropState, setHistoryDropState
+                          , asExplode, setExplode
+                          , toggleExplode
                           , clearHistory
                           , empty)
 
@@ -14,10 +16,11 @@ type alias DiceModel a =
     , lastRoll: Maybe a
     , maxHistory : Int
     , historyDropState : Dropdown.State
+    , explodes: Bool
     }
 
 empty : DiceModel a
-empty = { rolls = [], lastRoll = Nothing, maxHistory = 4, historyDropState =  Dropdown.initialState }
+empty = { rolls = [], lastRoll = Nothing, maxHistory = 4, historyDropState =  Dropdown.initialState, explodes = False }
 
 addRoll : a -> DiceModel a -> DiceModel a
 addRoll roll model =
@@ -31,15 +34,26 @@ setHistorySize : Int -> DiceModel a -> DiceModel a
 setHistorySize newSize model = 
     { model | maxHistory = newSize, rolls = model.rolls |> List.limit (newSize + 1) }
 
-withHistorySize : DiceModel a -> Int -> DiceModel a
-withHistorySize =
+asHistorySize : DiceModel a -> Int -> DiceModel a
+asHistorySize =
     Flip.flip setHistorySize
 
 setHistoryDropState : Dropdown.State -> DiceModel a -> DiceModel a
 setHistoryDropState state model = { model | historyDropState = state }
 
-withHistoryDropState : DiceModel a -> Dropdown.State -> DiceModel a
-withHistoryDropState = Flip.flip setHistoryDropState
+asHistoryDropState : DiceModel a -> Dropdown.State -> DiceModel a
+asHistoryDropState = Flip.flip setHistoryDropState
 
 clearHistory : DiceModel a -> DiceModel a
 clearHistory model = { model | rolls = [] }
+
+setExplode : Bool -> DiceModel a -> DiceModel a
+setExplode state model =
+    { model | explodes = state }
+
+asExplode : DiceModel a -> Bool -> DiceModel a
+asExplode = Flip.flip setExplode
+
+toggleExplode : DiceModel a -> DiceModel a
+toggleExplode model =
+    { model | explodes = not model.explodes }
