@@ -162,12 +162,12 @@ update msg model =
         RollSingleDie faceCount ->
             ( model
             --, Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (Roll.singleRandomGenerator faceCount))
-            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (createNewSingleDieResult model.singleDie.explodes faceCount 0))
+            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (singleDieGenerator model.singleDie.explodes faceCount 0))
             )
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (createNewMultiDiceResult model.multiDice.explodes faceCount diceCount)) --Roll.multiRandomGenerator faceCount diceCount)) 
+            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiDiceGenerator model.multiDice.explodes faceCount diceCount)) --Roll.multiRandomGenerator faceCount diceCount)) 
             )
 
         SingleRollDropStateChange new ->
@@ -336,14 +336,38 @@ modal model =
             ]
         |> Modal.view model.modalVisibility
 
-createNewSingleDieResult : Bool -> Int -> Int -> Random.Generator Int
-createNewSingleDieResult explode faceCount previous =
-    Random.andThen (\n -> if (n == faceCount) && explode then createNewSingleDieResult explode faceCount (previous + n) else Random.constant (previous + n)) (Roll.singleRandomGenerator faceCount)
 
-createNewMultiDiceResult : Bool -> Int -> Int -> Random.Generator (List Int)
-createNewMultiDiceResult explode faceCount diceCount =
-    Random.list diceCount (createNewSingleDieResult explode faceCount 0)
+{--
+    Code necessary to render the single die and multi dice cards.
+--}
 
+{-| Creates the generator necessary to create a new random number for a single die.
+The boolean argument tells the generator to roll an additional time if the max value was rolled.
+The last argument is an aggregator for _exploding_ results. Set this to zero.
+
+    rollSixSidedDie : Random.Generator Int
+    rollSixSidedDie =
+        singleDieGenerator False 6 0
+-}
+singleDieGenerator : Bool -> Int -> Int -> Random.Generator Int
+singleDieGenerator explode faceCount previous =
+    Random.andThen (\n -> if (n == faceCount) && explode then singleDieGenerator explode faceCount (previous + n) else Random.constant (previous + n)) (Roll.singleRandomGenerator faceCount)
+
+{-| Creates the generator necessary to create a new list of random dice throws.
+The boolean argument tells the generator to roll an additional time if the max value was rolled.
+
+    rollTwoDice : Random.Generator Int
+    rollTwoDice = 
+        multiDiceGenerator False 6 2
+
+The examples returns a generator that returns the sum of two dice with six faces.
+-}
+multiDiceGenerator : Bool -> Int -> Int -> Random.Generator (List Int)
+multiDiceGenerator explode faceCount diceCount =
+    Random.list diceCount (singleDieGenerator explode faceCount 0)
+
+{-| Renders the single roll card element.
+-}
 diceCard: Model -> Html Msg
 diceCard model =
     let button = \n -> Grid.col 
@@ -376,6 +400,11 @@ diceCard model =
         |> Card.view
 
 
+-- TODO Combine this this the multi dice variante using function parameters!
+
+{-|
+    Renders a list of results.
+-}
 diceResultMsg: Model -> Html Msg
 diceResultMsg model =
     if model.singleDie.rolls |> List.isEmpty then
