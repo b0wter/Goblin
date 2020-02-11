@@ -6907,31 +6907,8 @@ var $author$project$DiceModel$clearHistory = function (model) {
 		model,
 		{rolls: _List_Nil});
 };
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
-var $elm$random$Random$andThen = F2(
-	function (callback, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				var _v1 = genA(seed);
-				var result = _v1.a;
-				var newSeed = _v1.b;
-				var _v2 = callback(result);
-				var genB = _v2.a;
-				return genB(newSeed);
-			});
-	});
-var $elm$random$Random$constant = function (value) {
-	return $elm$random$Random$Generator(
-		function (seed) {
-			return _Utils_Tuple2(value, seed);
-		});
-};
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
 };
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -6942,96 +6919,6 @@ var $elm$random$Random$next = function (_v0) {
 	var state0 = _v0.a;
 	var incr = _v0.b;
 	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var $elm$core$Bitwise$xor = _Bitwise_xor;
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
-var $author$project$Roll$singleRandomGenerator = function (faceCount) {
-	return A2($elm$random$Random$int, 1, faceCount);
-};
-var $author$project$Main$createNewSingleDieResult = F3(
-	function (explode, faceCount, previous) {
-		return A2(
-			$elm$random$Random$andThen,
-			function (n) {
-				return (_Utils_eq(n, faceCount) && explode) ? A3($author$project$Main$createNewSingleDieResult, explode, faceCount, previous + n) : $elm$random$Random$constant(previous + n);
-			},
-			$author$project$Roll$singleRandomGenerator(faceCount));
-	});
-var $elm$random$Random$listHelp = F4(
-	function (revList, n, gen, seed) {
-		listHelp:
-		while (true) {
-			if (n < 1) {
-				return _Utils_Tuple2(revList, seed);
-			} else {
-				var _v0 = gen(seed);
-				var value = _v0.a;
-				var newSeed = _v0.b;
-				var $temp$revList = A2($elm$core$List$cons, value, revList),
-					$temp$n = n - 1,
-					$temp$gen = gen,
-					$temp$seed = newSeed;
-				revList = $temp$revList;
-				n = $temp$n;
-				gen = $temp$gen;
-				seed = $temp$seed;
-				continue listHelp;
-			}
-		}
-	});
-var $elm$random$Random$list = F2(
-	function (n, _v0) {
-		var gen = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed) {
-				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
-			});
-	});
-var $author$project$Main$createNewMultiDiceResult = F3(
-	function (explode, faceCount, diceCount) {
-		return A2(
-			$elm$random$Random$list,
-			diceCount,
-			A3($author$project$Main$createNewSingleDieResult, explode, faceCount, 0));
-	});
-var $elm$random$Random$Generate = function (a) {
-	return {$: 'Generate', a: a};
 };
 var $elm$random$Random$initialSeed = function (x) {
 	var _v0 = $elm$random$Random$next(
@@ -7093,6 +6980,9 @@ var $elm$random$Random$onSelfMsg = F3(
 	function (_v0, _v1, seed) {
 		return $elm$core$Task$succeed(seed);
 	});
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
 var $elm$random$Random$map = F2(
 	function (func, _v0) {
 		var genA = _v0.a;
@@ -7121,6 +7011,116 @@ var $elm$random$Random$generate = F2(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
+var $elm$random$Random$listHelp = F4(
+	function (revList, n, gen, seed) {
+		listHelp:
+		while (true) {
+			if (n < 1) {
+				return _Utils_Tuple2(revList, seed);
+			} else {
+				var _v0 = gen(seed);
+				var value = _v0.a;
+				var newSeed = _v0.b;
+				var $temp$revList = A2($elm$core$List$cons, value, revList),
+					$temp$n = n - 1,
+					$temp$gen = gen,
+					$temp$seed = newSeed;
+				revList = $temp$revList;
+				n = $temp$n;
+				gen = $temp$gen;
+				seed = $temp$seed;
+				continue listHelp;
+			}
+		}
+	});
+var $elm$random$Random$list = F2(
+	function (n, _v0) {
+		var gen = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				return A4($elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+			});
+	});
+var $elm$random$Random$andThen = F2(
+	function (callback, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				var _v1 = genA(seed);
+				var result = _v1.a;
+				var newSeed = _v1.b;
+				var _v2 = callback(result);
+				var genB = _v2.a;
+				return genB(newSeed);
+			});
+	});
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
+};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $author$project$Roll$singleRandomGenerator = function (faceCount) {
+	return A2($elm$random$Random$int, 1, faceCount);
+};
+var $author$project$Main$singleDieGenerator = F3(
+	function (explode, faceCount, previous) {
+		return A2(
+			$elm$random$Random$andThen,
+			function (n) {
+				return (_Utils_eq(n, faceCount) && explode) ? A3($author$project$Main$singleDieGenerator, explode, faceCount, previous + n) : $elm$random$Random$constant(previous + n);
+			},
+			$author$project$Roll$singleRandomGenerator(faceCount));
+	});
+var $author$project$Main$multiDiceGenerator = F3(
+	function (explode, faceCount, diceCount) {
+		return A2(
+			$elm$random$Random$list,
+			diceCount,
+			A3($author$project$Main$singleDieGenerator, explode, faceCount, 0));
+	});
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
@@ -7270,7 +7270,7 @@ var $author$project$Main$update = F2(
 							function (n) {
 								return {die: faceCount, result: n};
 							},
-							A3($author$project$Main$createNewSingleDieResult, model.singleDie.explodes, faceCount, 0))));
+							A3($author$project$Main$singleDieGenerator, model.singleDie.explodes, faceCount, 0))));
 			case 'RollMultiDice':
 				var faceCount = msg.a;
 				var diceCount = msg.b;
@@ -7284,7 +7284,7 @@ var $author$project$Main$update = F2(
 							function (n) {
 								return {die: faceCount, result: n};
 							},
-							A3($author$project$Main$createNewMultiDiceResult, model.multiDice.explodes, faceCount, diceCount))));
+							A3($author$project$Main$multiDiceGenerator, model.multiDice.explodes, faceCount, diceCount))));
 			case 'SingleRollDropStateChange':
 				var _new = msg.a;
 				return _Utils_Tuple2(
