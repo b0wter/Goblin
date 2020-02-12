@@ -13,10 +13,10 @@
         "sizes": "512x512"
       }
     ],
-    "start_url": "/Goblin",
+    "start_url": "/",
     "background_color": "#ffffff",
     "display": "standalone",
-    "scope": "/Goblin",
+    "scope": "/",
     "theme_color": "#3367D6"
   }
   
