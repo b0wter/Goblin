@@ -367,6 +367,32 @@ multiDiceGenerator explode faceCount diceCount =
 
 {-| Renders the single roll card element.
 -}
+
+diceCard: String -> (Model -> Html Msg) -> String -> Bool -> (Bool -> Msg) -> Msg -> Html Msg -> (Model -> Html Msg) -> Model -> Html Msg
+diceCard header elementsDropDown rollType explodes setDieExplodeMsg clearResultsMsg buttons resultList model =
+    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
+        |> Card.headerH4 [] [ text header ]
+        |> Card.footer [] 
+            [ div [ class "d-flex justify-content-between"] 
+                [ div [ class ""]
+                    [ elementsDropDown model 
+                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
+                    ]
+                , div [ class "mb-auto mt-auto"]
+                    [ explodeCheckbox (rollType ++ "-explode") explodes setDieExplodeMsg] 
+                , div [ class ""] 
+                    [ Button.button [ Button.secondary, Button.small, Button.onClick clearResultsMsg ] [ text "Clear" ] ] 
+                ]
+            ]
+        |> Card.block [ Block.attrs [ class "text-center"] ]
+            [ Block.custom <| buttons
+            , Block.custom <| Grid.row []
+                [ Grid.col [ ] 
+                  [ model |> resultList ] 
+                ]
+            ]
+        |> Card.view    
+
 singleDieCard: Model -> Html Msg
 singleDieCard model =
     let button = \n -> Grid.col 
@@ -374,56 +400,14 @@ singleDieCard model =
                         [ Button.button 
                           [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button disable-dbl-tap-zoom" ] ] 
                           [ text ("d" ++ (n |> String.fromInt)) ] ] in
-    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
-        |> Card.headerH4 [] [ text "Roll single die" ]
-        |> Card.footer [] 
-            [ div [ class "d-flex justify-content-between"] 
-                [ div [ class ""]
-                    [ singleRollMaxElementsDropdown model 
-                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
-                    ]
-                , div [ class "mb-auto mt-auto"]
-                    [ explodeCheckbox "single-explode" model.singleDie.explodes SetSingleDieExplode] 
-                , div [ class ""] 
-                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearSingleDieResults ] [ text "Clear" ] ] 
-                ]
-            ]
-        |> Card.block [ Block.attrs [ class "text-center"] ]
-            [ Block.custom <| Grid.row [] 
-                [ button 4, button 6, button 8, button 10, button 12, button 20 ]
-            , Block.custom <| Grid.row []
-                [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
-                  [ model |> singleDieResultList ] 
-                ]
-            ]
-        |> Card.view
+    let buttons =
+         Grid.row [] [ button 4, button 6, button 8, button 10, button 12, button 20 ]
+    in 
+        diceCard "Roll single die" singleRollMaxElementsDropdown "single-die" model.singleDie.explodes SetSingleDieExplode ClearSingleDieResults buttons singleDieResultList model
 
-{-| Renders the multi-dice roll card element.
--}
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
-    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ] ]
-        |> Card.headerH4 [] [ text "Roll multiple dice" ]
-        |> Card.footer [] 
-            [ div [ class "d-flex justify-content-between"] 
-                [ div [ class ""]
-                    [ multiRollMaxElementsDropdown model 
-                    , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
-                    ]
-                , div [ class "mb-auto mt-auto"]
-                    [ explodeCheckbox "multi-explode" model.multiDice.explodes SetMultiDiceExplode] 
-                , div [ class ""] 
-                    [ Button.button [ Button.secondary, Button.small, Button.onClick ClearMultiDiceResults ] [ text "Clear" ] ] 
-                ]
-            ]
-        |> Card.block [ Block.attrs [ class "text-center"] ]
-            [ Block.custom <| multiDiceTable
-            , Block.custom <| Grid.row []
-                [ Grid.col [ ] 
-                  [ model |> multiDiceResultList ] 
-                ]
-            ]
-        |> Card.view
+    diceCard "Roll multiple dice" multiRollMaxElementsDropdown "multi-dice" model.multiDice.explodes SetMultiDiceExplode ClearMultiDiceResults multiDiceTable multiDiceResultList model
 {- ----------------------------------------------------------------- -}
 
 {- Renders a list of results. -}
