@@ -1,4 +1,5 @@
 module DiceModel exposing ( DiceModel
+                          , NewDiceSet
                           , addRoll, withAddedRoll
                           , asHistorySize, setHistorySize
                           , asHistoryDropState, setHistoryDropState
@@ -18,6 +19,8 @@ type alias DiceModel a =
     , historyDropState : Dropdown.State
     , explodes: Bool
     }
+
+type alias NewDiceSet = List Int
 
 empty : DiceModel a
 empty = { rolls = [], lastRoll = Nothing, maxHistory = 4, historyDropState =  Dropdown.initialState, explodes = False }

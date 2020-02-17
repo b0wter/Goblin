@@ -17,7 +17,10 @@ import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
 import Bootstrap.Table as Table
 import Bootstrap.Dropdown as Dropdown
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Checkbox as Checkbox
+import Bootstrap.Utilities.Spacing as Spacing
 import Random
 
 import Roll
@@ -34,6 +37,8 @@ type alias Model =
     , modalVisibility : Modal.Visibility
     , singleDie : DiceModel.DiceModel Roll.Single
     , multiDice : DiceModel.DiceModel Roll.Multi
+    , mixedDice : List (DiceModel.DiceModel Roll.Mixed)
+    , newDiceSet : DiceModel.NewDiceSet
     }
 
 type Page
@@ -67,6 +72,8 @@ init _ url key =
                           , modalVisibility = Modal.hidden
                           , singleDie = DiceModel.empty
                           , multiDice = DiceModel.empty
+                          , mixedDice = []
+                          , newDiceSet = [ 4, 4, 6]
                           }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
@@ -99,14 +106,20 @@ type Msg
     | MixedRollNewValue Int
     | ClearMixedDiceResults
     | SetMixedDiceExplode Bool
+    --
+    | ClearNewSet
+    | AddNewSet
+    | AddNewDieToSet Int
+    | RemoveDieFromNewSet Int
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch 
-        [ Navbar.subscriptions model.navState NavMsg
-        , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
-        , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange
+            [ Navbar.subscriptions model.navState NavMsg
+            , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
+            , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange
+            {- TODO Add subscriptions for mixed sets. -}
         ]
 
 
@@ -201,6 +214,13 @@ update msg model =
         ClearMixedDiceResults -> (model, Cmd.none)
         SetMixedDiceExplode new -> (model, Cmd.none)
 
+        ClearNewSet -> (model, Cmd.none)
+        AddNewSet -> (model, Cmd.none)
+        AddNewDieToSet _ -> (model, Cmd.none)
+        RemoveDieFromNewSet index -> 
+            ( { model | newDiceSet = model.newDiceSet |> List.removeIndex index }
+            , Cmd.none)
+
 urlUpdate : Url -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
     case decode url of
@@ -280,6 +300,10 @@ pageHome model =
         , Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
             [
                 multiDiceCard model
+            ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
+            [
+                createMixedSetCard model
             ]
         ]
     ]
@@ -411,6 +435,53 @@ singleDieCard model =
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
     diceCard "Roll multiple dice" multiRollMaxElementsDropdown "multi-dice" model.multiDice.explodes SetMultiDiceExplode ClearMultiDiceResults multiDiceTable multiDiceResultList model
+
+
+createMixedSetCard: Model -> Html Msg
+createMixedSetCard model =
+    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
+        |> Card.headerH4 [] [ text "Create new set" ]
+        |> Card.footer [] 
+            [ div [ class "d-flex flex-row-reverse"] 
+                [ div [ class ""]
+                    [ Button.button [ Button.primary, Button.small, Button.onClick ClearNewSet ] [ text "Add" ] 
+                    , Button.button [ Button.secondary, Button.small, Button.onClick AddNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
+                    ]
+                ]
+            ]
+        |> Card.block [ Block.attrs [ class ""] ]
+            [ Block.custom <| div [] []
+            , Block.custom <| Form.form [] 
+                [ Form.group []
+                    [ Form.label [for "name"] [text "Name"]
+                    , Input.text [ Input.id "name" ]
+                    ]
+                , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ]
+                    [ Button.button [ Button.attrs [ class "" ],     Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  4) ] [ text "d4" ]
+                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  6) ] [ text "d6" ]
+                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  8) ] [ text "d8" ]
+                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 10) ] [ text "d10" ]
+                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 12) ] [ text "d12" ]
+                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 20) ] [ text "d20" ]
+                    ]
+                --, Form.group [] (model.newDiceSet |> List.map (\d -> Button.button [ Button.outlineDanger, Button.small ] [ text "lul" ]))
+                --, InputGroup.config
+                --    (InputGroup.text []) |> InputGroup.predecessors [ InputGroup.span [] [ text "kk"] ] |> InputGroup.view
+                ]
+            , Block.custom <| (model |> newDiceSetList) --div [] (model.newDiceSet |> List.map (\d -> Badge.badgeSecondary [] [ text (d |> String.fromInt)]))
+            ]
+        |> Card.view  
+
+newDiceSetList: Model -> Html Msg
+newDiceSetList model =
+    let dieButton i d =
+         Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs (if i == 0 then [ ] else [ Spacing.ml1 ])] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
+    in
+        div [] (model.newDiceSet |> List.indexedMap dieButton)
+
+--mixedDiceCard: Model -> Html Msg
+--mixedDiceCard model =
+--    diceCard "Roll mixed dice" mixedRollMaxElementsDropdown "mixed-dice" model.mixedDice.explodes SetMixedDiceExplode ClearMixedDiceResults (div [] []) (\_ -> div [] []) model
 {- ----------------------------------------------------------------- -}
 
 {- Renders a list of results. -}
@@ -503,6 +574,10 @@ singleRollMaxElementsDropdown model =
 multiRollMaxElementsDropdown : Model -> Html Msg
 multiRollMaxElementsDropdown model =
     rollMaxElementsDropdown model.multiDice.historyDropState model.multiDice.maxHistory MultiRollNewValue MultiRollDropStateChange
+
+mixedRollMaxElementsDropdown: Model -> List (Html Msg)
+mixedRollMaxElementsDropdown model =
+    model.mixedDice |> List.map (\md -> rollMaxElementsDropdown md.historyDropState md.maxHistory MixedRollNewValue MixedRollDropStateChange)
 
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =

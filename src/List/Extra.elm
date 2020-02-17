@@ -1,4 +1,4 @@
-module List.Extra exposing (limit, addAndDrop)
+module List.Extra exposing (limit, addAndDrop, removeIndex)
 
 limit: Int -> List a -> List a
 limit max list =
@@ -8,3 +8,14 @@ limit max list =
 addAndDrop: Int -> a -> List a -> List a
 addAndDrop max element list =
     element :: (list |> limit max)
+
+removeIndex: Int -> List a -> List a
+removeIndex i list =
+    let run aggregator current remaining =
+            case remaining of
+                [] -> aggregator
+                head :: tail -> 
+                    if current == i then run aggregator (current + 1) tail
+                    else run (head :: aggregator) (current + 1) tail
+    in
+        run [] 0 list |> List.reverse

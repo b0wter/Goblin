@@ -6100,7 +6100,17 @@ var $author$project$Main$init = F3(
 		var _v2 = A2(
 			$author$project$Main$urlUpdate,
 			url,
-			{modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden, multiDice: $author$project$DiceModel$empty, navKey: key, navState: navState, page: $author$project$Main$Home, singleDie: $author$project$DiceModel$empty});
+			{
+				mixedDice: _List_Nil,
+				modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden,
+				multiDice: $author$project$DiceModel$empty,
+				navKey: key,
+				navState: navState,
+				newDiceSet: _List_fromArray(
+					[4, 4, 6]),
+				page: $author$project$Main$Home,
+				singleDie: $author$project$DiceModel$empty
+			});
 		var model = _v2.a;
 		var urlCmd = _v2.b;
 		return _Utils_Tuple2(
@@ -7122,6 +7132,40 @@ var $author$project$Main$multiDiceGenerator = F3(
 			A3($author$project$Main$singleDieGenerator, explode, faceCount, 0));
 	});
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var $author$project$List$Extra$removeIndex = F2(
+	function (i, list) {
+		var run = F3(
+			function (aggregator, current, remaining) {
+				run:
+				while (true) {
+					if (!remaining.b) {
+						return aggregator;
+					} else {
+						var head = remaining.a;
+						var tail = remaining.b;
+						if (_Utils_eq(current, i)) {
+							var $temp$aggregator = aggregator,
+								$temp$current = current + 1,
+								$temp$remaining = tail;
+							aggregator = $temp$aggregator;
+							current = $temp$current;
+							remaining = $temp$remaining;
+							continue run;
+						} else {
+							var $temp$aggregator = A2($elm$core$List$cons, head, aggregator),
+								$temp$current = current + 1,
+								$temp$remaining = tail;
+							aggregator = $temp$aggregator;
+							current = $temp$current;
+							remaining = $temp$remaining;
+							continue run;
+						}
+					}
+				}
+			});
+		return $elm$core$List$reverse(
+			A3(run, _List_Nil, 0, list));
+	});
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
 		return _Utils_update(
@@ -7353,9 +7397,24 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'ClearMixedDiceResults':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
+			case 'SetMixedDiceExplode':
 				var _new = msg.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'ClearNewSet':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'AddNewSet':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'AddNewDieToSet':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			default:
+				var index = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							newDiceSet: A2($author$project$List$Extra$removeIndex, index, model.newDiceSet)
+						}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -7635,28 +7694,11 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$col = F2(
 		return $rundis$elm_bootstrap$Bootstrap$Grid$Column(
 			{children: children, options: options});
 	});
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4 = {$: 'Col4'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth = function (a) {
-	return {$: 'ColWidth', a: a};
+var $author$project$Main$AddNewDieToSet = function (a) {
+	return {$: 'AddNewDieToSet', a: a};
 };
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Width = F2(
-	function (screenSize, columnCount) {
-		return {columnCount: columnCount, screenSize: screenSize};
-	});
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$width = F2(
-	function (size, count) {
-		return $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth(
-			A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$Width, size, count));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
-var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
-var $author$project$Main$ClearMultiDiceResults = {$: 'ClearMultiDiceResults'};
-var $author$project$Main$SetMultiDiceExplode = function (a) {
-	return {$: 'SetMultiDiceExplode', a: a};
-};
+var $author$project$Main$AddNewSet = {$: 'AddNewSet'};
+var $author$project$Main$ClearNewSet = {$: 'ClearNewSet'};
 var $rundis$elm_bootstrap$Bootstrap$Card$Internal$Attrs = function (a) {
 	return {$: 'Attrs', a: a};
 };
@@ -7669,6 +7711,10 @@ var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Card$Block$attrs = function (attrs_) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockAttrs(attrs_);
 };
+var $rundis$elm_bootstrap$Bootstrap$Form$Attrs = function (a) {
+	return {$: 'Attrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$attrs = $rundis$elm_bootstrap$Bootstrap$Form$Attrs;
 var $rundis$elm_bootstrap$Bootstrap$Card$Config = function (a) {
 	return {$: 'Config', a: a};
 };
@@ -7862,6 +7908,798 @@ var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Card$Block$custom = function (element) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem(element);
 };
+var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
+	return {$: 'Footer', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$footer = F3(
+	function (attributes, children, _v0) {
+		var conf = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Card$Config(
+			_Utils_update(
+				conf,
+				{
+					footer: $elm$core$Maybe$Just(
+						$rundis$elm_bootstrap$Bootstrap$Card$Footer(
+							A2(
+								$elm$html$Html$div,
+								A2(
+									$elm$core$List$cons,
+									$elm$html$Html$Attributes$class('card-footer'),
+									attributes),
+								children)))
+				}));
+	});
+var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
+var $elm$html$Html$form = _VirtualDom_node('form');
+var $rundis$elm_bootstrap$Bootstrap$Form$form = F2(
+	function (attributes, children) {
+		return A2($elm$html$Html$form, attributes, children);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$applyModifier = F2(
+	function (modifier, options) {
+		var value = modifier.a;
+		return _Utils_update(
+			options,
+			{
+				attributes: _Utils_ap(options.attributes, value)
+			});
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$defaultOptions = {attributes: _List_Nil};
+var $rundis$elm_bootstrap$Bootstrap$Form$toAttributes = function (modifiers) {
+	var options = A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Form$applyModifier, $rundis$elm_bootstrap$Bootstrap$Form$defaultOptions, modifiers);
+	return _Utils_ap(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('form-group')
+			]),
+		options.attributes);
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$group = F2(
+	function (options, children) {
+		return A2(
+			$elm$html$Html$div,
+			$rundis$elm_bootstrap$Bootstrap$Form$toAttributes(options),
+			children);
+	});
+var $elm$html$Html$h4 = _VirtualDom_node('h4');
+var $rundis$elm_bootstrap$Bootstrap$Card$Header = function (a) {
+	return {$: 'Header', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$headerPrivate = F4(
+	function (elemFn, attributes, children, _v0) {
+		var conf = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Card$Config(
+			_Utils_update(
+				conf,
+				{
+					header: $elm$core$Maybe$Just(
+						$rundis$elm_bootstrap$Bootstrap$Card$Header(
+							A2(
+								elemFn,
+								A2(
+									$elm$core$List$cons,
+									$elm$html$Html$Attributes$class('card-header'),
+									attributes),
+								children)))
+				}));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Card$headerH4 = $rundis$elm_bootstrap$Bootstrap$Card$headerPrivate($elm$html$Html$h4);
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Id = function (a) {
+	return {$: 'Id', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$id = function (id_) {
+	return $rundis$elm_bootstrap$Bootstrap$Form$Input$Id(id_);
+};
+var $elm$html$Html$label = _VirtualDom_node('label');
+var $rundis$elm_bootstrap$Bootstrap$Form$label = F2(
+	function (attributes, children) {
+		return A2(
+			$elm$html$Html$label,
+			A2(
+				$elm$core$List$cons,
+				$elm$html$Html$Attributes$class('form-control-label'),
+				attributes),
+			children);
+	});
+var $author$project$Main$RemoveDieFromNewSet = function (a) {
+	return {$: 'RemoveDieFromNewSet', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml1 = $elm$html$Html$Attributes$class('ml-1');
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Button$onClick = function (message) {
+	return $rundis$elm_bootstrap$Bootstrap$Button$attrs(
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$Events$preventDefaultOn,
+				'click',
+				$elm$json$Json$Decode$succeed(
+					_Utils_Tuple2(message, true)))
+			]));
+};
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary = {$: 'Secondary'};
+var $rundis$elm_bootstrap$Bootstrap$Button$secondary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
+	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary));
+var $rundis$elm_bootstrap$Bootstrap$General$Internal$SM = {$: 'SM'};
+var $rundis$elm_bootstrap$Bootstrap$Button$small = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
+var $author$project$Main$newDiceSetList = function (model) {
+	var dieButton = F2(
+		function (i, d) {
+			return A2(
+				$rundis$elm_bootstrap$Bootstrap$Button$button,
+				_List_fromArray(
+					[
+						$rundis$elm_bootstrap$Bootstrap$Button$secondary,
+						$rundis$elm_bootstrap$Bootstrap$Button$small,
+						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+						$author$project$Main$RemoveDieFromNewSet(i)),
+						$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+						(!i) ? _List_Nil : _List_fromArray(
+							[$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml1]))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'd' + $elm$core$String$fromInt(d)),
+						$elm$html$Html$text(' ❌￼')
+					]));
+		});
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		A2($elm$core$List$indexedMap, dieButton, model.newDiceSet));
+};
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined = function (a) {
+	return {$: 'Outlined', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary = {$: 'Primary'};
+var $rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
+	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
+var $rundis$elm_bootstrap$Bootstrap$Button$primary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
+	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Text = {$: 'Text'};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Input = function (a) {
+	return {$: 'Input', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$Type = function (a) {
+	return {$: 'Type', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$create = F2(
+	function (tipe, options) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$Input$Input(
+			{
+				options: A2(
+					$elm$core$List$cons,
+					$rundis$elm_bootstrap$Bootstrap$Form$Input$Type(tipe),
+					options)
+			});
+	});
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$applyModifier = F2(
+	function (modifier, options) {
+		switch (modifier.$) {
+			case 'Size':
+				var size_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						size: $elm$core$Maybe$Just(size_)
+					});
+			case 'Id':
+				var id_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						id: $elm$core$Maybe$Just(id_)
+					});
+			case 'Type':
+				var tipe = modifier.a;
+				return _Utils_update(
+					options,
+					{tipe: tipe});
+			case 'Disabled':
+				var val = modifier.a;
+				return _Utils_update(
+					options,
+					{disabled: val});
+			case 'Value':
+				var value_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						value: $elm$core$Maybe$Just(value_)
+					});
+			case 'Placeholder':
+				var value_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						placeholder: $elm$core$Maybe$Just(value_)
+					});
+			case 'OnInput':
+				var onInput_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						onInput: $elm$core$Maybe$Just(onInput_)
+					});
+			case 'Validation':
+				var validation_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						validation: $elm$core$Maybe$Just(validation_)
+					});
+			case 'Readonly':
+				var val = modifier.a;
+				return _Utils_update(
+					options,
+					{readonly: val});
+			case 'PlainText':
+				var val = modifier.a;
+				return _Utils_update(
+					options,
+					{plainText: val});
+			default:
+				var attrs_ = modifier.a;
+				return _Utils_update(
+					options,
+					{
+						attributes: _Utils_ap(options.attributes, attrs_)
+					});
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$defaultOptions = {attributes: _List_Nil, disabled: false, id: $elm$core$Maybe$Nothing, onInput: $elm$core$Maybe$Nothing, placeholder: $elm$core$Maybe$Nothing, plainText: false, readonly: false, size: $elm$core$Maybe$Nothing, tipe: $rundis$elm_bootstrap$Bootstrap$Form$Input$Text, validation: $elm$core$Maybe$Nothing, value: $elm$core$Maybe$Nothing};
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$Attributes$readonly = $elm$html$Html$Attributes$boolProperty('readOnly');
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$sizeAttribute = function (size) {
+	return A2(
+		$elm$core$Maybe$map,
+		function (s) {
+			return $elm$html$Html$Attributes$class('form-control-' + s);
+		},
+		$rundis$elm_bootstrap$Bootstrap$General$Internal$screenSizeOption(size));
+};
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$typeAttribute = function (inputType) {
+	return $elm$html$Html$Attributes$type_(
+		function () {
+			switch (inputType.$) {
+				case 'Text':
+					return 'text';
+				case 'Password':
+					return 'password';
+				case 'DatetimeLocal':
+					return 'datetime-local';
+				case 'Date':
+					return 'date';
+				case 'Month':
+					return 'month';
+				case 'Time':
+					return 'time';
+				case 'Week':
+					return 'week';
+				case 'Number':
+					return 'number';
+				case 'Email':
+					return 'email';
+				case 'Url':
+					return 'url';
+				case 'Search':
+					return 'search';
+				case 'Tel':
+					return 'tel';
+				default:
+					return 'color';
+			}
+		}());
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$validationToString = function (validation) {
+	if (validation.$ === 'Success') {
+		return 'is-valid';
+	} else {
+		return 'is-invalid';
+	}
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$validationAttribute = function (validation) {
+	return $elm$html$Html$Attributes$class(
+		$rundis$elm_bootstrap$Bootstrap$Form$FormInternal$validationToString(validation));
+};
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$toAttributes = function (modifiers) {
+	var options = A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Form$Input$applyModifier, $rundis$elm_bootstrap$Bootstrap$Form$Input$defaultOptions, modifiers);
+	return _Utils_ap(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class(
+				options.plainText ? 'form-control-plaintext' : 'form-control'),
+				$elm$html$Html$Attributes$disabled(options.disabled),
+				$elm$html$Html$Attributes$readonly(options.readonly || options.plainText),
+				$rundis$elm_bootstrap$Bootstrap$Form$Input$typeAttribute(options.tipe)
+			]),
+		_Utils_ap(
+			A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				_List_fromArray(
+					[
+						A2($elm$core$Maybe$map, $elm$html$Html$Attributes$id, options.id),
+						A2($elm$core$Maybe$andThen, $rundis$elm_bootstrap$Bootstrap$Form$Input$sizeAttribute, options.size),
+						A2($elm$core$Maybe$map, $elm$html$Html$Attributes$value, options.value),
+						A2($elm$core$Maybe$map, $elm$html$Html$Attributes$placeholder, options.placeholder),
+						A2($elm$core$Maybe$map, $elm$html$Html$Events$onInput, options.onInput),
+						A2($elm$core$Maybe$map, $rundis$elm_bootstrap$Bootstrap$Form$Input$validationAttribute, options.validation)
+					])),
+			options.attributes));
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$view = function (_v0) {
+	var options = _v0.a.options;
+	return A2(
+		$elm$html$Html$input,
+		$rundis$elm_bootstrap$Bootstrap$Form$Input$toAttributes(options),
+		_List_Nil);
+};
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$input = F2(
+	function (tipe, options) {
+		return $rundis$elm_bootstrap$Bootstrap$Form$Input$view(
+			A2($rundis$elm_bootstrap$Bootstrap$Form$Input$create, tipe, options));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Form$Input$text = $rundis$elm_bootstrap$Bootstrap$Form$Input$input($rundis$elm_bootstrap$Bootstrap$Form$Input$Text);
+var $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier = F2(
+	function (option, options) {
+		switch (option.$) {
+			case 'Aligned':
+				var align = option.a;
+				return _Utils_update(
+					options,
+					{
+						aligned: $elm$core$Maybe$Just(align)
+					});
+			case 'Coloring':
+				var coloring = option.a;
+				return _Utils_update(
+					options,
+					{
+						coloring: $elm$core$Maybe$Just(coloring)
+					});
+			case 'TextColoring':
+				var coloring = option.a;
+				return _Utils_update(
+					options,
+					{
+						textColoring: $elm$core$Maybe$Just(coloring)
+					});
+			default:
+				var attrs = option.a;
+				return _Utils_update(
+					options,
+					{
+						attributes: _Utils_ap(options.attributes, attrs)
+					});
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Card$Internal$defaultOptions = {aligned: $elm$core$Maybe$Nothing, attributes: _List_Nil, coloring: $elm$core$Maybe$Nothing, textColoring: $elm$core$Maybe$Nothing};
+var $rundis$elm_bootstrap$Bootstrap$Card$Internal$cardAttributes = function (modifiers) {
+	var options = A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier, $rundis$elm_bootstrap$Bootstrap$Card$Internal$defaultOptions, modifiers);
+	return _Utils_ap(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('card')
+			]),
+		_Utils_ap(
+			function () {
+				var _v0 = options.coloring;
+				if (_v0.$ === 'Just') {
+					if (_v0.a.$ === 'Roled') {
+						var role = _v0.a.a;
+						return _List_fromArray(
+							[
+								A2($rundis$elm_bootstrap$Bootstrap$Internal$Role$toClass, 'bg', role)
+							]);
+					} else {
+						var role = _v0.a.a;
+						return _List_fromArray(
+							[
+								A2($rundis$elm_bootstrap$Bootstrap$Internal$Role$toClass, 'border', role)
+							]);
+					}
+				} else {
+					return _List_Nil;
+				}
+			}(),
+			_Utils_ap(
+				function () {
+					var _v1 = options.textColoring;
+					if (_v1.$ === 'Just') {
+						var color = _v1.a;
+						return _List_fromArray(
+							[
+								$rundis$elm_bootstrap$Bootstrap$Internal$Text$textColorClass(color)
+							]);
+					} else {
+						return _List_Nil;
+					}
+				}(),
+				_Utils_ap(
+					function () {
+						var _v2 = options.aligned;
+						if (_v2.$ === 'Just') {
+							var align = _v2.a;
+							return _List_fromArray(
+								[
+									$rundis$elm_bootstrap$Bootstrap$Internal$Text$textAlignClass(align)
+								]);
+						} else {
+							return _List_Nil;
+						}
+					}(),
+					options.attributes))));
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$Internal$renderBlocks = function (blocks) {
+	return A2(
+		$elm$core$List$map,
+		function (block_) {
+			if (block_.$ === 'CardBlock') {
+				var e = block_.a;
+				return e;
+			} else {
+				var e = block_.a;
+				return e;
+			}
+		},
+		blocks);
+};
+var $rundis$elm_bootstrap$Bootstrap$Card$view = function (_v0) {
+	var conf = _v0.a;
+	return A2(
+		$elm$html$Html$div,
+		$rundis$elm_bootstrap$Bootstrap$Card$Internal$cardAttributes(conf.options),
+		_Utils_ap(
+			A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				_List_fromArray(
+					[
+						A2(
+						$elm$core$Maybe$map,
+						function (_v1) {
+							var e = _v1.a;
+							return e;
+						},
+						conf.header),
+						A2(
+						$elm$core$Maybe$map,
+						function (_v2) {
+							var e = _v2.a;
+							return e;
+						},
+						conf.imgTop)
+					])),
+			_Utils_ap(
+				$rundis$elm_bootstrap$Bootstrap$Card$Internal$renderBlocks(conf.blocks),
+				A2(
+					$elm$core$List$filterMap,
+					$elm$core$Basics$identity,
+					_List_fromArray(
+						[
+							A2(
+							$elm$core$Maybe$map,
+							function (_v3) {
+								var e = _v3.a;
+								return e;
+							},
+							conf.footer),
+							A2(
+							$elm$core$Maybe$map,
+							function (_v4) {
+								var e = _v4.a;
+								return e;
+							},
+							conf.imgBottom)
+						])))));
+};
+var $author$project$Main$createMixedSetCard = function (model) {
+	return $rundis$elm_bootstrap$Bootstrap$Card$view(
+		A3(
+			$rundis$elm_bootstrap$Bootstrap$Card$block,
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$attrs(
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('')
+						]))
+				]),
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
+					A2($elm$html$Html$div, _List_Nil, _List_Nil)),
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
+					A2(
+						$rundis$elm_bootstrap$Bootstrap$Form$form,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$rundis$elm_bootstrap$Bootstrap$Form$group,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Form$label,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$for('name')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Name')
+											])),
+										$rundis$elm_bootstrap$Bootstrap$Form$Input$text(
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Form$Input$id('name')
+											]))
+									])),
+								A2(
+								$rundis$elm_bootstrap$Bootstrap$Form$group,
+								_List_fromArray(
+									[
+										$rundis$elm_bootstrap$Bootstrap$Form$attrs(
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('d-flex justify-content-between')
+											]))
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('')
+													])),
+												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$AddNewDieToSet(4))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('d4')
+											])),
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('ml-1')
+													])),
+												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$AddNewDieToSet(6))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('d6')
+											])),
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('ml-1')
+													])),
+												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$AddNewDieToSet(8))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('d8')
+											])),
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('ml-1')
+													])),
+												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$AddNewDieToSet(10))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('d10')
+											])),
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('ml-1')
+													])),
+												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$AddNewDieToSet(12))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('d12')
+											])),
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('ml-1')
+													])),
+												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$AddNewDieToSet(20))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('d20')
+											]))
+									]))
+							]))),
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
+					$author$project$Main$newDiceSetList(model))
+				]),
+			A3(
+				$rundis$elm_bootstrap$Bootstrap$Card$footer,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('d-flex flex-row-reverse')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$primary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Main$ClearNewSet)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Add')
+											])),
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$secondary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick($author$project$Main$AddNewSet),
+												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('ml-3')
+													]))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Clear')
+											]))
+									]))
+							]))
+					]),
+				A3(
+					$rundis$elm_bootstrap$Bootstrap$Card$headerH4,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Create new set')
+						]),
+					$rundis$elm_bootstrap$Bootstrap$Card$config(
+						_List_fromArray(
+							[
+								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('mb-4')
+									]))
+							]))))));
+};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4 = {$: 'Col4'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth = function (a) {
+	return {$: 'ColWidth', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Width = F2(
+	function (screenSize, columnCount) {
+		return {columnCount: columnCount, screenSize: screenSize};
+	});
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$width = F2(
+	function (size, count) {
+		return $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth(
+			A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$Width, size, count));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
+var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
+var $author$project$Main$ClearMultiDiceResults = {$: 'ClearMultiDiceResults'};
+var $author$project$Main$SetMultiDiceExplode = function (a) {
+	return {$: 'SetMultiDiceExplode', a: a};
+};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Custom = {$: 'Custom'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Checkbox = function (a) {
 	return {$: 'Checkbox', a: a};
@@ -7924,15 +8762,7 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$applyModifier = F2(
 	});
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off = {$: 'Off'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$defaultOptions = {attributes: _List_Nil, custom: false, disabled: false, id: $elm$core$Maybe$Nothing, inline: false, onChecked: $elm$core$Maybe$Nothing, state: $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off, validation: $elm$core$Maybe$Nothing};
-var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
-var $elm$html$Html$input = _VirtualDom_node('input');
-var $elm$html$Html$label = _VirtualDom_node('label');
 var $elm$core$Basics$not = _Basics_not;
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$html$Html$Events$targetChecked = A2(
 	$elm$json$Json$Decode$at,
@@ -7962,14 +8792,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$stateAttribute = function (sta
 			return $elm$html$Html$Attributes$checked(false);
 		default:
 			return A2($elm$html$Html$Attributes$attribute, 'indeterminate', 'true');
-	}
-};
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
-var $rundis$elm_bootstrap$Bootstrap$Form$FormInternal$validationToString = function (validation) {
-	if (validation.$ === 'Success') {
-		return 'is-valid';
-	} else {
-		return 'is-invalid';
 	}
 };
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$toAttributes = function (options) {
@@ -8129,71 +8951,6 @@ var $author$project$Main$explodeCheckbox = F3(
 							]))
 					])));
 	});
-var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
-	return {$: 'Footer', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$footer = F3(
-	function (attributes, children, _v0) {
-		var conf = _v0.a;
-		return $rundis$elm_bootstrap$Bootstrap$Card$Config(
-			_Utils_update(
-				conf,
-				{
-					footer: $elm$core$Maybe$Just(
-						$rundis$elm_bootstrap$Bootstrap$Card$Footer(
-							A2(
-								$elm$html$Html$div,
-								A2(
-									$elm$core$List$cons,
-									$elm$html$Html$Attributes$class('card-footer'),
-									attributes),
-								children)))
-				}));
-	});
-var $elm$html$Html$h4 = _VirtualDom_node('h4');
-var $rundis$elm_bootstrap$Bootstrap$Card$Header = function (a) {
-	return {$: 'Header', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$headerPrivate = F4(
-	function (elemFn, attributes, children, _v0) {
-		var conf = _v0.a;
-		return $rundis$elm_bootstrap$Bootstrap$Card$Config(
-			_Utils_update(
-				conf,
-				{
-					header: $elm$core$Maybe$Just(
-						$rundis$elm_bootstrap$Bootstrap$Card$Header(
-							A2(
-								elemFn,
-								A2(
-									$elm$core$List$cons,
-									$elm$html$Html$Attributes$class('card-header'),
-									attributes),
-								children)))
-				}));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Card$headerH4 = $rundis$elm_bootstrap$Bootstrap$Card$headerPrivate($elm$html$Html$h4);
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Button$onClick = function (message) {
-	return $rundis$elm_bootstrap$Bootstrap$Button$attrs(
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$Events$preventDefaultOn,
-				'click',
-				$elm$json$Json$Decode$succeed(
-					_Utils_Tuple2(message, true)))
-			]));
-};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col = {$: 'Col'};
 var $rundis$elm_bootstrap$Bootstrap$General$Internal$XS = {$: 'XS'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$applyColAlign = F2(
@@ -8957,165 +9714,7 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$row = F2(
 			$rundis$elm_bootstrap$Bootstrap$Grid$Internal$rowAttributes(options),
 			A2($elm$core$List$map, $rundis$elm_bootstrap$Bootstrap$Grid$renderCol, cols));
 	});
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary = {$: 'Secondary'};
-var $rundis$elm_bootstrap$Bootstrap$Button$secondary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Secondary));
-var $rundis$elm_bootstrap$Bootstrap$General$Internal$SM = {$: 'SM'};
-var $rundis$elm_bootstrap$Bootstrap$Button$small = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Size($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier = F2(
-	function (option, options) {
-		switch (option.$) {
-			case 'Aligned':
-				var align = option.a;
-				return _Utils_update(
-					options,
-					{
-						aligned: $elm$core$Maybe$Just(align)
-					});
-			case 'Coloring':
-				var coloring = option.a;
-				return _Utils_update(
-					options,
-					{
-						coloring: $elm$core$Maybe$Just(coloring)
-					});
-			case 'TextColoring':
-				var coloring = option.a;
-				return _Utils_update(
-					options,
-					{
-						textColoring: $elm$core$Maybe$Just(coloring)
-					});
-			default:
-				var attrs = option.a;
-				return _Utils_update(
-					options,
-					{
-						attributes: _Utils_ap(options.attributes, attrs)
-					});
-		}
-	});
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$defaultOptions = {aligned: $elm$core$Maybe$Nothing, attributes: _List_Nil, coloring: $elm$core$Maybe$Nothing, textColoring: $elm$core$Maybe$Nothing};
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$cardAttributes = function (modifiers) {
-	var options = A3($elm$core$List$foldl, $rundis$elm_bootstrap$Bootstrap$Card$Internal$applyModifier, $rundis$elm_bootstrap$Bootstrap$Card$Internal$defaultOptions, modifiers);
-	return _Utils_ap(
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('card')
-			]),
-		_Utils_ap(
-			function () {
-				var _v0 = options.coloring;
-				if (_v0.$ === 'Just') {
-					if (_v0.a.$ === 'Roled') {
-						var role = _v0.a.a;
-						return _List_fromArray(
-							[
-								A2($rundis$elm_bootstrap$Bootstrap$Internal$Role$toClass, 'bg', role)
-							]);
-					} else {
-						var role = _v0.a.a;
-						return _List_fromArray(
-							[
-								A2($rundis$elm_bootstrap$Bootstrap$Internal$Role$toClass, 'border', role)
-							]);
-					}
-				} else {
-					return _List_Nil;
-				}
-			}(),
-			_Utils_ap(
-				function () {
-					var _v1 = options.textColoring;
-					if (_v1.$ === 'Just') {
-						var color = _v1.a;
-						return _List_fromArray(
-							[
-								$rundis$elm_bootstrap$Bootstrap$Internal$Text$textColorClass(color)
-							]);
-					} else {
-						return _List_Nil;
-					}
-				}(),
-				_Utils_ap(
-					function () {
-						var _v2 = options.aligned;
-						if (_v2.$ === 'Just') {
-							var align = _v2.a;
-							return _List_fromArray(
-								[
-									$rundis$elm_bootstrap$Bootstrap$Internal$Text$textAlignClass(align)
-								]);
-						} else {
-							return _List_Nil;
-						}
-					}(),
-					options.attributes))));
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$Internal$renderBlocks = function (blocks) {
-	return A2(
-		$elm$core$List$map,
-		function (block_) {
-			if (block_.$ === 'CardBlock') {
-				var e = block_.a;
-				return e;
-			} else {
-				var e = block_.a;
-				return e;
-			}
-		},
-		blocks);
-};
-var $rundis$elm_bootstrap$Bootstrap$Card$view = function (_v0) {
-	var conf = _v0.a;
-	return A2(
-		$elm$html$Html$div,
-		$rundis$elm_bootstrap$Bootstrap$Card$Internal$cardAttributes(conf.options),
-		_Utils_ap(
-			A2(
-				$elm$core$List$filterMap,
-				$elm$core$Basics$identity,
-				_List_fromArray(
-					[
-						A2(
-						$elm$core$Maybe$map,
-						function (_v1) {
-							var e = _v1.a;
-							return e;
-						},
-						conf.header),
-						A2(
-						$elm$core$Maybe$map,
-						function (_v2) {
-							var e = _v2.a;
-							return e;
-						},
-						conf.imgTop)
-					])),
-			_Utils_ap(
-				$rundis$elm_bootstrap$Bootstrap$Card$Internal$renderBlocks(conf.blocks),
-				A2(
-					$elm$core$List$filterMap,
-					$elm$core$Basics$identity,
-					_List_fromArray(
-						[
-							A2(
-							$elm$core$Maybe$map,
-							function (_v3) {
-								var e = _v3.a;
-								return e;
-							},
-							conf.footer),
-							A2(
-							$elm$core$Maybe$map,
-							function (_v4) {
-								var e = _v4.a;
-								return e;
-							},
-							conf.imgBottom)
-						])))));
-};
 var $author$project$Main$diceCard = F9(
 	function (header, elementsDropDown, rollType, explodes, setDieExplodeMsg, clearResultsMsg, buttons, resultList, model) {
 		return $rundis$elm_bootstrap$Bootstrap$Card$view(
@@ -9343,12 +9942,6 @@ var $author$project$Main$RollMultiDice = F2(
 	function (a, b) {
 		return {$: 'RollMultiDice', a: a, b: b};
 	});
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined = function (a) {
-	return {$: 'Outlined', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary = {$: 'Primary'};
-var $rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
 var $rundis$elm_bootstrap$Bootstrap$Table$Td = function (a) {
 	return {$: 'Td', a: a};
 };
@@ -10194,8 +10787,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
 					A3($rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownMenu, state, config, items)
 				]));
 	});
-var $rundis$elm_bootstrap$Bootstrap$Button$primary = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Primary));
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle = function (a) {
 	return {$: 'DropdownToggle', a: a};
 };
@@ -10283,7 +10874,6 @@ var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
 	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$className = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -10557,6 +11147,14 @@ var $author$project$Main$pageHome = function (model) {
 					_List_fromArray(
 						[
 							$author$project$Main$multiDiceCard(model)
+						])),
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Grid$col,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
+					_List_fromArray(
+						[
+							$author$project$Main$createMixedSetCard(model)
 						]))
 				]))
 		]);
