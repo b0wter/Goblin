@@ -365,9 +365,8 @@ multiDiceGenerator : Bool -> Int -> Int -> Random.Generator (List Int)
 multiDiceGenerator explode faceCount diceCount =
     Random.list diceCount (singleDieGenerator explode faceCount 0)
 
-{-| Renders the single roll card element.
+{- Creates cards for single and multi-dice rolls.
 -}
-
 diceCard: String -> (Model -> Html Msg) -> String -> Bool -> (Bool -> Msg) -> Msg -> Html Msg -> (Model -> Html Msg) -> Model -> Html Msg
 diceCard header elementsDropDown rollType explodes setDieExplodeMsg clearResultsMsg buttons resultList model =
     Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
@@ -393,6 +392,8 @@ diceCard header elementsDropDown rollType explodes setDieExplodeMsg clearResults
             ]
         |> Card.view    
 
+{-| Renders the single roll card element.
+-}
 singleDieCard: Model -> Html Msg
 singleDieCard model =
     let button = \n -> Grid.col 
@@ -405,6 +406,8 @@ singleDieCard model =
     in 
         diceCard "Roll single die" singleRollMaxElementsDropdown "single-die" model.singleDie.explodes SetSingleDieExplode ClearSingleDieResults buttons singleDieResultList model
 
+{-| Renders the multi-dice roll card element.
+-}
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
     diceCard "Roll multiple dice" multiRollMaxElementsDropdown "multi-dice" model.multiDice.explodes SetMultiDiceExplode ClearMultiDiceResults multiDiceTable multiDiceResultList model
