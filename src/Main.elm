@@ -276,7 +276,7 @@ pageHome model =
     , Grid.row []
         [ Grid.col [ Col.xs12, Col.sm6, Col.md4 ]
             [
-                diceCard model
+                singleDieCard model
             ]
         , Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
             [
@@ -368,8 +368,8 @@ multiDiceGenerator explode faceCount diceCount =
 
 {-| Renders the single roll card element.
 -}
-diceCard: Model -> Html Msg
-diceCard model =
+singleDieCard: Model -> Html Msg
+singleDieCard model =
     let button = \n -> Grid.col 
                         [ Col.xs6, Col.md4, Col.lg3 ] 
                         [ Button.button 
@@ -394,62 +394,13 @@ diceCard model =
                 [ button 4, button 6, button 8, button 10, button 12, button 20 ]
             , Block.custom <| Grid.row []
                 [ Grid.col [ Col.attrs [ class "mt-3" ] ] 
-                  [ model |> diceResultMsg ] 
+                  [ model |> singleDieResultList ] 
                 ]
             ]
         |> Card.view
 
-
--- TODO Combine this this the multi dice variante using function parameters!
-
-{-|
-    Renders a list of results.
+{-| Renders the multi-dice roll card element.
 -}
-diceResultMsg: Model -> Html Msg
-diceResultMsg model =
-    if model.singleDie.rolls |> List.isEmpty then
-        Html.div [] [ text "No dice rolled."]
-    else
-        Html.div [] (model.singleDie.rolls |> List.indexedMap dieResultMsg) --  ] --|> List.foldl (++) "") ]
-
-dieResultMsg: Int -> Roll.Single -> Html Msg
-dieResultMsg i roll =
-    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
-    [ Html.span [] [ text "｢" ]
-    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (roll.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
-    , Html.span [ class "font-weight-bold"] [ text (roll.result |> String.fromInt) ]
-    , Html.span [] [ text "」"]
-    ]
-
-multiDieButton : (Int -> Int -> Msg) -> Int -> Int -> Table.Cell Msg
-multiDieButton command faceCount dieCount =
-    Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount), class "disable-dbl-tap-zoom"] ] [ text (dieCount |> String.fromInt) ] ]
-
-multiDieButtonRow : Int -> Table.Row Msg
-multiDieButtonRow faceCount =
-    let dieCounts = [ 2, 3, 4, 5, 6, 7, 8 ] in
-    Table.tr [] 
-    ( Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] ::
-      (dieCounts |> List.map (\n -> multiDieButton RollMultiDice faceCount n) ) )
-    
-
-multiDiceTable: Html Msg
-multiDiceTable = 
-    Table.simpleTable
-        ( Table.simpleThead
-            [ Table.th [] [ text "#"] 
-            , Table.th [ Table.cellAttr (colspan 8) ] [ text "dice count" ]
-            ]
-        , Table.tbody []
-            [ multiDieButtonRow 4
-            , multiDieButtonRow 6
-            , multiDieButtonRow 8
-            , multiDieButtonRow 10
-            , multiDieButtonRow 12
-            , multiDieButtonRow 20
-            ]
-        )
-
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
     Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ] ]
@@ -470,27 +421,78 @@ multiDiceCard model =
             [ Block.custom <| multiDiceTable
             , Block.custom <| Grid.row []
                 [ Grid.col [ ] 
-                  [ model |> multiDiceResultMsg ] 
+                  [ model |> multiDiceResultList ] 
                 ]
             ]
         |> Card.view
+{- ----------------------------------------------------------------- -}
 
-multiDiceResultMsg: Model -> Html Msg
-multiDiceResultMsg model =
-    if model.multiDice.rolls |> List.isEmpty then
+{- Renders a list of results. -}
+diceResultList: List a -> (Int -> a -> Html Msg) -> Html Msg
+diceResultList rolls elementRenderer =
+    if rolls |> List.isEmpty then
         Html.div [] [ text "No dice rolled." ]
     else
-        Html.div [] (model.multiDice.rolls |> List.indexedMap multiDieResultMsg)
+        Html.div [] (rolls |> List.indexedMap elementRenderer)
 
-multiDieResultMsg: Int -> Roll.Multi -> Html Msg
-multiDieResultMsg i rolls =
-    Html.div [] 
-    [ Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
-      [ Html.span [] [ text "｢" ]
-      , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (rolls.die |> String.fromInt) ++ ": ") ]  --text ("｢d" ++ (roll.die |> String.fromInt) ++ ": " ++ (roll.result |> String.fromInt) ++ "」")]
-      , Html.span [ class "font-weight-bold"] [ text (rolls.result |> List.map String.fromInt |> String.join ",") ]
-      , Html.span [] [ text "」"]
-    ] ]
+multiDiceResultList: Model -> Html Msg
+multiDiceResultList model =
+    diceResultList model.multiDice.rolls multiDieResult
+
+singleDieResultList: Model -> Html Msg
+singleDieResultList model =
+    diceResultList model.singleDie.rolls singleDieResult
+{- ----------------------------------------------------------------- -}
+
+{- Renders the results of single and multi dice rolls. -}
+dieResult: (result -> Int) -> (result -> String) -> Int -> result -> Html Msg
+dieResult asDie asRolls i result =
+    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
+    [ Html.span [] [ text "｢" ]
+    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (result |> asDie |> String.fromInt) ++ ": ") ] 
+    , Html.span [ class "font-weight-bold"] [ text (result |> asRolls) ]
+    , Html.span [] [ text "」"]
+    ]
+
+singleDieResult: Int -> Roll.Single -> Html Msg
+singleDieResult i roll = 
+    dieResult (\r -> r.die) (\r -> r.result |> String.fromInt) i roll
+
+multiDieResult: Int -> Roll.Multi -> Html Msg
+multiDieResult i roll =
+    dieResult (\r -> r.die) (\r -> r.result |> List.map String.fromInt |> String.join ", ") i roll
+{- ----------------------------------------------------------------- -}
+
+{- Required helpers to render the table for all multi-dice buttons. -}
+multiDieButton : (Int -> Int -> Msg) -> Int -> Int -> Table.Cell Msg
+multiDieButton command faceCount dieCount =
+    Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ Button.button [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (command faceCount dieCount), class "disable-dbl-tap-zoom"] ] [ text (dieCount |> String.fromInt) ] ]
+
+multiDieButtonRow : Int -> Table.Row Msg
+multiDieButtonRow faceCount =
+    let dieCounts = [ 2, 3, 4, 5, 6, 7, 8 ] in
+    Table.tr [] 
+    ( Table.td [ Table.cellAttr ( class "die-button-table" ) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] ::
+      (dieCounts |> List.map (\n -> multiDieButton RollMultiDice faceCount n) ) )
+    
+multiDiceTable: Html Msg
+multiDiceTable = 
+    Table.simpleTable
+        ( Table.simpleThead
+            [ Table.th [] [ text "#"] 
+            , Table.th [ Table.cellAttr (colspan 8) ] [ text "dice count" ]
+            ]
+        , Table.tbody []
+            [ multiDieButtonRow 4
+            , multiDieButtonRow 6
+            , multiDieButtonRow 8
+            , multiDieButtonRow 10
+            , multiDieButtonRow 12
+            , multiDieButtonRow 20
+            ]
+        )
+{- ----------------------------------------------------------------- -}
+
 
 rollMaxElementsDropdown : Dropdown.State -> Int -> (Int -> Msg) -> (Dropdown.State -> Msg) -> Html Msg
 rollMaxElementsDropdown dropDownState historySize msg dropDownStateMsg =
