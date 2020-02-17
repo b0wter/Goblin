@@ -272,8 +272,7 @@ mainContent model =
 
 pageHome : Model -> List (Html Msg)
 pageHome model =
-    [ h1 [] [ text "Home" ]
-    , Grid.row []
+    [ Grid.row []
         [ Grid.col [ Col.xs12, Col.sm6, Col.md4 ]
             [
                 singleDieCard model

@@ -7635,7 +7635,6 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$col = F2(
 		return $rundis$elm_bootstrap$Bootstrap$Grid$Column(
 			{children: children, options: options});
 	});
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4 = {$: 'Col4'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth = function (a) {
 	return {$: 'ColWidth', a: a};
@@ -10664,13 +10663,6 @@ var $author$project$Main$pageHome = function (model) {
 	return _List_fromArray(
 		[
 			A2(
-			$elm$html$Html$h1,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Home')
-				])),
-			A2(
 			$rundis$elm_bootstrap$Bootstrap$Grid$row,
 			_List_Nil,
 			_List_fromArray(
@@ -10694,6 +10686,7 @@ var $author$project$Main$pageHome = function (model) {
 				]))
 		]);
 };
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $rundis$elm_bootstrap$Bootstrap$Internal$ListGroup$Item = function (a) {
 	return {$: 'Item', a: a};
 };
