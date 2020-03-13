@@ -8516,6 +8516,29 @@ var $rundis$elm_bootstrap$Bootstrap$Card$view = function (_v0) {
 						])))));
 };
 var $author$project$Main$createMixedSetCard = function (model) {
+	var createAddDieButton = F2(
+		function (index, faceCount) {
+			return A2(
+				$rundis$elm_bootstrap$Bootstrap$Button$button,
+				_List_fromArray(
+					[
+						$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class(
+								(!index) ? '' : 'ml-1')
+							])),
+						$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
+						$rundis$elm_bootstrap$Bootstrap$Button$small,
+						$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+						$author$project$Main$AddNewDieToSet(faceCount))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'd' + $elm$core$String$fromInt(faceCount))
+					]));
+		});
 	return $rundis$elm_bootstrap$Bootstrap$Card$view(
 		A3(
 			$rundis$elm_bootstrap$Bootstrap$Card$block,
@@ -8572,117 +8595,11 @@ var $author$project$Main$createMixedSetCard = function (model) {
 												$elm$html$Html$Attributes$class('d-flex justify-content-between')
 											]))
 									]),
-								_List_fromArray(
-									[
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('')
-													])),
-												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$AddNewDieToSet(4))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('d4')
-											])),
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('ml-1')
-													])),
-												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$AddNewDieToSet(6))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('d6')
-											])),
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('ml-1')
-													])),
-												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$AddNewDieToSet(8))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('d8')
-											])),
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('ml-1')
-													])),
-												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$AddNewDieToSet(10))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('d10')
-											])),
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('ml-1')
-													])),
-												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$AddNewDieToSet(12))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('d12')
-											])),
-										A2(
-										$rundis$elm_bootstrap$Bootstrap$Button$button,
-										_List_fromArray(
-											[
-												$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-												_List_fromArray(
-													[
-														$elm$html$Html$Attributes$class('ml-1')
-													])),
-												$rundis$elm_bootstrap$Bootstrap$Button$outlinePrimary,
-												$rundis$elm_bootstrap$Bootstrap$Button$small,
-												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$AddNewDieToSet(20))
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text('d20')
-											]))
-									]))
+								A2(
+									$elm$core$List$indexedMap,
+									createAddDieButton,
+									_List_fromArray(
+										[4, 6, 8, 10, 12, 20])))
 							]))),
 					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
 					A2(

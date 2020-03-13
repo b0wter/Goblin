@@ -39,13 +39,13 @@ type alias Model =
     , multiDice : DiceModel.DiceModel Roll.Multi
     , mixedDice : List MixedCard
     , newDiceSet : DiceModel.NewDiceSet
-    , newDiceSetName: String
+    , newDiceSetName : String
     }
 
 type alias MixedCard =
-    { dice: DiceModel.DiceModel Roll.Mixed
-    , name: String
-    , dieFaces: List Int
+    { dice : DiceModel.DiceModel Roll.Mixed
+    , name : String
+    , dieFaces : List Int
     }
 
 type Page
@@ -228,7 +228,7 @@ update msg model =
 
         AddNewSet -> 
             ( if (model.newDiceSet |> List.isEmpty) || (model.newDiceSetName |> String.isEmpty) then model 
-              else  model |> addMixedSet model.newDiceSetName model.newDiceSet |> clearNewMixedSet--{ model | mixedDice = { name = model.newDiceSetName, dieFaces = model.newDiceSet, dice = DiceModel.empty } :: model.mixedDice } 
+              else  model |> addMixedSet model.newDiceSetName model.newDiceSet |> clearNewMixedSet
             , Cmd.none)
         
         AddNewDieToSet d -> 
@@ -480,35 +480,30 @@ multiDiceCard model =
 
 createMixedSetCard: Model -> Html Msg
 createMixedSetCard model =
-    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
-        |> Card.headerH4 [] [ text "Create new set" ]
-        |> Card.footer [] 
-            [ div [ class "d-flex flex-row-reverse"] 
-                [ div [ class ""]
-                    [ Button.button [ Button.primary, Button.small, Button.onClick AddNewSet ] [ text "Add" ] 
-                    , Button.button [ Button.secondary, Button.small, Button.onClick ClearNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
+    let createAddDieButton index faceCount = Button.button [ Button.attrs [ class (if index == 0 then "" else "ml-1")], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  faceCount) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] 
+        in
+        Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
+            |> Card.headerH4 [] [ text "Create new set" ]
+            |> Card.footer [] 
+                [ div [ class "d-flex flex-row-reverse"] 
+                    [ div [ class ""]
+                        [ Button.button [ Button.primary, Button.small, Button.onClick AddNewSet ] [ text "Add" ] 
+                        , Button.button [ Button.secondary, Button.small, Button.onClick ClearNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
+                        ]
                     ]
                 ]
-            ]
-        |> Card.block [ Block.attrs [ class ""] ]
-            [ Block.custom <| div [] []
-            , Block.custom <| Form.form [] 
-                [ Form.group []
-                    [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newDiceSetName, Input.attrs [ placeholder "Name" ] ]
+            |> Card.block [ Block.attrs [ class ""] ]
+                [ Block.custom <| div [] []
+                , Block.custom <| Form.form [] 
+                    [ Form.group []
+                        [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newDiceSetName, Input.attrs [ placeholder "Name" ] ]
+                        ]
+                    , div [] [ text "Add die" ]
+                    , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ] ([4, 6, 8, 10, 12, 20] |> List.indexedMap createAddDieButton)
                     ]
-                , div [] [ text "Add die" ]
-                , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ]
-                    [ Button.button [ Button.attrs [ class "" ],     Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  4) ] [ text "d4" ]
-                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  6) ] [ text "d6" ]
-                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  8) ] [ text "d8" ]
-                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 10) ] [ text "d10" ]
-                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 12) ] [ text "d12" ]
-                    , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 20) ] [ text "d20" ]
-                    ]
+                , Block.custom <| div [] [div [] [ text "Current set"], model |> newDiceSetList]
                 ]
-            , Block.custom <| div [] [div [] [ text "Current set"], model |> newDiceSetList]
-            ]
-        |> Card.view  
+            |> Card.view  
 
 mixedSetCards: Model -> Html Msg
 mixedSetCards model =
