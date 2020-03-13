@@ -6,6 +6,7 @@ module DiceModel exposing ( DiceModel
                           , asExplode, setExplode
                           , toggleExplode
                           , clearHistory
+                          , withName
                           , empty)
 
 import Bootstrap.Dropdown as Dropdown
@@ -18,12 +19,16 @@ type alias DiceModel a =
     , maxHistory : Int
     , historyDropState : Dropdown.State
     , explodes: Bool
+    , name: String
     }
 
 type alias NewDiceSet = List Int
 
 empty : DiceModel a
-empty = { rolls = [], lastRoll = Nothing, maxHistory = 4, historyDropState =  Dropdown.initialState, explodes = False }
+empty = withName "<unnamed>"
+
+withName : String -> DiceModel a
+withName name = { rolls = [], lastRoll = Nothing, maxHistory = 4, historyDropState =  Dropdown.initialState, explodes = False, name = name }
 
 addRoll : a -> DiceModel a -> DiceModel a
 addRoll roll model =

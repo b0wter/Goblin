@@ -37,8 +37,15 @@ type alias Model =
     , modalVisibility : Modal.Visibility
     , singleDie : DiceModel.DiceModel Roll.Single
     , multiDice : DiceModel.DiceModel Roll.Multi
-    , mixedDice : List (DiceModel.DiceModel Roll.Mixed)
+    , mixedDice : List MixedCard
     , newDiceSet : DiceModel.NewDiceSet
+    , newDiceSetName: String
+    }
+
+type alias MixedCard =
+    { dice: DiceModel.DiceModel Roll.Mixed
+    , name: String
+    , dieFaces: List Int
     }
 
 type Page
@@ -70,10 +77,11 @@ init _ url key =
                           , navState = navState
                           , page = Home
                           , modalVisibility = Modal.hidden
-                          , singleDie = DiceModel.empty
-                          , multiDice = DiceModel.empty
-                          , mixedDice = []
+                          , singleDie = DiceModel.withName "Roll single die"
+                          , multiDice = DiceModel.withName "Roll multiple dice"
+                          , mixedDice = [{ name = "1.Test", dieFaces = [], dice = DiceModel.empty} ]
                           , newDiceSet = [ 4, 4, 6]
+                          , newDiceSetName = ""
                           }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
@@ -111,6 +119,7 @@ type Msg
     | AddNewSet
     | AddNewDieToSet Int
     | RemoveDieFromNewSet Int
+    | NewDieSetNameChanged String
 
 
 subscriptions : Model -> Sub Msg
@@ -174,7 +183,6 @@ update msg model =
 
         RollSingleDie faceCount ->
             ( model
-            --, Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (Roll.singleRandomGenerator faceCount))
             , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (singleDieGenerator model.singleDie.explodes faceCount 0))
             )
 
@@ -214,12 +222,33 @@ update msg model =
         ClearMixedDiceResults -> (model, Cmd.none)
         SetMixedDiceExplode new -> (model, Cmd.none)
 
-        ClearNewSet -> (model, Cmd.none)
-        AddNewSet -> (model, Cmd.none)
-        AddNewDieToSet _ -> (model, Cmd.none)
+        ClearNewSet -> 
+            ( model |> clearNewSet
+            , Cmd.none)
+
+        AddNewSet -> 
+            ( if (model.newDiceSet |> List.isEmpty) || (model.newDiceSetName |> String.isEmpty) then model 
+              else  { model | mixedDice = { name = model.newDiceSetName, dieFaces = [], dice = DiceModel.empty } :: model.mixedDice } 
+            , Cmd.none)
+        
+        AddNewDieToSet d -> 
+            ( { model | newDiceSet = d :: model.newDiceSet }
+            , Cmd.none)
+        
         RemoveDieFromNewSet index -> 
             ( { model | newDiceSet = model.newDiceSet |> List.removeIndex index }
             , Cmd.none)
+        
+        NewDieSetNameChanged name ->
+            ( { model | newDiceSetName = name }
+            , Cmd.none)
+
+addMixedSet : String -> Model -> Model
+addMixedSet name model =
+    let set = { name = name, dieFaces = [], dice = DiceModel.empty } in
+        { model | mixedDice = set :: model.mixedDice }
+
+
 
 urlUpdate : Url -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
@@ -305,6 +334,11 @@ pageHome model =
             [
                 createMixedSetCard model
             ]
+        , Grid.col [ Col.xs12 ]
+            [
+                model |> mixedSetCards
+            ]
+            --[ div [] (model.mixedDice |> List.map (\d -> div [] [ text d.name ])) ]
         ]
     ]
 
@@ -359,6 +393,11 @@ modal model =
             ]
         |> Modal.view model.modalVisibility
 
+
+clearNewSet : Model -> Model
+clearNewSet model =
+    let updatedName =  {model | newDiceSetName = "" } in
+        { updatedName | newDiceSet = []}
 
 {--
     Code necessary to render the single die and multi dice cards.
@@ -428,13 +467,13 @@ singleDieCard model =
     let buttons =
          Grid.row [] [ button 4, button 6, button 8, button 10, button 12, button 20 ]
     in 
-        diceCard "Roll single die" singleRollMaxElementsDropdown "single-die" model.singleDie.explodes SetSingleDieExplode ClearSingleDieResults buttons singleDieResultList model
+        diceCard model.singleDie.name singleRollMaxElementsDropdown "single-die" model.singleDie.explodes SetSingleDieExplode ClearSingleDieResults buttons singleDieResultList model
 
 {-| Renders the multi-dice roll card element.
 -}
 multiDiceCard: Model -> Html Msg
 multiDiceCard model =
-    diceCard "Roll multiple dice" multiRollMaxElementsDropdown "multi-dice" model.multiDice.explodes SetMultiDiceExplode ClearMultiDiceResults multiDiceTable multiDiceResultList model
+    diceCard model.multiDice.name multiRollMaxElementsDropdown "multi-dice" model.multiDice.explodes SetMultiDiceExplode ClearMultiDiceResults multiDiceTable multiDiceResultList model
 
 
 createMixedSetCard: Model -> Html Msg
@@ -444,8 +483,8 @@ createMixedSetCard model =
         |> Card.footer [] 
             [ div [ class "d-flex flex-row-reverse"] 
                 [ div [ class ""]
-                    [ Button.button [ Button.primary, Button.small, Button.onClick ClearNewSet ] [ text "Add" ] 
-                    , Button.button [ Button.secondary, Button.small, Button.onClick AddNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
+                    [ Button.button [ Button.primary, Button.small, Button.onClick AddNewSet ] [ text "Add" ] 
+                    , Button.button [ Button.secondary, Button.small, Button.onClick ClearNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
                     ]
                 ]
             ]
@@ -453,9 +492,9 @@ createMixedSetCard model =
             [ Block.custom <| div [] []
             , Block.custom <| Form.form [] 
                 [ Form.group []
-                    [ Form.label [for "name"] [text "Name"]
-                    , Input.text [ Input.id "name" ]
+                    [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newDiceSetName, Input.attrs [ placeholder "Name" ] ]
                     ]
+                , div [] [ text "Add die" ]
                 , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ]
                     [ Button.button [ Button.attrs [ class "" ],     Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  4) ] [ text "d4" ]
                     , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  6) ] [ text "d6" ]
@@ -464,18 +503,42 @@ createMixedSetCard model =
                     , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 12) ] [ text "d12" ]
                     , Button.button [ Button.attrs [ class "ml-1" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet 20) ] [ text "d20" ]
                     ]
-                --, Form.group [] (model.newDiceSet |> List.map (\d -> Button.button [ Button.outlineDanger, Button.small ] [ text "lul" ]))
-                --, InputGroup.config
-                --    (InputGroup.text []) |> InputGroup.predecessors [ InputGroup.span [] [ text "kk"] ] |> InputGroup.view
                 ]
-            , Block.custom <| (model |> newDiceSetList) --div [] (model.newDiceSet |> List.map (\d -> Badge.badgeSecondary [] [ text (d |> String.fromInt)]))
+            , Block.custom <| div [] [div [] [ text "Current set"], model |> newDiceSetList]
+            ]
+        |> Card.view  
+
+mixedSetCards: Model -> Html Msg
+mixedSetCards model =
+    --[Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
+    let makeColumn card = Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ] [ card ] in
+        Grid.row [] (model.mixedDice |> List.map (mixedSetCard >> makeColumn))
+        
+
+mixedSetCard : MixedCard -> Html Msg
+mixedSetCard card =
+    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
+        |> Card.headerH4 [] [ text card.name ]
+        |> Card.footer []
+            [ div [class "d-flex flex-row-reverse"]
+                [ div [ class "" ]
+                    []    
+                ]
+            ]
+        |> Card.block [ Block.attrs [ class "text-center"] ]
+            [ Block.custom <| div [] [ text "moep"]
+            , Block.custom <| Grid.row []
+                [ Grid.col [ ] 
+                  [ div [] [] ] 
+                ]
             ]
         |> Card.view  
 
 newDiceSetList: Model -> Html Msg
 newDiceSetList model =
     let dieButton i d =
-         Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs (if i == 0 then [ ] else [ Spacing.ml1 ])] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
+         --Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs (if i == 0 then [ Spacing.mb1 ] else [ Spacing.mb1, Spacing.ml1 ])] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
+         Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs [ Spacing.mb1, Spacing.mr1 ] ] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
     in
         div [] (model.newDiceSet |> List.indexedMap dieButton)
 
@@ -575,9 +638,9 @@ multiRollMaxElementsDropdown : Model -> Html Msg
 multiRollMaxElementsDropdown model =
     rollMaxElementsDropdown model.multiDice.historyDropState model.multiDice.maxHistory MultiRollNewValue MultiRollDropStateChange
 
-mixedRollMaxElementsDropdown: Model -> List (Html Msg)
-mixedRollMaxElementsDropdown model =
-    model.mixedDice |> List.map (\md -> rollMaxElementsDropdown md.historyDropState md.maxHistory MixedRollNewValue MixedRollDropStateChange)
+--mixedRollMaxElementsDropdown: Model -> List (Html Msg)
+--mixedRollMaxElementsDropdown model =
+--    model.mixedDice |> List.map (\md -> rollMaxElementsDropdown md.historyDropState md.maxHistory MixedRollNewValue MixedRollDropStateChange)
 
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =
