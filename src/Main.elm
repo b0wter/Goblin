@@ -79,7 +79,7 @@ init _ url key =
                           , modalVisibility = Modal.hidden
                           , singleDie = DiceModel.withName "Roll single die"
                           , multiDice = DiceModel.withName "Roll multiple dice"
-                          , mixedDice = [{ name = "1.Test", dieFaces = [], dice = DiceModel.empty} ]
+                          , mixedDice = [{ name = "1.Test", dieFaces = [20, 20, 20], dice = DiceModel.empty} ]
                           , newDiceSet = [ 4, 4, 6]
                           , newDiceSetName = ""
                           }
@@ -228,7 +228,7 @@ update msg model =
 
         AddNewSet -> 
             ( if (model.newDiceSet |> List.isEmpty) || (model.newDiceSetName |> String.isEmpty) then model 
-              else  { model | mixedDice = { name = model.newDiceSetName, dieFaces = [], dice = DiceModel.empty } :: model.mixedDice } 
+              else  model |> addMixedSet model.newDiceSetName model.newDiceSet |> clearNewMixedSet--{ model | mixedDice = { name = model.newDiceSetName, dieFaces = model.newDiceSet, dice = DiceModel.empty } :: model.mixedDice } 
             , Cmd.none)
         
         AddNewDieToSet d -> 
@@ -243,12 +243,14 @@ update msg model =
             ( { model | newDiceSetName = name }
             , Cmd.none)
 
-addMixedSet : String -> Model -> Model
-addMixedSet name model =
-    let set = { name = name, dieFaces = [], dice = DiceModel.empty } in
+addMixedSet : String -> List Int -> Model -> Model
+addMixedSet name dieFaces model =
+    let set = { name = name, dieFaces = dieFaces , dice = DiceModel.empty } in
         { model | mixedDice = set :: model.mixedDice }
 
-
+clearNewMixedSet : Model -> Model
+clearNewMixedSet model =
+        { model | newDiceSet = [] } |> \m -> { m | newDiceSetName = "" }
 
 urlUpdate : Url -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
@@ -510,11 +512,9 @@ createMixedSetCard model =
 
 mixedSetCards: Model -> Html Msg
 mixedSetCards model =
-    --[Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
     let makeColumn card = Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ] [ card ] in
         Grid.row [] (model.mixedDice |> List.map (mixedSetCard >> makeColumn))
         
-
 mixedSetCard : MixedCard -> Html Msg
 mixedSetCard card =
     Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
@@ -526,11 +526,9 @@ mixedSetCard card =
                 ]
             ]
         |> Card.block [ Block.attrs [ class "text-center"] ]
-            [ Block.custom <| div [] [ text "moep"]
-            , Block.custom <| Grid.row []
-                [ Grid.col [ ] 
-                  [ div [] [] ] 
-                ]
+            [ Block.custom <| div [] [ text (card.dieFaces |> List.map (String.fromInt >> (++) "d") |> String.join ", ") ]
+            , Block.custom <| hr  [] []
+            , Block.custom <| div [] [ text "result" ]
             ]
         |> Card.view  
 

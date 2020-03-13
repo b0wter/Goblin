@@ -6106,7 +6106,12 @@ var $author$project$Main$init = F3(
 			{
 				mixedDice: _List_fromArray(
 					[
-						{dice: $author$project$DiceModel$empty, dieFaces: _List_Nil, name: '1.Test'}
+						{
+						dice: $author$project$DiceModel$empty,
+						dieFaces: _List_fromArray(
+							[20, 20, 20]),
+						name: '1.Test'
+					}
 					]),
 				modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden,
 				multiDice: $author$project$DiceModel$withName('Roll multiple dice'),
@@ -6759,6 +6764,15 @@ var $author$project$Main$NewMultiDiceResult = function (a) {
 var $author$project$Main$NewSingleDieResult = function (a) {
 	return {$: 'NewSingleDieResult', a: a};
 };
+var $author$project$Main$addMixedSet = F3(
+	function (name, dieFaces, model) {
+		var set = {dice: $author$project$DiceModel$empty, dieFaces: dieFaces, name: name};
+		return _Utils_update(
+			model,
+			{
+				mixedDice: A2($elm$core$List$cons, set, model.mixedDice)
+			});
+	});
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -6923,6 +6937,16 @@ var $author$project$DiceModel$clearHistory = function (model) {
 	return _Utils_update(
 		model,
 		{rolls: _List_Nil});
+};
+var $author$project$Main$clearNewMixedSet = function (model) {
+	return function (m) {
+		return _Utils_update(
+			m,
+			{newDiceSetName: ''});
+	}(
+		_Utils_update(
+			model,
+			{newDiceSet: _List_Nil}));
 };
 var $author$project$Main$clearNewSet = function (model) {
 	var updatedName = _Utils_update(
@@ -7428,14 +7452,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'AddNewSet':
 				return _Utils_Tuple2(
-					($elm$core$List$isEmpty(model.newDiceSet) || $elm$core$String$isEmpty(model.newDiceSetName)) ? model : _Utils_update(
-						model,
-						{
-							mixedDice: A2(
-								$elm$core$List$cons,
-								{dice: $author$project$DiceModel$empty, dieFaces: _List_Nil, name: model.newDiceSetName},
-								model.mixedDice)
-						}),
+					($elm$core$List$isEmpty(model.newDiceSet) || $elm$core$String$isEmpty(model.newDiceSetName)) ? model : $author$project$Main$clearNewMixedSet(
+						A3($author$project$Main$addMixedSet, model.newDiceSetName, model.newDiceSet, model)),
 					$elm$core$Platform$Cmd$none);
 			case 'AddNewDieToSet':
 				var d = msg.a;
@@ -8775,6 +8793,89 @@ var $elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
+var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $author$project$Main$mixedSetCard = function (card) {
+	return $rundis$elm_bootstrap$Bootstrap$Card$view(
+		A3(
+			$rundis$elm_bootstrap$Bootstrap$Card$block,
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$attrs(
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('text-center')
+						]))
+				]),
+			_List_fromArray(
+				[
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
+					A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2(
+									$elm$core$String$join,
+									', ',
+									A2(
+										$elm$core$List$map,
+										A2(
+											$elm$core$Basics$composeR,
+											$elm$core$String$fromInt,
+											$elm$core$Basics$append('d')),
+										card.dieFaces)))
+							]))),
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
+					A2($elm$html$Html$hr, _List_Nil, _List_Nil)),
+					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
+					A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('result')
+							])))
+				]),
+			A3(
+				$rundis$elm_bootstrap$Bootstrap$Card$footer,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('d-flex flex-row-reverse')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('')
+									]),
+								_List_Nil)
+							]))
+					]),
+				A3(
+					$rundis$elm_bootstrap$Bootstrap$Card$headerH4,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(card.name)
+						]),
+					$rundis$elm_bootstrap$Bootstrap$Card$config(
+						_List_fromArray(
+							[
+								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('mb-4')
+									]))
+							]))))));
+};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col = {$: 'Col'};
 var $rundis$elm_bootstrap$Bootstrap$General$Internal$XS = {$: 'XS'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$applyColAlign = F2(
@@ -9538,82 +9639,6 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$row = F2(
 			$rundis$elm_bootstrap$Bootstrap$Grid$Internal$rowAttributes(options),
 			A2($elm$core$List$map, $rundis$elm_bootstrap$Bootstrap$Grid$renderCol, cols));
 	});
-var $author$project$Main$mixedSetCard = function (card) {
-	return $rundis$elm_bootstrap$Bootstrap$Card$view(
-		A3(
-			$rundis$elm_bootstrap$Bootstrap$Card$block,
-			_List_fromArray(
-				[
-					$rundis$elm_bootstrap$Bootstrap$Card$Block$attrs(
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('text-center')
-						]))
-				]),
-			_List_fromArray(
-				[
-					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
-					A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('moep')
-							]))),
-					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
-					A2(
-						$rundis$elm_bootstrap$Bootstrap$Grid$row,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$rundis$elm_bootstrap$Bootstrap$Grid$col,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2($elm$html$Html$div, _List_Nil, _List_Nil)
-									]))
-							])))
-				]),
-			A3(
-				$rundis$elm_bootstrap$Bootstrap$Card$footer,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('d-flex flex-row-reverse')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('')
-									]),
-								_List_Nil)
-							]))
-					]),
-				A3(
-					$rundis$elm_bootstrap$Bootstrap$Card$headerH4,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(card.name)
-						]),
-					$rundis$elm_bootstrap$Bootstrap$Card$config(
-						_List_fromArray(
-							[
-								$rundis$elm_bootstrap$Bootstrap$Card$attrs(
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('mb-4')
-									]))
-							]))))));
-};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$SM, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
