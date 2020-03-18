@@ -31,20 +31,16 @@ withName : String -> DiceModel a
 withName name = { rolls = [], lastRoll = Nothing, maxHistory = 4, historyDropState =  Dropdown.initialState, explodes = False, name = name }
 
 addRoll : a -> DiceModel a -> DiceModel a
-addRoll roll model =
-    { model | rolls = List.addAndDrop model.maxHistory roll model.rolls, lastRoll = Just roll }
+addRoll roll model = { model | rolls = List.addAndDrop model.maxHistory roll model.rolls, lastRoll = Just roll }
 
 withAddedRoll : DiceModel a -> a -> DiceModel a
-withAddedRoll =
-    Flip.flip addRoll
+withAddedRoll = Flip.flip addRoll
 
 setHistorySize : Int -> DiceModel a -> DiceModel a
-setHistorySize newSize model = 
-    { model | maxHistory = newSize, rolls = model.rolls |> List.limit (newSize + 1) }
+setHistorySize newSize model = { model | maxHistory = newSize, rolls = model.rolls |> List.limit (newSize + 1) }
 
 asHistorySize : DiceModel a -> Int -> DiceModel a
-asHistorySize =
-    Flip.flip setHistorySize
+asHistorySize = Flip.flip setHistorySize
 
 setHistoryDropState : Dropdown.State -> DiceModel a -> DiceModel a
 setHistoryDropState state model = { model | historyDropState = state }
@@ -56,12 +52,10 @@ clearHistory : DiceModel a -> DiceModel a
 clearHistory model = { model | rolls = [] }
 
 setExplode : Bool -> DiceModel a -> DiceModel a
-setExplode state model =
-    { model | explodes = state }
+setExplode state model = { model | explodes = state }
 
 asExplode : DiceModel a -> Bool -> DiceModel a
 asExplode = Flip.flip setExplode
 
 toggleExplode : DiceModel a -> DiceModel a
-toggleExplode model =
-    { model | explodes = not model.explodes }
+toggleExplode model = { model | explodes = not model.explodes }
