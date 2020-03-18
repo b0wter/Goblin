@@ -4357,22 +4357,183 @@ function _Browser_load(url)
 }
 
 
-function _Url_percentEncode(string)
+// BYTES
+
+function _Bytes_width(bytes)
 {
-	return encodeURIComponent(string);
+	return bytes.byteLength;
 }
 
-function _Url_percentDecode(string)
+var _Bytes_getHostEndianness = F2(function(le, be)
 {
-	try
+	return _Scheduler_binding(function(callback)
 	{
-		return $elm$core$Maybe$Just(decodeURIComponent(string));
+		callback(_Scheduler_succeed(new Uint8Array(new Uint32Array([1]))[0] === 1 ? le : be));
+	});
+});
+
+
+// ENCODERS
+
+function _Bytes_encode(encoder)
+{
+	var mutableBytes = new DataView(new ArrayBuffer($elm$bytes$Bytes$Encode$getWidth(encoder)));
+	$elm$bytes$Bytes$Encode$write(encoder)(mutableBytes)(0);
+	return mutableBytes;
+}
+
+
+// SIGNED INTEGERS
+
+var _Bytes_write_i8  = F3(function(mb, i, n) { mb.setInt8(i, n); return i + 1; });
+var _Bytes_write_i16 = F4(function(mb, i, n, isLE) { mb.setInt16(i, n, isLE); return i + 2; });
+var _Bytes_write_i32 = F4(function(mb, i, n, isLE) { mb.setInt32(i, n, isLE); return i + 4; });
+
+
+// UNSIGNED INTEGERS
+
+var _Bytes_write_u8  = F3(function(mb, i, n) { mb.setUint8(i, n); return i + 1 ;});
+var _Bytes_write_u16 = F4(function(mb, i, n, isLE) { mb.setUint16(i, n, isLE); return i + 2; });
+var _Bytes_write_u32 = F4(function(mb, i, n, isLE) { mb.setUint32(i, n, isLE); return i + 4; });
+
+
+// FLOATS
+
+var _Bytes_write_f32 = F4(function(mb, i, n, isLE) { mb.setFloat32(i, n, isLE); return i + 4; });
+var _Bytes_write_f64 = F4(function(mb, i, n, isLE) { mb.setFloat64(i, n, isLE); return i + 8; });
+
+
+// BYTES
+
+var _Bytes_write_bytes = F3(function(mb, offset, bytes)
+{
+	for (var i = 0, len = bytes.byteLength, limit = len - 4; i <= limit; i += 4)
+	{
+		mb.setUint32(offset + i, bytes.getUint32(i));
 	}
-	catch (e)
+	for (; i < len; i++)
 	{
+		mb.setUint8(offset + i, bytes.getUint8(i));
+	}
+	return offset + len;
+});
+
+
+// STRINGS
+
+function _Bytes_getStringWidth(string)
+{
+	for (var width = 0, i = 0; i < string.length; i++)
+	{
+		var code = string.charCodeAt(i);
+		width +=
+			(code < 0x80) ? 1 :
+			(code < 0x800) ? 2 :
+			(code < 0xD800 || 0xDBFF < code) ? 3 : (i++, 4);
+	}
+	return width;
+}
+
+var _Bytes_write_string = F3(function(mb, offset, string)
+{
+	for (var i = 0; i < string.length; i++)
+	{
+		var code = string.charCodeAt(i);
+		offset +=
+			(code < 0x80)
+				? (mb.setUint8(offset, code)
+				, 1
+				)
+				:
+			(code < 0x800)
+				? (mb.setUint16(offset, 0xC080 /* 0b1100000010000000 */
+					| (code >>> 6 & 0x1F /* 0b00011111 */) << 8
+					| code & 0x3F /* 0b00111111 */)
+				, 2
+				)
+				:
+			(code < 0xD800 || 0xDBFF < code)
+				? (mb.setUint16(offset, 0xE080 /* 0b1110000010000000 */
+					| (code >>> 12 & 0xF /* 0b00001111 */) << 8
+					| code >>> 6 & 0x3F /* 0b00111111 */)
+				, mb.setUint8(offset + 2, 0x80 /* 0b10000000 */
+					| code & 0x3F /* 0b00111111 */)
+				, 3
+				)
+				:
+			(code = (code - 0xD800) * 0x400 + string.charCodeAt(++i) - 0xDC00 + 0x10000
+			, mb.setUint32(offset, 0xF0808080 /* 0b11110000100000001000000010000000 */
+				| (code >>> 18 & 0x7 /* 0b00000111 */) << 24
+				| (code >>> 12 & 0x3F /* 0b00111111 */) << 16
+				| (code >>> 6 & 0x3F /* 0b00111111 */) << 8
+				| code & 0x3F /* 0b00111111 */)
+			, 4
+			);
+	}
+	return offset;
+});
+
+
+// DECODER
+
+var _Bytes_decode = F2(function(decoder, bytes)
+{
+	try {
+		return $elm$core$Maybe$Just(A2(decoder, bytes, 0).b);
+	} catch(e) {
 		return $elm$core$Maybe$Nothing;
 	}
-}
+});
+
+var _Bytes_read_i8  = F2(function(      bytes, offset) { return _Utils_Tuple2(offset + 1, bytes.getInt8(offset)); });
+var _Bytes_read_i16 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 2, bytes.getInt16(offset, isLE)); });
+var _Bytes_read_i32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getInt32(offset, isLE)); });
+var _Bytes_read_u8  = F2(function(      bytes, offset) { return _Utils_Tuple2(offset + 1, bytes.getUint8(offset)); });
+var _Bytes_read_u16 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 2, bytes.getUint16(offset, isLE)); });
+var _Bytes_read_u32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getUint32(offset, isLE)); });
+var _Bytes_read_f32 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 4, bytes.getFloat32(offset, isLE)); });
+var _Bytes_read_f64 = F3(function(isLE, bytes, offset) { return _Utils_Tuple2(offset + 8, bytes.getFloat64(offset, isLE)); });
+
+var _Bytes_read_bytes = F3(function(len, bytes, offset)
+{
+	return _Utils_Tuple2(offset + len, new DataView(bytes.buffer, bytes.byteOffset + offset, len));
+});
+
+var _Bytes_read_string = F3(function(len, bytes, offset)
+{
+	var string = '';
+	var end = offset + len;
+	for (; offset < end;)
+	{
+		var byte = bytes.getUint8(offset++);
+		string +=
+			(byte < 128)
+				? String.fromCharCode(byte)
+				:
+			((byte & 0xE0 /* 0b11100000 */) === 0xC0 /* 0b11000000 */)
+				? String.fromCharCode((byte & 0x1F /* 0b00011111 */) << 6 | bytes.getUint8(offset++) & 0x3F /* 0b00111111 */)
+				:
+			((byte & 0xF0 /* 0b11110000 */) === 0xE0 /* 0b11100000 */)
+				? String.fromCharCode(
+					(byte & 0xF /* 0b00001111 */) << 12
+					| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 6
+					| bytes.getUint8(offset++) & 0x3F /* 0b00111111 */
+				)
+				:
+				(byte =
+					((byte & 0x7 /* 0b00000111 */) << 18
+						| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 12
+						| (bytes.getUint8(offset++) & 0x3F /* 0b00111111 */) << 6
+						| bytes.getUint8(offset++) & 0x3F /* 0b00111111 */
+					) - 0x10000
+				, String.fromCharCode(Math.floor(byte / 0x400) + 0xD800, byte % 0x400 + 0xDC00)
+				);
+	}
+	return _Utils_Tuple2(offset, string);
+});
+
+var _Bytes_decodeFailure = F2(function() { throw 0; });
+
 
 
 var _Bitwise_and = F2(function(a, b)
@@ -4410,6 +4571,23 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 	return a >>> offset;
 });
 
+
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return $elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return $elm$core$Maybe$Nothing;
+	}
+}
 
 
 function _Time_now(millisToPosix)
@@ -5255,6 +5433,813 @@ var $author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
+	switch (builder.$) {
+		case 'I8':
+			return 1;
+		case 'I16':
+			return 2;
+		case 'I32':
+			return 4;
+		case 'U8':
+			return 1;
+		case 'U16':
+			return 2;
+		case 'U32':
+			return 4;
+		case 'F32':
+			return 4;
+		case 'F64':
+			return 8;
+		case 'Seq':
+			var w = builder.a;
+			return w;
+		case 'Utf8':
+			var w = builder.a;
+			return w;
+		default:
+			var bs = builder.a;
+			return _Bytes_width(bs);
+	}
+};
+var $elm$bytes$Bytes$LE = {$: 'LE'};
+var $elm$bytes$Bytes$Encode$write = F3(
+	function (builder, mb, offset) {
+		switch (builder.$) {
+			case 'I8':
+				var n = builder.a;
+				return A3(_Bytes_write_i8, mb, offset, n);
+			case 'I16':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_i16,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'I32':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_i32,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'U8':
+				var n = builder.a;
+				return A3(_Bytes_write_u8, mb, offset, n);
+			case 'U16':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_u16,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'U32':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_u32,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'F32':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_f32,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'F64':
+				var e = builder.a;
+				var n = builder.b;
+				return A4(
+					_Bytes_write_f64,
+					mb,
+					offset,
+					n,
+					_Utils_eq(e, $elm$bytes$Bytes$LE));
+			case 'Seq':
+				var bs = builder.b;
+				return A3($elm$bytes$Bytes$Encode$writeSequence, bs, mb, offset);
+			case 'Utf8':
+				var s = builder.b;
+				return A3(_Bytes_write_string, mb, offset, s);
+			default:
+				var bs = builder.a;
+				return A3(_Bytes_write_bytes, mb, offset, bs);
+		}
+	});
+var $elm$bytes$Bytes$Encode$writeSequence = F3(
+	function (builders, mb, offset) {
+		writeSequence:
+		while (true) {
+			if (!builders.b) {
+				return offset;
+			} else {
+				var b = builders.a;
+				var bs = builders.b;
+				var $temp$builders = bs,
+					$temp$mb = mb,
+					$temp$offset = A3($elm$bytes$Bytes$Encode$write, b, mb, offset);
+				builders = $temp$builders;
+				mb = $temp$mb;
+				offset = $temp$offset;
+				continue writeSequence;
+			}
+		}
+	});
+var $elm$bytes$Bytes$Encode$encode = _Bytes_encode;
+var $TSFoster$elm_uuid$UUID$UUID = F4(
+	function (a, b, c, d) {
+		return {$: 'UUID', a: a, b: b, c: c, d: d};
+	});
+var $elm$bytes$Bytes$Encode$Bytes = function (a) {
+	return {$: 'Bytes', a: a};
+};
+var $elm$bytes$Bytes$Encode$bytes = $elm$bytes$Bytes$Encode$Bytes;
+var $elm$bytes$Bytes$BE = {$: 'BE'};
+var $elm$bytes$Bytes$Encode$Seq = F2(
+	function (a, b) {
+		return {$: 'Seq', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$getWidths = F2(
+	function (width, builders) {
+		getWidths:
+		while (true) {
+			if (!builders.b) {
+				return width;
+			} else {
+				var b = builders.a;
+				var bs = builders.b;
+				var $temp$width = width + $elm$bytes$Bytes$Encode$getWidth(b),
+					$temp$builders = bs;
+				width = $temp$width;
+				builders = $temp$builders;
+				continue getWidths;
+			}
+		}
+	});
+var $elm$bytes$Bytes$Encode$sequence = function (builders) {
+	return A2(
+		$elm$bytes$Bytes$Encode$Seq,
+		A2($elm$bytes$Bytes$Encode$getWidths, 0, builders),
+		builders);
+};
+var $elm$bytes$Bytes$Encode$U32 = F2(
+	function (a, b) {
+		return {$: 'U32', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
+var $TSFoster$elm_uuid$UUID$encoder = function (_v0) {
+	var a = _v0.a;
+	var b = _v0.b;
+	var c = _v0.c;
+	var d = _v0.d;
+	return $elm$bytes$Bytes$Encode$sequence(
+		_List_fromArray(
+			[
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, a),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, b),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, c),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, d)
+			]));
+};
+var $elm$bytes$Bytes$Decode$decode = F2(
+	function (_v0, bs) {
+		var decoder = _v0.a;
+		return A2(_Bytes_decode, decoder, bs);
+	});
+var $elm$bytes$Bytes$Decode$Decoder = function (a) {
+	return {$: 'Decoder', a: a};
+};
+var $elm$bytes$Bytes$Decode$loopHelp = F4(
+	function (state, callback, bites, offset) {
+		loopHelp:
+		while (true) {
+			var _v0 = callback(state);
+			var decoder = _v0.a;
+			var _v1 = A2(decoder, bites, offset);
+			var newOffset = _v1.a;
+			var step = _v1.b;
+			if (step.$ === 'Loop') {
+				var newState = step.a;
+				var $temp$state = newState,
+					$temp$callback = callback,
+					$temp$bites = bites,
+					$temp$offset = newOffset;
+				state = $temp$state;
+				callback = $temp$callback;
+				bites = $temp$bites;
+				offset = $temp$offset;
+				continue loopHelp;
+			} else {
+				var result = step.a;
+				return _Utils_Tuple2(newOffset, result);
+			}
+		}
+	});
+var $elm$bytes$Bytes$Decode$loop = F2(
+	function (state, callback) {
+		return $elm$bytes$Bytes$Decode$Decoder(
+			A2($elm$bytes$Bytes$Decode$loopHelp, state, callback));
+	});
+var $elm$bytes$Bytes$Decode$Done = function (a) {
+	return {$: 'Done', a: a};
+};
+var $elm$bytes$Bytes$Decode$Loop = function (a) {
+	return {$: 'Loop', a: a};
+};
+var $elm$bytes$Bytes$Decode$map = F2(
+	function (func, _v0) {
+		var decodeA = _v0.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v1 = A2(decodeA, bites, offset);
+					var aOffset = _v1.a;
+					var a = _v1.b;
+					return _Utils_Tuple2(
+						aOffset,
+						func(a));
+				}));
+	});
+var $elm$bytes$Bytes$Decode$succeed = function (a) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		F2(
+			function (_v0, offset) {
+				return _Utils_Tuple2(offset, a);
+			}));
+};
+var $TSFoster$elm_sha1$SHA1$loopHelp = F2(
+	function (step, _v0) {
+		var n = _v0.a;
+		var state = _v0.b;
+		return (n > 0) ? A2(
+			$elm$bytes$Bytes$Decode$map,
+			function (_new) {
+				return $elm$bytes$Bytes$Decode$Loop(
+					_Utils_Tuple2(n - 1, _new));
+			},
+			step(state)) : $elm$bytes$Bytes$Decode$succeed(
+			$elm$bytes$Bytes$Decode$Done(state));
+	});
+var $TSFoster$elm_sha1$SHA1$iterate = F3(
+	function (n, step, initial) {
+		return A2(
+			$elm$bytes$Bytes$Decode$loop,
+			_Utils_Tuple2(n, initial),
+			$TSFoster$elm_sha1$SHA1$loopHelp(step));
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$bytes$Bytes$Encode$U8 = function (a) {
+	return {$: 'U8', a: a};
+};
+var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
+var $elm$bytes$Bytes$width = _Bytes_width;
+var $TSFoster$elm_sha1$SHA1$padBuffer = function (bytes) {
+	var byteCount = $elm$bytes$Bytes$width(bytes);
+	var paddingSize = 4 + A2(
+		$elm$core$Basics$modBy,
+		64,
+		56 - A2($elm$core$Basics$modBy, 64, byteCount + 1));
+	var message = $elm$bytes$Bytes$Encode$encode(
+		$elm$bytes$Bytes$Encode$sequence(
+			_List_fromArray(
+				[
+					$elm$bytes$Bytes$Encode$bytes(bytes),
+					$elm$bytes$Bytes$Encode$unsignedInt8(128),
+					$elm$bytes$Bytes$Encode$sequence(
+					A2(
+						$elm$core$List$repeat,
+						paddingSize,
+						$elm$bytes$Bytes$Encode$unsignedInt8(0))),
+					A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, byteCount << 3)
+				])));
+	return message;
+};
+var $elm$bytes$Bytes$Decode$map4 = F5(
+	function (func, _v0, _v1, _v2, _v3) {
+		var decodeA = _v0.a;
+		var decodeB = _v1.a;
+		var decodeC = _v2.a;
+		var decodeD = _v3.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v4 = A2(decodeA, bites, offset);
+					var aOffset = _v4.a;
+					var a = _v4.b;
+					var _v5 = A2(decodeB, bites, aOffset);
+					var bOffset = _v5.a;
+					var b = _v5.b;
+					var _v6 = A2(decodeC, bites, bOffset);
+					var cOffset = _v6.a;
+					var c = _v6.b;
+					var _v7 = A2(decodeD, bites, cOffset);
+					var dOffset = _v7.a;
+					var d = _v7.b;
+					return _Utils_Tuple2(
+						dOffset,
+						A4(func, a, b, c, d));
+				}));
+	});
+var $elm$bytes$Bytes$Decode$map5 = F6(
+	function (func, _v0, _v1, _v2, _v3, _v4) {
+		var decodeA = _v0.a;
+		var decodeB = _v1.a;
+		var decodeC = _v2.a;
+		var decodeD = _v3.a;
+		var decodeE = _v4.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v5 = A2(decodeA, bites, offset);
+					var aOffset = _v5.a;
+					var a = _v5.b;
+					var _v6 = A2(decodeB, bites, aOffset);
+					var bOffset = _v6.a;
+					var b = _v6.b;
+					var _v7 = A2(decodeC, bites, bOffset);
+					var cOffset = _v7.a;
+					var c = _v7.b;
+					var _v8 = A2(decodeD, bites, cOffset);
+					var dOffset = _v8.a;
+					var d = _v8.b;
+					var _v9 = A2(decodeE, bites, dOffset);
+					var eOffset = _v9.a;
+					var e = _v9.b;
+					return _Utils_Tuple2(
+						eOffset,
+						A5(func, a, b, c, d, e));
+				}));
+	});
+var $TSFoster$elm_sha1$SHA1$map16 = function (f) {
+	return function (b1) {
+		return function (b2) {
+			return function (b3) {
+				return function (b4) {
+					return function (b5) {
+						return function (b6) {
+							return function (b7) {
+								return function (b8) {
+									return function (b9) {
+										return function (b10) {
+											return function (b11) {
+												return function (b12) {
+													return function (b13) {
+														return function (b14) {
+															return function (b15) {
+																return function (b16) {
+																	var d1 = A5(
+																		$elm$bytes$Bytes$Decode$map4,
+																		F4(
+																			function (a, b, c, d) {
+																				return A4(f, a, b, c, d);
+																			}),
+																		b1,
+																		b2,
+																		b3,
+																		b4);
+																	var d2 = A6(
+																		$elm$bytes$Bytes$Decode$map5,
+																		F5(
+																			function (h, a, b, c, d) {
+																				return A4(h, a, b, c, d);
+																			}),
+																		d1,
+																		b5,
+																		b6,
+																		b7,
+																		b8);
+																	var d3 = A6(
+																		$elm$bytes$Bytes$Decode$map5,
+																		F5(
+																			function (h, a, b, c, d) {
+																				return A4(h, a, b, c, d);
+																			}),
+																		d2,
+																		b9,
+																		b10,
+																		b11,
+																		b12);
+																	var d4 = A6(
+																		$elm$bytes$Bytes$Decode$map5,
+																		F5(
+																			function (h, a, b, c, d) {
+																				return A4(h, a, b, c, d);
+																			}),
+																		d3,
+																		b13,
+																		b14,
+																		b15,
+																		b16);
+																	return d4;
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $TSFoster$elm_sha1$SHA1$DeltaState = function (a) {
+	return {$: 'DeltaState', a: a};
+};
+var $TSFoster$elm_sha1$SHA1$State = function (a) {
+	return {$: 'State', a: a};
+};
+var $TSFoster$elm_sha1$SHA1$Tuple5 = F5(
+	function (a, b, c, d, e) {
+		return {a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$complement = _Bitwise_complement;
+var $elm$core$Bitwise$or = _Bitwise_or;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $TSFoster$elm_sha1$SHA1$rotateLeftBy = F2(
+	function (amount, i) {
+		return ((i >>> (32 - amount)) | (i << amount)) >>> 0;
+	});
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $TSFoster$elm_sha1$SHA1$calculateDigestDeltas = F3(
+	function (index, _int, _v0) {
+		var a = _v0.a.a;
+		var b = _v0.a.b;
+		var c = _v0.a.c;
+		var d = _v0.a.d;
+		var e = _v0.a.e;
+		var f = function () {
+			var _v1 = (index / 20) | 0;
+			switch (_v1) {
+				case 0:
+					return ((b & c) | ((~b) & d)) + 1518500249;
+				case 1:
+					return (b ^ (c ^ d)) + 1859775393;
+				case 2:
+					return ((b & (c | d)) | (c & d)) + 2400959708;
+				default:
+					return (b ^ (c ^ d)) + 3395469782;
+			}
+		}();
+		var newA = ((A2($TSFoster$elm_sha1$SHA1$rotateLeftBy, 5, a) + f) + e) + _int;
+		return $TSFoster$elm_sha1$SHA1$DeltaState(
+			A5(
+				$TSFoster$elm_sha1$SHA1$Tuple5,
+				newA,
+				a,
+				A2($TSFoster$elm_sha1$SHA1$rotateLeftBy, 30, b),
+				c,
+				d));
+	});
+var $TSFoster$elm_sha1$SHA1$blockSize = 64;
+var $TSFoster$elm_sha1$SHA1$numberOfWords = 16;
+var $TSFoster$elm_sha1$SHA1$reduceWords = function (i) {
+	return function (deltaState) {
+		return function (b16) {
+			return function (b15) {
+				return function (b14) {
+					return function (b13) {
+						return function (b12) {
+							return function (b11) {
+								return function (b10) {
+									return function (b9) {
+										return function (b8) {
+											return function (b7) {
+												return function (b6) {
+													return function (b5) {
+														return function (b4) {
+															return function (b3) {
+																return function (b2) {
+																	return function (b1) {
+																		reduceWords:
+																		while (true) {
+																			if ((i - $TSFoster$elm_sha1$SHA1$blockSize) < 0) {
+																				var value = A2($TSFoster$elm_sha1$SHA1$rotateLeftBy, 1, b16 ^ (b14 ^ (b8 ^ b3)));
+																				var $temp$i = i + 1,
+																					$temp$deltaState = A3($TSFoster$elm_sha1$SHA1$calculateDigestDeltas, i + $TSFoster$elm_sha1$SHA1$numberOfWords, value, deltaState),
+																					$temp$b16 = b15,
+																					$temp$b15 = b14,
+																					$temp$b14 = b13,
+																					$temp$b13 = b12,
+																					$temp$b12 = b11,
+																					$temp$b11 = b10,
+																					$temp$b10 = b9,
+																					$temp$b9 = b8,
+																					$temp$b8 = b7,
+																					$temp$b7 = b6,
+																					$temp$b6 = b5,
+																					$temp$b5 = b4,
+																					$temp$b4 = b3,
+																					$temp$b3 = b2,
+																					$temp$b2 = b1,
+																					$temp$b1 = value;
+																				i = $temp$i;
+																				deltaState = $temp$deltaState;
+																				b16 = $temp$b16;
+																				b15 = $temp$b15;
+																				b14 = $temp$b14;
+																				b13 = $temp$b13;
+																				b12 = $temp$b12;
+																				b11 = $temp$b11;
+																				b10 = $temp$b10;
+																				b9 = $temp$b9;
+																				b8 = $temp$b8;
+																				b7 = $temp$b7;
+																				b6 = $temp$b6;
+																				b5 = $temp$b5;
+																				b4 = $temp$b4;
+																				b3 = $temp$b3;
+																				b2 = $temp$b2;
+																				b1 = $temp$b1;
+																				continue reduceWords;
+																			} else {
+																				return deltaState;
+																			}
+																		}
+																	};
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $TSFoster$elm_sha1$SHA1$reduceChunkHelp = function (_v0) {
+	return function (b1) {
+		return function (b2) {
+			return function (b3) {
+				return function (b4) {
+					return function (b5) {
+						return function (b6) {
+							return function (b7) {
+								return function (b8) {
+									return function (b9) {
+										return function (b10) {
+											return function (b11) {
+												return function (b12) {
+													return function (b13) {
+														return function (b14) {
+															return function (b15) {
+																return function (b16) {
+																	var initial = _v0.a;
+																	var initialDeltaState = A3(
+																		$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																		15,
+																		b16,
+																		A3(
+																			$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																			14,
+																			b15,
+																			A3(
+																				$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																				13,
+																				b14,
+																				A3(
+																					$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																					12,
+																					b13,
+																					A3(
+																						$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																						11,
+																						b12,
+																						A3(
+																							$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																							10,
+																							b11,
+																							A3(
+																								$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																								9,
+																								b10,
+																								A3(
+																									$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																									8,
+																									b9,
+																									A3(
+																										$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																										7,
+																										b8,
+																										A3(
+																											$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																											6,
+																											b7,
+																											A3(
+																												$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																												5,
+																												b6,
+																												A3(
+																													$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																													4,
+																													b5,
+																													A3(
+																														$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																														3,
+																														b4,
+																														A3(
+																															$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																															2,
+																															b3,
+																															A3(
+																																$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																																1,
+																																b2,
+																																A3(
+																																	$TSFoster$elm_sha1$SHA1$calculateDigestDeltas,
+																																	0,
+																																	b1,
+																																	$TSFoster$elm_sha1$SHA1$DeltaState(initial)))))))))))))))));
+																	var _v1 = $TSFoster$elm_sha1$SHA1$reduceWords(0)(initialDeltaState)(b1)(b2)(b3)(b4)(b5)(b6)(b7)(b8)(b9)(b10)(b11)(b12)(b13)(b14)(b15)(b16);
+																	var a = _v1.a.a;
+																	var b = _v1.a.b;
+																	var c = _v1.a.c;
+																	var d = _v1.a.d;
+																	var e = _v1.a.e;
+																	return $TSFoster$elm_sha1$SHA1$State(
+																		A5($TSFoster$elm_sha1$SHA1$Tuple5, initial.a + a, initial.b + b, initial.c + c, initial.d + d, initial.e + e));
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_u32(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $TSFoster$elm_sha1$SHA1$u32 = $elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE);
+var $TSFoster$elm_sha1$SHA1$reduceChunk = function (state) {
+	return $TSFoster$elm_sha1$SHA1$map16(
+		$TSFoster$elm_sha1$SHA1$reduceChunkHelp(state))($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32)($TSFoster$elm_sha1$SHA1$u32);
+};
+var $TSFoster$elm_sha1$SHA1$Digest = function (a) {
+	return {$: 'Digest', a: a};
+};
+var $TSFoster$elm_sha1$SHA1$stateToDigest = function (_v0) {
+	var a = _v0.a.a;
+	var b = _v0.a.b;
+	var c = _v0.a.c;
+	var d = _v0.a.d;
+	var e = _v0.a.e;
+	return $TSFoster$elm_sha1$SHA1$Digest(
+		{a: a >>> 0, b: b >>> 0, c: c >>> 0, d: d >>> 0, e: e >>> 0});
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $TSFoster$elm_sha1$SHA1$hashBytes = F2(
+	function (state, bytes) {
+		var message = $TSFoster$elm_sha1$SHA1$padBuffer(bytes);
+		var numberOfChunks = ($elm$bytes$Bytes$width(message) / 64) | 0;
+		var hashState = A3($TSFoster$elm_sha1$SHA1$iterate, numberOfChunks, $TSFoster$elm_sha1$SHA1$reduceChunk, state);
+		return $TSFoster$elm_sha1$SHA1$stateToDigest(
+			A2(
+				$elm$core$Maybe$withDefault,
+				state,
+				A2($elm$bytes$Bytes$Decode$decode, hashState, message)));
+	});
+var $TSFoster$elm_sha1$SHA1$initialState = $TSFoster$elm_sha1$SHA1$State(
+	A5($TSFoster$elm_sha1$SHA1$Tuple5, 1732584193, 4023233417, 2562383102, 271733878, 3285377520));
+var $TSFoster$elm_sha1$SHA1$fromBytes = $TSFoster$elm_sha1$SHA1$hashBytes($TSFoster$elm_sha1$SHA1$initialState);
+var $TSFoster$elm_sha1$SHA1$toInt32s = function (_v0) {
+	var digest = _v0.a;
+	return digest;
+};
+var $TSFoster$elm_uuid$UUID$forceUnsigned = $elm$core$Bitwise$shiftRightZfBy(0);
+var $TSFoster$elm_uuid$UUID$toVariant1 = function (_v0) {
+	var a = _v0.a;
+	var b = _v0.b;
+	var c = _v0.c;
+	var d = _v0.d;
+	return A4(
+		$TSFoster$elm_uuid$UUID$UUID,
+		a,
+		b,
+		$TSFoster$elm_uuid$UUID$forceUnsigned(2147483648 | (1073741823 & c)),
+		d);
+};
+var $TSFoster$elm_uuid$UUID$toVersion = F2(
+	function (v, _v0) {
+		var a = _v0.a;
+		var b = _v0.b;
+		var c = _v0.c;
+		var d = _v0.d;
+		return A4(
+			$TSFoster$elm_uuid$UUID$UUID,
+			a,
+			$TSFoster$elm_uuid$UUID$forceUnsigned((v << 12) | (4294905855 & b)),
+			c,
+			d);
+	});
+var $TSFoster$elm_uuid$UUID$forBytes = F2(
+	function (bytes, namespace) {
+		return $TSFoster$elm_uuid$UUID$toVariant1(
+			A2(
+				$TSFoster$elm_uuid$UUID$toVersion,
+				5,
+				function (_v0) {
+					var a = _v0.a;
+					var b = _v0.b;
+					var c = _v0.c;
+					var d = _v0.d;
+					return A4($TSFoster$elm_uuid$UUID$UUID, a, b, c, d);
+				}(
+					$TSFoster$elm_sha1$SHA1$toInt32s(
+						$TSFoster$elm_sha1$SHA1$fromBytes(
+							$elm$bytes$Bytes$Encode$encode(
+								$elm$bytes$Bytes$Encode$sequence(
+									_List_fromArray(
+										[
+											$TSFoster$elm_uuid$UUID$encoder(namespace),
+											$elm$bytes$Bytes$Encode$bytes(bytes)
+										]))))))));
+	});
+var $elm$bytes$Bytes$Encode$Utf8 = F2(
+	function (a, b) {
+		return {$: 'Utf8', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$string = function (str) {
+	return A2(
+		$elm$bytes$Bytes$Encode$Utf8,
+		_Bytes_getStringWidth(str),
+		str);
+};
+var $TSFoster$elm_uuid$UUID$forName = A2(
+	$elm$core$Basics$composeL,
+	A2($elm$core$Basics$composeL, $TSFoster$elm_uuid$UUID$forBytes, $elm$bytes$Bytes$Encode$encode),
+	$elm$bytes$Bytes$Encode$string);
+var $TSFoster$elm_uuid$UUID$urlNamespace = A4($TSFoster$elm_uuid$UUID$UUID, 1806153745, 2645365201, 2159280320, 1339306184);
+var $author$project$Main$debugUuid = A2($TSFoster$elm_uuid$UUID$forName, 'https://gutsman.de/debugId', $TSFoster$elm_uuid$UUID$urlNamespace);
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
 	function (top, left, width, height) {
 		return {height: height, left: left, top: top, width: width};
@@ -5273,6 +6258,11 @@ var $author$project$DiceModel$withName = function (name) {
 	return {explodes: false, historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, name: name, rolls: _List_Nil};
 };
 var $author$project$DiceModel$empty = $author$project$DiceModel$withName('<unnamed>');
+var $author$project$MixedCard$empty = function (id) {
+	return {dice: $author$project$DiceModel$empty, dieFaces: _List_Nil, id: id, name: ''};
+};
+var $author$project$MixedCard$firstEmptyCard = $author$project$MixedCard$empty(
+	A2($TSFoster$elm_uuid$UUID$forName, 'https://gutsman.de/newId', $TSFoster$elm_uuid$UUID$urlNamespace));
 var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$hidden = $rundis$elm_bootstrap$Bootstrap$Modal$Hide;
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Hidden = {$: 'Hidden'};
@@ -6056,15 +7046,6 @@ var $author$project$Main$routeParser = $elm$url$Url$Parser$oneOf(
 			$author$project$Main$Modules,
 			$elm$url$Url$Parser$s('modules'))
 		]));
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Main$decode = function (url) {
 	return A2(
 		$elm$url$Url$Parser$parse,
@@ -6110,6 +7091,7 @@ var $author$project$Main$init = F3(
 						dice: $author$project$DiceModel$empty,
 						dieFaces: _List_fromArray(
 							[20, 20, 20]),
+						id: $author$project$Main$debugUuid,
 						name: '1.Test'
 					}
 					]),
@@ -6117,9 +7099,7 @@ var $author$project$Main$init = F3(
 				multiDice: $author$project$DiceModel$withName('Roll multiple dice'),
 				navKey: key,
 				navState: navState,
-				newDiceSet: _List_fromArray(
-					[4, 4, 6]),
-				newDiceSetName: '',
+				newMixedSet: $author$project$MixedCard$firstEmptyCard,
 				page: $author$project$Main$Home,
 				singleDie: $author$project$DiceModel$withName('Roll single die')
 			});
@@ -6250,11 +7230,6 @@ var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 	return {$: 'Delta', a: a};
 };
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $elm$browser$Browser$AnimationManager$subMap = F2(
 	function (func, sub) {
 		if (sub.$ === 'Time') {
@@ -6764,13 +7739,23 @@ var $author$project$Main$NewMultiDiceResult = function (a) {
 var $author$project$Main$NewSingleDieResult = function (a) {
 	return {$: 'NewSingleDieResult', a: a};
 };
-var $author$project$Main$addMixedSet = F3(
-	function (name, dieFaces, model) {
-		var set = {dice: $author$project$DiceModel$empty, dieFaces: dieFaces, name: name};
+var $author$project$Main$ResetNewMixedSet = function (a) {
+	return {$: 'ResetNewMixedSet', a: a};
+};
+var $author$project$MixedCard$addDie = F2(
+	function (face, card) {
+		return _Utils_update(
+			card,
+			{
+				dieFaces: A2($elm$core$List$cons, face, card.dieFaces)
+			});
+	});
+var $author$project$Main$addMixedSet = F2(
+	function (card, model) {
 		return _Utils_update(
 			model,
 			{
-				mixedDice: A2($elm$core$List$cons, set, model.mixedDice)
+				mixedDice: A2($elm$core$List$cons, card, model.mixedDice)
 			});
 	});
 var $elm$core$Basics$ge = _Utils_ge;
@@ -6938,24 +7923,6 @@ var $author$project$DiceModel$clearHistory = function (model) {
 		model,
 		{rolls: _List_Nil});
 };
-var $author$project$Main$clearNewMixedSet = function (model) {
-	return function (m) {
-		return _Utils_update(
-			m,
-			{newDiceSetName: ''});
-	}(
-		_Utils_update(
-			model,
-			{newDiceSet: _List_Nil}));
-};
-var $author$project$Main$clearNewSet = function (model) {
-	var updatedName = _Utils_update(
-		model,
-		{newDiceSetName: ''});
-	return _Utils_update(
-		updatedName,
-		{newDiceSet: _List_Nil});
-};
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -6963,7 +7930,6 @@ var $elm$random$Random$Seed = F2(
 	function (a, b) {
 		return {$: 'Seed', a: a, b: b};
 	});
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $elm$random$Random$next = function (_v0) {
 	var state0 = _v0.a;
 	var incr = _v0.b;
@@ -7059,12 +8025,99 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$random$Random$map4 = F5(
+	function (func, _v0, _v1, _v2, _v3) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		var genD = _v3.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v4 = genA(seed0);
+				var a = _v4.a;
+				var seed1 = _v4.b;
+				var _v5 = genB(seed1);
+				var b = _v5.a;
+				var seed2 = _v5.b;
+				var _v6 = genC(seed2);
+				var c = _v6.a;
+				var seed3 = _v6.b;
+				var _v7 = genD(seed3);
+				var d = _v7.a;
+				var seed4 = _v7.b;
+				return _Utils_Tuple2(
+					A4(func, a, b, c, d),
+					seed4);
+			});
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$maxInt = 2147483647;
+var $elm$random$Random$minInt = -2147483648;
+var $TSFoster$elm_uuid$UUID$randomU32 = A2(
+	$elm$random$Random$map,
+	$TSFoster$elm_uuid$UUID$forceUnsigned,
+	A2($elm$random$Random$int, $elm$random$Random$minInt, $elm$random$Random$maxInt));
+var $TSFoster$elm_uuid$UUID$generator = A2(
+	$elm$random$Random$map,
+	A2(
+		$elm$core$Basics$composeR,
+		$TSFoster$elm_uuid$UUID$toVersion(4),
+		$TSFoster$elm_uuid$UUID$toVariant1),
+	A5($elm$random$Random$map4, $TSFoster$elm_uuid$UUID$UUID, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32));
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
 	} else {
 		return false;
 	}
+};
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$MixedCard$isComplete = function (card) {
+	return !($elm$core$List$isEmpty(card.dieFaces) || $elm$core$String$isEmpty(card.name));
 };
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$random$Random$listHelp = F4(
@@ -7116,48 +8169,6 @@ var $elm$random$Random$constant = function (value) {
 			return _Utils_Tuple2(value, seed);
 		});
 };
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Bitwise$xor = _Bitwise_xor;
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
 var $author$project$Roll$singleRandomGenerator = function (faceCount) {
 	return A2($elm$random$Random$int, 1, faceCount);
 };
@@ -7212,6 +8223,14 @@ var $author$project$List$Extra$removeIndex = F2(
 		return $elm$core$List$reverse(
 			A3(run, _List_Nil, 0, list));
 	});
+var $author$project$MixedCard$removeDie = F2(
+	function (index, card) {
+		return _Utils_update(
+			card,
+			{
+				dieFaces: A2($author$project$List$Extra$removeIndex, index, card.dieFaces)
+			});
+	});
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
 		return _Utils_update(
@@ -7226,6 +8245,12 @@ var $author$project$DiceModel$setHistorySize = F2(
 				maxHistory: newSize,
 				rolls: A2($author$project$List$Extra$limit, newSize + 1, model.rolls)
 			});
+	});
+var $author$project$MixedCard$setName = F2(
+	function (name, card) {
+		return _Utils_update(
+			card,
+			{name: name});
 	});
 var $rundis$elm_bootstrap$Bootstrap$Modal$Show = {$: 'Show'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$shown = $rundis$elm_bootstrap$Bootstrap$Modal$Show;
@@ -7446,22 +8471,35 @@ var $author$project$Main$update = F2(
 			case 'SetMixedDiceExplode':
 				var _new = msg.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'ResetNewMixedSet':
+				var id = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							newMixedSet: $author$project$MixedCard$empty(id)
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'ClearNewSet':
 				return _Utils_Tuple2(
-					$author$project$Main$clearNewSet(model),
+					_Utils_update(
+						model,
+						{
+							newMixedSet: $author$project$MixedCard$empty(model.newMixedSet.id)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'AddNewSet':
+				var isIncomplete = A3($elm$core$Basics$composeL, $elm$core$Basics$not, $author$project$MixedCard$isComplete, model.newMixedSet);
 				return _Utils_Tuple2(
-					($elm$core$List$isEmpty(model.newDiceSet) || $elm$core$String$isEmpty(model.newDiceSetName)) ? model : $author$project$Main$clearNewMixedSet(
-						A3($author$project$Main$addMixedSet, model.newDiceSetName, model.newDiceSet, model)),
-					$elm$core$Platform$Cmd$none);
+					isIncomplete ? model : A2($author$project$Main$addMixedSet, model.newMixedSet, model),
+					isIncomplete ? $elm$core$Platform$Cmd$none : A2($elm$random$Random$generate, $author$project$Main$ResetNewMixedSet, $TSFoster$elm_uuid$UUID$generator));
 			case 'AddNewDieToSet':
 				var d = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							newDiceSet: A2($elm$core$List$cons, d, model.newDiceSet)
+							newMixedSet: A2($author$project$MixedCard$addDie, d, model.newMixedSet)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'RemoveDieFromNewSet':
@@ -7470,7 +8508,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							newDiceSet: A2($author$project$List$Extra$removeIndex, index, model.newDiceSet)
+							newMixedSet: A2($author$project$MixedCard$removeDie, index, model.newMixedSet)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -7478,7 +8516,9 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{newDiceSetName: name}),
+						{
+							newMixedSet: A2($author$project$MixedCard$setName, name, model.newMixedSet)
+						}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -8119,7 +9159,7 @@ var $author$project$Main$newDiceSetList = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
-		A2($elm$core$List$indexedMap, dieButton, model.newDiceSet));
+		A2($elm$core$List$indexedMap, dieButton, model.newMixedSet.dieFaces));
 };
 var $rundis$elm_bootstrap$Bootstrap$Form$Input$OnInput = function (a) {
 	return {$: 'OnInput', a: a};
@@ -8570,7 +9610,7 @@ var $author$project$Main$createMixedSetCard = function (model) {
 											[
 												$rundis$elm_bootstrap$Bootstrap$Form$Input$id('dice-set-name'),
 												$rundis$elm_bootstrap$Bootstrap$Form$Input$onInput($author$project$Main$NewDieSetNameChanged),
-												$rundis$elm_bootstrap$Bootstrap$Form$Input$value(model.newDiceSetName),
+												$rundis$elm_bootstrap$Bootstrap$Form$Input$value(model.newMixedSet.name),
 												$rundis$elm_bootstrap$Bootstrap$Form$Input$attrs(
 												_List_fromArray(
 													[
@@ -8705,12 +9745,121 @@ var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
+var $author$project$Main$RollMixedDice = function (a) {
+	return {$: 'RollMixedDice', a: a};
+};
 var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $elm$html$Html$small = _VirtualDom_node('small');
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)),
+			string);
+	});
+var $elm$core$String$fromList = _String_fromList;
+var $TSFoster$elm_uuid$UUID$toHex = F2(
+	function (acc, _int) {
+		toHex:
+		while (true) {
+			if (!_int) {
+				return $elm$core$String$fromList(acc);
+			} else {
+				var _char = function () {
+					var _v0 = 15 & _int;
+					switch (_v0) {
+						case 0:
+							return _Utils_chr('0');
+						case 1:
+							return _Utils_chr('1');
+						case 2:
+							return _Utils_chr('2');
+						case 3:
+							return _Utils_chr('3');
+						case 4:
+							return _Utils_chr('4');
+						case 5:
+							return _Utils_chr('5');
+						case 6:
+							return _Utils_chr('6');
+						case 7:
+							return _Utils_chr('7');
+						case 8:
+							return _Utils_chr('8');
+						case 9:
+							return _Utils_chr('9');
+						case 10:
+							return _Utils_chr('a');
+						case 11:
+							return _Utils_chr('b');
+						case 12:
+							return _Utils_chr('c');
+						case 13:
+							return _Utils_chr('d');
+						case 14:
+							return _Utils_chr('e');
+						default:
+							return _Utils_chr('f');
+					}
+				}();
+				var $temp$acc = A2($elm$core$List$cons, _char, acc),
+					$temp$int = _int >>> 4;
+				acc = $temp$acc;
+				_int = $temp$int;
+				continue toHex;
+			}
+		}
+	});
+var $TSFoster$elm_uuid$UUID$toString = function (_v0) {
+	var a = _v0.a;
+	var b = _v0.b;
+	var c = _v0.c;
+	var d = _v0.d;
+	return A3(
+		$elm$core$String$padLeft,
+		8,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, a)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, b >>> 16)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & b)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, c >>> 16)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & c)) + A3(
+		$elm$core$String$padLeft,
+		8,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, d))))))))));
+};
 var $author$project$Main$mixedSetCard = function (card) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$view(
 		A3(
@@ -8728,20 +9877,48 @@ var $author$project$Main$mixedSetCard = function (card) {
 					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
 					A2(
 						$elm$html$Html$div,
-						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text(
+								$elm$html$Html$Attributes$class('d-flex justify-content-between align-items-center')
+							]),
+						_List_fromArray(
+							[
 								A2(
-									$elm$core$String$join,
-									', ',
-									A2(
-										$elm$core$List$map,
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
 										A2(
-											$elm$core$Basics$composeR,
-											$elm$core$String$fromInt,
-											$elm$core$Basics$append('d')),
-										card.dieFaces)))
+											$elm$core$String$join,
+											', ',
+											A2(
+												$elm$core$List$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$String$fromInt,
+													$elm$core$Basics$append('d')),
+												card.dieFaces)))
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Button$button,
+										_List_fromArray(
+											[
+												$rundis$elm_bootstrap$Bootstrap$Button$primary,
+												$rundis$elm_bootstrap$Bootstrap$Button$small,
+												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+												$author$project$Main$RollMixedDice(card.dieFaces))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Roll')
+											]))
+									]))
 							]))),
 					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
 					A2($elm$html$Html$hr, _List_Nil, _List_Nil)),
@@ -8763,7 +9940,7 @@ var $author$project$Main$mixedSetCard = function (card) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('d-flex flex-row-reverse')
+								$elm$html$Html$Attributes$class('d-flex justify-content-center')
 							]),
 						_List_fromArray(
 							[
@@ -8773,7 +9950,17 @@ var $author$project$Main$mixedSetCard = function (card) {
 									[
 										$elm$html$Html$Attributes$class('')
 									]),
-								_List_Nil)
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$small,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												$TSFoster$elm_uuid$UUID$toString(card.id))
+											]))
+									]))
 							]))
 					]),
 				A3(
@@ -9645,7 +10832,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off = {$: 'Off'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$defaultOptions = {attributes: _List_Nil, custom: false, disabled: false, id: $elm$core$Maybe$Nothing, inline: false, onChecked: $elm$core$Maybe$Nothing, state: $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off, validation: $elm$core$Maybe$Nothing};
 var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
 var $elm$html$Html$label = _VirtualDom_node('label');
-var $elm$core$Basics$not = _Basics_not;
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$html$Html$Events$targetChecked = A2(
 	$elm$json$Json$Decode$at,
@@ -9806,7 +10992,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$onCheck = function (toMsg) {
 	return $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$OnChecked(toMsg);
 };
-var $elm$html$Html$small = _VirtualDom_node('small');
 var $author$project$Main$explodeCheckbox = F3(
 	function (id, val, cmd) {
 		return A2(
