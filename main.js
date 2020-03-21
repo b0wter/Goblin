@@ -7923,6 +7923,17 @@ var $author$project$DiceModel$clearHistory = function (model) {
 		model,
 		{rolls: _List_Nil});
 };
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -8188,6 +8199,7 @@ var $author$project$Main$multiDiceGenerator = F3(
 			diceCount,
 			A3($author$project$Main$singleDieGenerator, explode, faceCount, 0));
 	});
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $author$project$List$Extra$removeIndex = F2(
 	function (i, list) {
@@ -8471,6 +8483,20 @@ var $author$project$Main$update = F2(
 			case 'SetMixedDiceExplode':
 				var _new = msg.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'DeleteMixedSetCard':
+				var id = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							mixedDice: A2(
+								$elm$core$List$filter,
+								function (x) {
+									return !_Utils_eq(x.id, id);
+								},
+								model.mixedDice)
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'ResetNewMixedSet':
 				var id = msg.a;
 				return _Utils_Tuple2(
@@ -8597,17 +8623,6 @@ var $rundis$elm_bootstrap$Bootstrap$Internal$Button$applyModifier = F2(
 						attributes: _Utils_ap(options.attributes, attrs)
 					});
 		}
-	});
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
 	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
@@ -9745,6 +9760,9 @@ var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
+var $author$project$Main$DeleteMixedSetCard = function (a) {
+	return {$: 'DeleteMixedSetCard', a: a};
+};
 var $author$project$Main$RollMixedDice = function (a) {
 	return {$: 'RollMixedDice', a: a};
 };
@@ -9968,7 +9986,40 @@ var $author$project$Main$mixedSetCard = function (card) {
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text(card.name)
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('d-flex justify-content-between')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(card.name)
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$small,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('cursor-pointer'),
+													$elm$html$Html$Events$onClick(
+													$author$project$Main$DeleteMixedSetCard(card.id))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('❌')
+												]))
+										]))
+								]))
 						]),
 					$rundis$elm_bootstrap$Bootstrap$Card$config(
 						_List_fromArray(
@@ -11153,7 +11204,6 @@ var $author$project$Main$diceResultList = F2(
 			_List_Nil,
 			A2($elm$core$List$indexedMap, elementRenderer, rolls));
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Main$dieResult = F4(
 	function (asDie, asRolls, i, result) {
 		return A2(

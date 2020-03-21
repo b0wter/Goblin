@@ -112,6 +112,7 @@ type Msg
     | ClearMixedDiceResults
     | SetMixedDiceExplode Bool
     | ResetNewMixedSet UUID
+    | DeleteMixedSetCard UUID
     --
     | ClearNewSet
     | AddNewSet
@@ -186,7 +187,7 @@ update msg model =
 
         RollMultiDice faceCount diceCount ->
             ( model
-            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiDiceGenerator model.multiDice.explodes faceCount diceCount)) --Roll.multiRandomGenerator faceCount diceCount)) 
+            , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiDiceGenerator model.multiDice.explodes faceCount diceCount)) 
             )
 
         SingleRollDropStateChange new ->
@@ -219,6 +220,10 @@ update msg model =
         MixedRollNewValue new  -> (model, Cmd.none)
         ClearMixedDiceResults -> (model, Cmd.none)
         SetMixedDiceExplode new -> (model, Cmd.none)
+
+        DeleteMixedSetCard id ->
+            ( { model | mixedDice = model.mixedDice |> List.filter (\x -> x.id /= id) }
+            , Cmd.none)
 
         ResetNewMixedSet id ->
             ( { model | newMixedSet = MixedCard.empty id }
@@ -504,7 +509,7 @@ mixedSetCards model =
 mixedSetCard : MixedCard.MixedCard -> Html Msg
 mixedSetCard card =
     Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
-        |> Card.headerH4 [] [ text card.name ]
+        |> Card.headerH4 [] [ div [ class "d-flex justify-content-between"] [ div [] [ text card.name ], div [] [ small [ class "cursor-pointer", onClick (DeleteMixedSetCard card.id) ] [ text "❌" ] ] ] ]
         |> Card.footer []
             [ div [class "d-flex justify-content-center"]
                 [ div [ class "" ]

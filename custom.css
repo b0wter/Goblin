@@ -1,3 +1,11 @@
 .disable-dbl-tap-zoom {
     touch-action: manipulation;
 }
+
+.cursor-default {
+    cursor: default;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
