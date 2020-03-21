@@ -8467,7 +8467,9 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'NewMixedDiceResult':
-				var _new = msg.a;
+				var _v2 = msg.a;
+				var id = _v2.a;
+				var result = _v2.b;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'RollMixedDice':
 				var result = msg.a;
@@ -9930,7 +9932,8 @@ var $author$project$Main$mixedSetCard = function (card) {
 												$rundis$elm_bootstrap$Bootstrap$Button$primary,
 												$rundis$elm_bootstrap$Bootstrap$Button$small,
 												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-												$author$project$Main$RollMixedDice(card.dieFaces))
+												$author$project$Main$RollMixedDice(
+													_Utils_Tuple2(card.id, card.dieFaces)))
 											]),
 										_List_fromArray(
 											[

@@ -105,8 +105,8 @@ type Msg
     | ClearMultiDiceResults
     | SetMultiDiceExplode Bool
     --
-    | NewMixedDiceResult Roll.Mixed
-    | RollMixedDice (List Int)
+    | NewMixedDiceResult (UUID, Roll.Mixed)
+    | RollMixedDice (UUID, List Int)
     | MixedRollDropStateChange Dropdown.State
     | MixedRollNewValue Int
     | ClearMixedDiceResults
@@ -214,8 +214,12 @@ update msg model =
             ( { model | multiDice = new |> DiceModel.asExplode model.multiDice }
             , Cmd.none )
 
-        NewMixedDiceResult new -> (model, Cmd.none)
-        RollMixedDice result -> (model, Cmd.none)
+        NewMixedDiceResult (id, result) -> (model, Cmd.none)
+        
+        RollMixedDice result -> 
+            ( model
+            , Cmd.none)
+
         MixedRollDropStateChange state -> (model, Cmd.none)
         MixedRollNewValue new  -> (model, Cmd.none)
         ClearMixedDiceResults -> (model, Cmd.none)
@@ -421,10 +425,25 @@ The boolean argument tells the generator to roll an additional time if the max v
         multiDiceGenerator False 6 2
 
 The examples returns a generator that returns the sum of two dice with six faces.
+
+(This is merely a convenience method.)
 -}
 multiDiceGenerator : Bool -> Int -> Int -> Random.Generator (List Int)
 multiDiceGenerator explode faceCount diceCount =
     Random.list diceCount (singleDieGenerator explode faceCount 0)
+
+{-| Transforms a list of generators into a single generator that produces a list. 
+This is limited to generators that produce the same type.
+-}
+mixedDiceGenerator : List (Random.Generator a) -> Random.Generator (List a)
+mixedDiceGenerator generators =
+    let 
+        step remaining accumulator = 
+            case remaining of
+                [] -> Random.constant accumulator
+                head :: tail -> Random.andThen (\n -> step tail (n :: accumulator)) head 
+    in
+        step generators []
 
 {- Creates cards for single and multi-dice rolls.
 -}
@@ -519,7 +538,7 @@ mixedSetCard card =
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| div [class "d-flex justify-content-between align-items-center"] 
                 [ div [] [ text (card.dieFaces |> List.map (String.fromInt >> (++) "d") |> String.join ", ") ]
-                , div [] [ Button.button [ Button.primary, Button.small, Button.onClick (RollMixedDice card.dieFaces) ] [ text "Roll" ] ] 
+                , div [] [ Button.button [ Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces)) ] [ text "Roll" ] ] 
                 ]
             , Block.custom <| hr  [] []
             , Block.custom <| div [] [ text "result" ]
