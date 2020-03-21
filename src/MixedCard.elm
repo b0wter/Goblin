@@ -6,6 +6,7 @@ module MixedCard exposing ( MixedCard
                           , setId, asId
                           , isComplete
                           , empty
+                          , addRoll
                           )
 
 import DiceModel
@@ -50,3 +51,6 @@ isComplete card = not <| (card.dieFaces |> List.isEmpty) || (card.name |> String
 
 empty : UUID -> MixedCard
 empty id = { dice = DiceModel.empty, name = "", dieFaces = [], id = id }
+
+addRoll : Roll.Mixed -> MixedCard -> MixedCard
+addRoll roll card = { card | dice = card.dice |> DiceModel.addRoll roll }

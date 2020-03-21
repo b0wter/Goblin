@@ -106,7 +106,7 @@ type Msg
     | SetMultiDiceExplode Bool
     --
     | NewMixedDiceResult (UUID, Roll.Mixed)
-    | RollMixedDice (UUID, List Int)
+    | RollMixedDice (UUID, List Int, Bool)
     | MixedRollDropStateChange Dropdown.State
     | MixedRollNewValue Int
     | ClearMixedDiceResults
@@ -182,12 +182,17 @@ update msg model =
 
         RollSingleDie faceCount ->
             ( model
-            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (singleDieGenerator model.singleDie.explodes faceCount 0))
+            , Random.generate NewSingleDieResult (Random.map (\n -> { die = faceCount, result = n}) (singleDieGenerator model.singleDie.explodes 0 faceCount))
             )
 
         RollMultiDice faceCount diceCount ->
             ( model
             , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiDiceGenerator model.multiDice.explodes faceCount diceCount)) 
+            )
+
+        RollMixedDice (id, dice, explode) -> 
+            ( model
+            , Random.generate NewMixedDiceResult (rollMixedSet id explode dice) 
             )
 
         SingleRollDropStateChange new ->
@@ -214,11 +219,23 @@ update msg model =
             ( { model | multiDice = new |> DiceModel.asExplode model.multiDice }
             , Cmd.none )
 
-        NewMixedDiceResult (id, result) -> (model, Cmd.none)
-        
-        RollMixedDice result -> 
-            ( model
-            , Cmd.none)
+        NewMixedDiceResult (id, result) -> 
+            ( let
+                card = model.mixedDice |> List.find (\x -> x.id == id)
+              in
+                case card of
+                    Just c ->
+                        let
+                            updatedCard =
+                                c |> MixedCard.addRoll result  
+                        in
+                            { model | mixedDice = model.mixedDice |> List.replaceBy (\x -> x.id == id) updatedCard } --updatedCard :: model.mixedDice }
+                        
+                        --c.dice |> DiceModel.addRoll result
+                    Nothing ->
+                        model
+            , Cmd.none
+            )
 
         MixedRollDropStateChange state -> (model, Cmd.none)
         MixedRollNewValue new  -> (model, Cmd.none)
@@ -414,7 +431,7 @@ The last argument is an aggregator for _exploding_ results. Set this to zero.
         singleDieGenerator False 6 0
 -}
 singleDieGenerator : Bool -> Int -> Int -> Random.Generator Int
-singleDieGenerator explode faceCount previous =
+singleDieGenerator explode previous faceCount =
     Random.andThen (\n -> if (n == faceCount) && explode then singleDieGenerator explode faceCount (previous + n) else Random.constant (previous + n)) (Roll.singleRandomGenerator faceCount)
 
 {-| Creates the generator necessary to create a new list of random dice throws.
@@ -430,13 +447,13 @@ The examples returns a generator that returns the sum of two dice with six faces
 -}
 multiDiceGenerator : Bool -> Int -> Int -> Random.Generator (List Int)
 multiDiceGenerator explode faceCount diceCount =
-    Random.list diceCount (singleDieGenerator explode faceCount 0)
+    Random.list diceCount (singleDieGenerator explode 0 faceCount)
 
 {-| Transforms a list of generators into a single generator that produces a list. 
 This is limited to generators that produce the same type.
 -}
-mixedDiceGenerator : List (Random.Generator a) -> Random.Generator (List a)
-mixedDiceGenerator generators =
+mixedRandomGenerator : List (Random.Generator a) -> Random.Generator (List a)
+mixedRandomGenerator generators =
     let 
         step remaining accumulator = 
             case remaining of
@@ -444,6 +461,17 @@ mixedDiceGenerator generators =
                 head :: tail -> Random.andThen (\n -> step tail (n :: accumulator)) head 
     in
         step generators []
+
+mixedDiceGenerator : Bool -> List Int -> Random.Generator (List Int)
+mixedDiceGenerator explode dice =
+    dice |> List.map (singleDieGenerator explode 0) |> mixedRandomGenerator
+
+rollMixedSet : UUID -> Bool -> List Int -> Random.Generator (UUID, Roll.Mixed)
+rollMixedSet id explode dice =
+    let 
+        generator = mixedDiceGenerator explode dice -- Random.Generator #List Int#
+    in
+        Random.map (\results -> (id, results |> List.map2 (\x y -> { die = x, result = y }) dice)) generator
 
 {- Creates cards for single and multi-dice rolls.
 -}
@@ -538,12 +566,17 @@ mixedSetCard card =
         |> Card.block [ Block.attrs [ class "text-center"] ]
             [ Block.custom <| div [class "d-flex justify-content-between align-items-center"] 
                 [ div [] [ text (card.dieFaces |> List.map (String.fromInt >> (++) "d") |> String.join ", ") ]
-                , div [] [ Button.button [ Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces)) ] [ text "Roll" ] ] 
+                , div [] [ Button.button [ Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, False)) ] [ text "Roll" ] ] 
                 ]
             , Block.custom <| hr  [] []
-            , Block.custom <| div [] [ text "result" ]
+            , Block.custom <| div [] [ card.dice |> formatMixedDiceResult ]
             ]
         |> Card.view  
+
+formatMixedDiceResult : DiceModel.DiceModel Roll.Mixed -> Html Msg
+formatMixedDiceResult dice =
+    div [] [ text (dice.lastRoll |> Maybe.map (\roll -> roll |> List.map (\x -> x.result |> String.fromInt) |> String.join ", ") |> Maybe.withDefault "") ]
+
 
 newDiceSetList: Model -> Html Msg
 newDiceSetList model =

@@ -7733,6 +7733,9 @@ var $author$project$Main$subscriptions = function (model) {
 				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.multiDice.historyDropState, $author$project$Main$MultiRollDropStateChange)
 			]));
 };
+var $author$project$Main$NewMixedDiceResult = function (a) {
+	return {$: 'NewMixedDiceResult', a: a};
+};
 var $author$project$Main$NewMultiDiceResult = function (a) {
 	return {$: 'NewMultiDiceResult', a: a};
 };
@@ -7907,6 +7910,14 @@ var $author$project$DiceModel$addRoll = F2(
 				rolls: A3($author$project$List$Extra$addAndDrop, model.maxHistory, roll, model.rolls)
 			});
 	});
+var $author$project$MixedCard$addRoll = F2(
+	function (roll, card) {
+		return _Utils_update(
+			card,
+			{
+				dice: A2($author$project$DiceModel$addRoll, roll, card.dice)
+			});
+	});
 var $pilatch$flip$Flip$flip = F3(
 	function (_function, argB, argA) {
 		return A2(_function, argA, argB);
@@ -7933,6 +7944,27 @@ var $elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
+	});
+var $author$project$List$Extra$find = F2(
+	function (predicate, items) {
+		find:
+		while (true) {
+			if (!items.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var head = items.a;
+				var tail = items.b;
+				if (predicate(head)) {
+					return $elm$core$Maybe$Just(head);
+				} else {
+					var $temp$predicate = predicate,
+						$temp$items = tail;
+					predicate = $temp$predicate;
+					items = $temp$items;
+					continue find;
+				}
+			}
+		}
 	});
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
@@ -8184,7 +8216,7 @@ var $author$project$Roll$singleRandomGenerator = function (faceCount) {
 	return A2($elm$random$Random$int, 1, faceCount);
 };
 var $author$project$Main$singleDieGenerator = F3(
-	function (explode, faceCount, previous) {
+	function (explode, previous, faceCount) {
 		return A2(
 			$elm$random$Random$andThen,
 			function (n) {
@@ -8197,7 +8229,7 @@ var $author$project$Main$multiDiceGenerator = F3(
 		return A2(
 			$elm$random$Random$list,
 			diceCount,
-			A3($author$project$Main$singleDieGenerator, explode, faceCount, 0));
+			A3($author$project$Main$singleDieGenerator, explode, 0, faceCount));
 	});
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
@@ -8242,6 +8274,69 @@ var $author$project$MixedCard$removeDie = F2(
 			{
 				dieFaces: A2($author$project$List$Extra$removeIndex, index, card.dieFaces)
 			});
+	});
+var $author$project$List$Extra$replaceBy = F3(
+	function (predicate, _new, items) {
+		return $elm$core$List$reverse(
+			A3(
+				$elm$core$List$foldl,
+				F2(
+					function (current, acc) {
+						return A2(
+							$elm$core$List$cons,
+							predicate(current) ? _new : current,
+							acc);
+					}),
+				_List_Nil,
+				items));
+	});
+var $author$project$Main$mixedRandomGenerator = function (generators) {
+	var step = F2(
+		function (remaining, accumulator) {
+			if (!remaining.b) {
+				return $elm$random$Random$constant(accumulator);
+			} else {
+				var head = remaining.a;
+				var tail = remaining.b;
+				return A2(
+					$elm$random$Random$andThen,
+					function (n) {
+						return A2(
+							step,
+							tail,
+							A2($elm$core$List$cons, n, accumulator));
+					},
+					head);
+			}
+		});
+	return A2(step, generators, _List_Nil);
+};
+var $author$project$Main$mixedDiceGenerator = F2(
+	function (explode, dice) {
+		return $author$project$Main$mixedRandomGenerator(
+			A2(
+				$elm$core$List$map,
+				A2($author$project$Main$singleDieGenerator, explode, 0),
+				dice));
+	});
+var $author$project$Main$rollMixedSet = F3(
+	function (id, explode, dice) {
+		var generator = A2($author$project$Main$mixedDiceGenerator, explode, dice);
+		return A2(
+			$elm$random$Random$map,
+			function (results) {
+				return _Utils_Tuple2(
+					id,
+					A3(
+						$elm$core$List$map2,
+						F2(
+							function (x, y) {
+								return {die: x, result: y};
+							}),
+						dice,
+						results));
+			},
+			generator);
 	});
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
@@ -8397,7 +8492,7 @@ var $author$project$Main$update = F2(
 							function (n) {
 								return {die: faceCount, result: n};
 							},
-							A3($author$project$Main$singleDieGenerator, model.singleDie.explodes, faceCount, 0))));
+							A3($author$project$Main$singleDieGenerator, model.singleDie.explodes, 0, faceCount))));
 			case 'RollMultiDice':
 				var faceCount = msg.a;
 				var diceCount = msg.b;
@@ -8412,6 +8507,17 @@ var $author$project$Main$update = F2(
 								return {die: faceCount, result: n};
 							},
 							A3($author$project$Main$multiDiceGenerator, model.multiDice.explodes, faceCount, diceCount))));
+			case 'RollMixedDice':
+				var _v2 = msg.a;
+				var id = _v2.a;
+				var dice = _v2.b;
+				var explode = _v2.c;
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$random$Random$generate,
+						$author$project$Main$NewMixedDiceResult,
+						A3($author$project$Main$rollMixedSet, id, explode, dice)));
 			case 'SingleRollDropStateChange':
 				var _new = msg.a;
 				return _Utils_Tuple2(
@@ -8467,13 +8573,36 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'NewMixedDiceResult':
-				var _v2 = msg.a;
-				var id = _v2.a;
-				var result = _v2.b;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'RollMixedDice':
-				var result = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				var _v3 = msg.a;
+				var id = _v3.a;
+				var result = _v3.b;
+				return _Utils_Tuple2(
+					function () {
+						var card = A2(
+							$author$project$List$Extra$find,
+							function (x) {
+								return _Utils_eq(x.id, id);
+							},
+							model.mixedDice);
+						if (card.$ === 'Just') {
+							var c = card.a;
+							var updatedCard = A2($author$project$MixedCard$addRoll, result, c);
+							return _Utils_update(
+								model,
+								{
+									mixedDice: A3(
+										$author$project$List$Extra$replaceBy,
+										function (x) {
+											return _Utils_eq(x.id, id);
+										},
+										updatedCard,
+										model.mixedDice)
+								});
+						} else {
+							return model;
+						}
+					}(),
+					$elm$core$Platform$Cmd$none);
 			case 'MixedRollDropStateChange':
 				var state = msg.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -9768,6 +9897,32 @@ var $author$project$Main$DeleteMixedSetCard = function (a) {
 var $author$project$Main$RollMixedDice = function (a) {
 	return {$: 'RollMixedDice', a: a};
 };
+var $author$project$Main$formatMixedDiceResult = function (dice) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2(
+					$elm$core$Maybe$withDefault,
+					'',
+					A2(
+						$elm$core$Maybe$map,
+						function (roll) {
+							return A2(
+								$elm$core$String$join,
+								', ',
+								A2(
+									$elm$core$List$map,
+									function (x) {
+										return $elm$core$String$fromInt(x.result);
+									},
+									roll));
+						},
+						dice.lastRoll)))
+			]));
+};
 var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$small = _VirtualDom_node('small');
 var $elm$core$String$cons = _String_cons;
@@ -9933,7 +10088,7 @@ var $author$project$Main$mixedSetCard = function (card) {
 												$rundis$elm_bootstrap$Bootstrap$Button$small,
 												$rundis$elm_bootstrap$Bootstrap$Button$onClick(
 												$author$project$Main$RollMixedDice(
-													_Utils_Tuple2(card.id, card.dieFaces)))
+													_Utils_Tuple3(card.id, card.dieFaces, false)))
 											]),
 										_List_fromArray(
 											[
@@ -9949,7 +10104,7 @@ var $author$project$Main$mixedSetCard = function (card) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('result')
+								$author$project$Main$formatMixedDiceResult(card.dice)
 							])))
 				]),
 			A3(
