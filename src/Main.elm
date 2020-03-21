@@ -229,9 +229,7 @@ update msg model =
                             updatedCard =
                                 c |> MixedCard.addRoll result  
                         in
-                            { model | mixedDice = model.mixedDice |> List.replaceBy (\x -> x.id == id) updatedCard } --updatedCard :: model.mixedDice }
-                        
-                        --c.dice |> DiceModel.addRoll result
+                            { model | mixedDice = model.mixedDice |> List.replaceBy (\x -> x.id == id) updatedCard }
                     Nothing ->
                         model
             , Cmd.none
