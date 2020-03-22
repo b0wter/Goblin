@@ -567,14 +567,9 @@ mixedSetCard card =
                 , div [] [ Button.button [ Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, False)) ] [ text "Roll" ] ] 
                 ]
             , Block.custom <| hr  [] []
-            , Block.custom <| div [] [ card.dice |> formatMixedDiceResult ]
+            , Block.custom <| div [] [ card |> mixedDieResultList ]--card.dice |> formatMixedDiceResult ]
             ]
         |> Card.view  
-
-formatMixedDiceResult : DiceModel.DiceModel Roll.Mixed -> Html Msg
-formatMixedDiceResult dice =
-    div [] [ text (dice.lastRoll |> Maybe.map (\roll -> roll |> List.map (\x -> x.result |> String.fromInt) |> String.join ", ") |> Maybe.withDefault "") ]
-
 
 newDiceSetList: Model -> Html Msg
 newDiceSetList model =
@@ -604,6 +599,10 @@ multiDiceResultList model =
 singleDieResultList: Model -> Html Msg
 singleDieResultList model =
     diceResultList model.singleDie.rolls singleDieResult
+
+mixedDieResultList: MixedCard.MixedCard -> Html Msg
+mixedDieResultList card =
+    diceResultList card.dice.rolls mixedDieResult
 {- ----------------------------------------------------------------- -}
 
 {- Renders the results of single and multi dice rolls. -}
@@ -623,6 +622,25 @@ singleDieResult i roll =
 multiDieResult: Int -> Roll.Multi -> Html Msg
 multiDieResult i roll =
     dieResult (\r -> r.die) (\r -> r.result |> List.map String.fromInt |> String.join ", ") i roll
+
+mixedDieResult: Int -> Roll.Mixed -> Html Msg
+mixedDieResult i roll =
+    dieResult (\r -> r |> List.head |> Maybe.map (\x -> x.die) |> Maybe.withDefault 0) (\r -> r |> List.map (\x -> x.result |> String.fromInt) |> String.join "| ") i roll
+    -- |> String.fromInt) |> Maybe.withDefault "X")
+    
+    {-
+    let
+        singleElement element =
+            div [] [ text ("d" ++ (element.die |> String.))]
+    in
+    
+    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
+    [ Html.span [] [ text "｢" ]
+    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (result |> asDie |> String.fromInt) ++ ": ") ] 
+    , Html.span [ class "font-weight-bold"] [ text (result |> asRolls) ]
+    , Html.span [] [ text "」"]
+    ]
+    -}
 {- ----------------------------------------------------------------- -}
 
 {- Required helpers to render the table for all multi-dice buttons. -}

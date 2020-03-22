@@ -9897,33 +9897,113 @@ var $author$project$Main$DeleteMixedSetCard = function (a) {
 var $author$project$Main$RollMixedDice = function (a) {
 	return {$: 'RollMixedDice', a: a};
 };
-var $author$project$Main$formatMixedDiceResult = function (dice) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				A2(
+var $elm$html$Html$hr = _VirtualDom_node('hr');
+var $author$project$Main$diceResultList = F2(
+	function (rolls, elementRenderer) {
+		return $elm$core$List$isEmpty(rolls) ? A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('No dice rolled.')
+				])) : A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			A2($elm$core$List$indexedMap, elementRenderer, rolls));
+	});
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$Main$dieResult = F4(
+	function (asDie, asRolls, i, result) {
+		return A2(
+			$elm$html$Html$span,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(
+					'no-wrap ' + ((!i) ? 'text-primary' : ''))
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('｢')
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(
+							'font-italic ' + ((!(!i)) ? 'font-muted' : ''))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'd' + ($elm$core$String$fromInt(
+								asDie(result)) + ': '))
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-weight-bold')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							asRolls(result))
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('」')
+						]))
+				]));
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Main$mixedDieResult = F2(
+	function (i, roll) {
+		return A4(
+			$author$project$Main$dieResult,
+			function (r) {
+				return A2(
 					$elm$core$Maybe$withDefault,
-					'',
+					0,
 					A2(
 						$elm$core$Maybe$map,
-						function (roll) {
-							return A2(
-								$elm$core$String$join,
-								', ',
-								A2(
-									$elm$core$List$map,
-									function (x) {
-										return $elm$core$String$fromInt(x.result);
-									},
-									roll));
+						function (x) {
+							return x.die;
 						},
-						dice.lastRoll)))
-			]));
+						$elm$core$List$head(r)));
+			},
+			function (r) {
+				return A2(
+					$elm$core$String$join,
+					'| ',
+					A2(
+						$elm$core$List$map,
+						function (x) {
+							return $elm$core$String$fromInt(x.result);
+						},
+						r));
+			},
+			i,
+			roll);
+	});
+var $author$project$Main$mixedDieResultList = function (card) {
+	return A2($author$project$Main$diceResultList, card.dice.rolls, $author$project$Main$mixedDieResult);
 };
-var $elm$html$Html$hr = _VirtualDom_node('hr');
 var $elm$html$Html$small = _VirtualDom_node('small');
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
@@ -10104,7 +10184,7 @@ var $author$project$Main$mixedSetCard = function (card) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$author$project$Main$formatMixedDiceResult(card.dice)
+								$author$project$Main$mixedDieResultList(card)
 							])))
 				]),
 			A3(
@@ -11228,7 +11308,6 @@ var $author$project$Main$explodeCheckbox = F3(
 							]))
 					])));
 	});
-var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$Main$diceCard = F9(
 	function (header, elementsDropDown, rollType, explodes, setDieExplodeMsg, clearResultsMsg, buttons, resultList, model) {
 		return $rundis$elm_bootstrap$Bootstrap$Card$view(
@@ -11348,70 +11427,6 @@ var $author$project$Main$diceCard = F9(
 											$elm$html$Html$Attributes$class('mb-4')
 										]))
 								]))))));
-	});
-var $author$project$Main$diceResultList = F2(
-	function (rolls, elementRenderer) {
-		return $elm$core$List$isEmpty(rolls) ? A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$elm$html$Html$text('No dice rolled.')
-				])) : A2(
-			$elm$html$Html$div,
-			_List_Nil,
-			A2($elm$core$List$indexedMap, elementRenderer, rolls));
-	});
-var $author$project$Main$dieResult = F4(
-	function (asDie, asRolls, i, result) {
-		return A2(
-			$elm$html$Html$span,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class(
-					'no-wrap ' + ((!i) ? 'text-primary' : ''))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$span,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text('｢')
-						])),
-					A2(
-					$elm$html$Html$span,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class(
-							'font-italic ' + ((!(!i)) ? 'font-muted' : ''))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							'd' + ($elm$core$String$fromInt(
-								asDie(result)) + ': '))
-						])),
-					A2(
-					$elm$html$Html$span,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('font-weight-bold')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							asRolls(result))
-						])),
-					A2(
-					$elm$html$Html$span,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text('」')
-						]))
-				]));
 	});
 var $author$project$Main$multiDieResult = F2(
 	function (i, roll) {
@@ -11676,15 +11691,6 @@ var $rundis$elm_bootstrap$Bootstrap$Table$maybeMapInversedTHead = F2(
 					rows: A2($elm$core$List$map, $rundis$elm_bootstrap$Bootstrap$Table$mapInversedRow, thead_.rows)
 				}) : thead_);
 	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $rundis$elm_bootstrap$Bootstrap$Table$maybeWrapResponsive = F2(
 	function (options, table_) {
 		var responsiveClass = $elm$html$Html$Attributes$class(
