@@ -594,9 +594,9 @@ newDiceSetList model =
 diceResultList: List a -> (Int -> a -> Html Msg) -> Html Msg
 diceResultList rolls elementRenderer =
     if rolls |> List.isEmpty then
-        Html.div [] [ text "No dice rolled." ]
+        Html.div [ Spacing.mt3 ] [ text "No dice rolled." ]
     else
-        Html.div [] (rolls |> List.indexedMap elementRenderer)
+        Html.div [ Spacing.mt3 ] (rolls |> List.indexedMap elementRenderer)
 
 multiDiceResultList: Model -> Html Msg
 multiDiceResultList model =
