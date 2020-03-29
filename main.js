@@ -9897,6 +9897,18 @@ var $author$project$Main$DeleteMixedSetCard = function (a) {
 var $author$project$Main$RollMixedDice = function (a) {
 	return {$: 'RollMixedDice', a: a};
 };
+var $rundis$elm_bootstrap$Bootstrap$Table$CellAttr = function (a) {
+	return {$: 'CellAttr', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Table$cellAttr = function (attr_) {
+	return $rundis$elm_bootstrap$Bootstrap$Table$CellAttr(attr_);
+};
+var $elm$html$Html$Attributes$colspan = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'colspan',
+		$elm$core$String$fromInt(n));
+};
 var $rundis$elm_bootstrap$Bootstrap$Table$RowAttr = function (a) {
 	return {$: 'RowAttr', a: a};
 };
@@ -10104,12 +10116,6 @@ var $rundis$elm_bootstrap$Bootstrap$Table$maybeWrapResponsive = F2(
 			_List_fromArray(
 				[table_])) : table_;
 	});
-var $rundis$elm_bootstrap$Bootstrap$Table$CellAttr = function (a) {
-	return {$: 'CellAttr', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Table$cellAttr = function (attr_) {
-	return $rundis$elm_bootstrap$Bootstrap$Table$CellAttr(attr_);
-};
 var $elm$html$Html$Attributes$scope = $elm$html$Html$Attributes$stringProperty('scope');
 var $rundis$elm_bootstrap$Bootstrap$Table$addScopeIfTh = function (cell) {
 	if (cell.$ === 'Th') {
@@ -10592,7 +10598,24 @@ var $author$project$Main$mixedSetCard = function (card) {
 					_List_Nil,
 					$elm$core$List$isEmpty(card.dice.rolls) ? _List_fromArray(
 						[
-							A2($rundis$elm_bootstrap$Bootstrap$Table$tr, _List_Nil, _List_Nil)
+							A2(
+							$rundis$elm_bootstrap$Bootstrap$Table$tr,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$rundis$elm_bootstrap$Bootstrap$Table$td,
+									_List_fromArray(
+										[
+											$rundis$elm_bootstrap$Bootstrap$Table$cellAttr(
+											$elm$html$Html$Attributes$colspan(
+												$elm$core$List$length(card.dieFaces)))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('No dice rolled.')
+										]))
+								]))
 						]) : A2($elm$core$List$indexedMap, resultRow, card.dice.rolls))));
 	}();
 	return $rundis$elm_bootstrap$Bootstrap$Card$view(
@@ -11967,12 +11990,6 @@ var $rundis$elm_bootstrap$Bootstrap$Table$TableAttr = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Table$attr = function (attr_) {
 	return $rundis$elm_bootstrap$Bootstrap$Table$TableAttr(attr_);
-};
-var $elm$html$Html$Attributes$colspan = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'colspan',
-		$elm$core$String$fromInt(n));
 };
 var $rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$mb0 = $elm$html$Html$Attributes$class('mb-0');
 var $author$project$Main$RollMultiDice = F2(
