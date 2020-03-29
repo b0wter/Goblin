@@ -518,7 +518,6 @@ multiDiceCard: Model -> Html Msg
 multiDiceCard model =
     diceCard model.multiDice.name multiRollMaxElementsDropdown "multi-dice" model.multiDice.explodes SetMultiDiceExplode ClearMultiDiceResults multiDiceTable multiDiceResultList model
 
-
 createMixedSetCard: Model -> Html Msg
 createMixedSetCard model =
     let createAddDieButton index faceCount = Button.button [ Button.attrs [ class (if index == 0 then "" else "ml-1")], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  faceCount) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] 
@@ -550,31 +549,38 @@ mixedSetCards: Model -> Html Msg
 mixedSetCards model =
     let makeColumn card = Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ] [ card ] in
         Grid.row [] (model.mixedDice |> List.map (mixedSetCard >> makeColumn))
-        
+
 mixedSetCard : MixedCard.MixedCard -> Html Msg
 mixedSetCard card =
-    Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
-        |> Card.headerH4 [] [ div [ class "d-flex justify-content-between"] [ div [] [ text card.name ], div [] [ small [ class "cursor-pointer", onClick (DeleteMixedSetCard card.id) ] [ text "❌" ] ] ] ]
-        |> Card.footer []
-            [ div [class "d-flex justify-content-center"]
-                [ div [ class "" ]
-                    [ small [] [ text (card.id |> UUID.toString) ] ]
+    let
+        dieTable =
+            let 
+                resultRow r =
+                    Table.tr [] (r |> List.map (\x -> Table.td [] [ text (x.result |> String.fromInt)]))
+            in
+                Table.simpleTable
+                    ( Table.simpleThead
+                        (card.dieFaces |> List.map (\f -> Table.th [] [ text ("d" ++ (f |> String.fromInt))]))
+                    , Table.tbody [] (if card.dice.rolls |> List.isEmpty then [ Table.tr [] [] ] else card.dice.rolls |> List.map resultRow)
+                    )
+    in
+        Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
+            |> Card.headerH4 [] [ div [ class "d-flex justify-content-between"] [ div [] [ text card.name ], div [] [ small [ class "cursor-pointer", onClick (DeleteMixedSetCard card.id) ] [ text "❌" ] ] ] ]
+            |> Card.footer []
+                [ div [ class "d-flex justify-content-center" ]
+                    [ div [ class "" ]
+                        [ small [] [ text (card.id |> UUID.toString) ] ]
+                    ]
                 ]
-            ]
-        |> Card.block [ Block.attrs [ class "text-center"] ]
-            [ Block.custom <| div [class "d-flex justify-content-between align-items-center"] 
-                [ div [] [ text (card.dieFaces |> List.map (String.fromInt >> (++) "d") |> String.join ", ") ]
-                , div [] [ Button.button [ Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, False)) ] [ text "Roll" ] ] 
+            |> Card.block [ Block.attrs [ class "text-center pb-0"] ]
+                [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, False)) ] [ text "Roll" ] ]
+                , Block.custom <| dieTable
                 ]
-            , Block.custom <| hr  [] []
-            , Block.custom <| div [] [ card |> mixedDieResultList ]--card.dice |> formatMixedDiceResult ]
-            ]
-        |> Card.view  
+            |> Card.view
 
 newDiceSetList: Model -> Html Msg
 newDiceSetList model =
     let dieButton i d =
-         --Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs (if i == 0 then [ Spacing.mb1 ] else [ Spacing.mb1, Spacing.ml1 ])] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
          Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs [ Spacing.mb1, Spacing.mr1 ] ] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
     in
         div [] (model.newMixedSet.dieFaces |> List.indexedMap dieButton)
@@ -657,12 +663,13 @@ multiDieButtonRow faceCount =
     
 multiDiceTable: Html Msg
 multiDiceTable = 
-    Table.simpleTable
-        ( Table.simpleThead
+    Table.table
+        { options =  [ Table.attr Spacing.mb0 ]
+        , thead = Table.simpleThead
             [ Table.th [] [ text "#"] 
             , Table.th [ Table.cellAttr (colspan 8) ] [ text "dice count" ]
             ]
-        , Table.tbody []
+        , tbody = Table.tbody []
             [ multiDieButtonRow 4
             , multiDieButtonRow 6
             , multiDieButtonRow 8
@@ -670,7 +677,7 @@ multiDiceTable =
             , multiDieButtonRow 12
             , multiDieButtonRow 20
             ]
-        )
+        }
 {- ----------------------------------------------------------------- -}
 
 
