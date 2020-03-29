@@ -7111,6 +7111,9 @@ var $author$project$Main$init = F3(
 				_List_fromArray(
 					[urlCmd, navCmd])));
 	});
+var $author$project$Main$MixedRollDropStateChange = function (a) {
+	return {$: 'MixedRollDropStateChange', a: a};
+};
 var $author$project$Main$MultiRollDropStateChange = function (a) {
 	return {$: 'MultiRollDropStateChange', a: a};
 };
@@ -7726,12 +7729,26 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions = F2(
 	});
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				A2($rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions, model.navState, $author$project$Main$NavMsg),
-				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.singleDie.historyDropState, $author$project$Main$SingleRollDropStateChange),
-				A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.multiDice.historyDropState, $author$project$Main$MultiRollDropStateChange)
-			]));
+		A2(
+			$elm$core$List$append,
+			_List_fromArray(
+				[
+					A2($rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions, model.navState, $author$project$Main$NavMsg),
+					A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.singleDie.historyDropState, $author$project$Main$SingleRollDropStateChange),
+					A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.multiDice.historyDropState, $author$project$Main$MultiRollDropStateChange)
+				]),
+			A2(
+				$elm$core$List$map,
+				function (x) {
+					return A2(
+						$rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions,
+						x.dice.historyDropState,
+						function (z) {
+							return $author$project$Main$MixedRollDropStateChange(
+								_Utils_Tuple2(x.id, z));
+						});
+				},
+				model.mixedDice)));
 };
 var $author$project$Main$NewMixedDiceResult = function (a) {
 	return {$: 'NewMixedDiceResult', a: a};
@@ -8338,6 +8355,17 @@ var $author$project$Main$rollMixedSet = F3(
 			},
 			generator);
 	});
+var $author$project$MixedCard$setExplodes = F2(
+	function (explodes, card) {
+		var newDiceModel = function (dice) {
+			return A2($author$project$DiceModel$setExplode, explodes, dice);
+		};
+		return _Utils_update(
+			card,
+			{
+				dice: newDiceModel(card.dice)
+			});
+	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -8348,26 +8376,11 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$MixedCard$setExplodes = F2(
-	function (explodes, card) {
-		var newDiceModel = function (dice) {
-			return _Utils_update(
-				dice,
-				{explodes: explodes});
-		};
-		return _Utils_update(
-			card,
-			{
-				dice: newDiceModel(card.dice)
-			});
-	});
-var $author$project$Main$setExplodeForMixedSet = F3(
-	function (isChecked, id, model) {
+var $author$project$Main$setForMixedSet = F3(
+	function (f, id, model) {
 		var updatedCard = A2(
 			$elm$core$Maybe$map,
-			function (c) {
-				return A2($author$project$MixedCard$setExplodes, isChecked, c);
-			},
+			f,
 			A2(
 				$author$project$List$Extra$find,
 				function (c) {
@@ -8391,11 +8404,42 @@ var $author$project$Main$setExplodeForMixedSet = F3(
 				});
 		}
 	});
+var $author$project$Main$setExplodeForMixedSet = F3(
+	function (isChecked, id, model) {
+		return A3(
+			$author$project$Main$setForMixedSet,
+			function (c) {
+				return A2($author$project$MixedCard$setExplodes, isChecked, c);
+			},
+			id,
+			model);
+	});
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
 		return _Utils_update(
 			model,
 			{historyDropState: state});
+	});
+var $author$project$MixedCard$setHistoryDropState = F2(
+	function (state, card) {
+		var newDiceModel = function (dice) {
+			return A2($author$project$DiceModel$setHistoryDropState, state, dice);
+		};
+		return _Utils_update(
+			card,
+			{
+				dice: newDiceModel(card.dice)
+			});
+	});
+var $author$project$Main$setHistoryDropStateForMixedSet = F3(
+	function (state, id, model) {
+		return A3(
+			$author$project$Main$setForMixedSet,
+			function (c) {
+				return A2($author$project$MixedCard$setHistoryDropState, state, c);
+			},
+			id,
+			model);
 	});
 var $author$project$DiceModel$setHistorySize = F2(
 	function (newSize, model) {
@@ -8405,6 +8449,27 @@ var $author$project$DiceModel$setHistorySize = F2(
 				maxHistory: newSize,
 				rolls: A2($author$project$List$Extra$limit, newSize + 1, model.rolls)
 			});
+	});
+var $author$project$MixedCard$setHistoryLength = F2(
+	function (length, card) {
+		var newDiceModel = function (dice) {
+			return A2($author$project$DiceModel$setHistorySize, length, dice);
+		};
+		return _Utils_update(
+			card,
+			{
+				dice: newDiceModel(card.dice)
+			});
+	});
+var $author$project$Main$setHistoryLengthForMixedSet = F3(
+	function (length, id, model) {
+		return A3(
+			$author$project$Main$setForMixedSet,
+			function (c) {
+				return A2($author$project$MixedCard$setHistoryLength, length, c);
+			},
+			id,
+			model);
 	});
 var $author$project$MixedCard$setName = F2(
 	function (name, card) {
@@ -8657,18 +8722,26 @@ var $author$project$Main$update = F2(
 					}(),
 					$elm$core$Platform$Cmd$none);
 			case 'MixedRollDropStateChange':
-				var state = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				var _v5 = msg.a;
+				var id = _v5.a;
+				var state = _v5.b;
+				return _Utils_Tuple2(
+					A3($author$project$Main$setHistoryDropStateForMixedSet, state, id, model),
+					$elm$core$Platform$Cmd$none);
 			case 'MixedRollNewValue':
-				var _new = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				var _v6 = msg.a;
+				var id = _v6.a;
+				var _new = _v6.b;
+				return _Utils_Tuple2(
+					A3($author$project$Main$setHistoryLengthForMixedSet, _new, id, model),
+					$elm$core$Platform$Cmd$none);
 			case 'ClearMixedDiceResults':
 				var id = msg.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'SetMixedDiceExplode':
-				var _v5 = msg.a;
-				var id = _v5.a;
-				var checked = _v5.b;
+				var _v7 = msg.a;
+				var id = _v7.a;
+				var checked = _v7.b;
 				return _Utils_Tuple2(
 					A3($author$project$Main$setExplodeForMixedSet, checked, id, model),
 					$elm$core$Platform$Cmd$none);
@@ -10215,9 +10288,6 @@ var $author$project$Main$explodeCheckbox = F3(
 							]))
 					])));
 	});
-var $author$project$Main$MixedRollDropStateChange = function (a) {
-	return {$: 'MixedRollDropStateChange', a: a};
-};
 var $author$project$Main$MixedRollNewValue = function (a) {
 	return {$: 'MixedRollNewValue', a: a};
 };
@@ -10700,7 +10770,18 @@ var $author$project$Main$rollMaxElementsDropdown = F4(
 			});
 	});
 var $author$project$Main$mixedRollMaxElementsDropDown = function (card) {
-	return A4($author$project$Main$rollMaxElementsDropdown, card.dice.historyDropState, card.dice.maxHistory, $author$project$Main$MixedRollNewValue, $author$project$Main$MixedRollDropStateChange);
+	return A4(
+		$author$project$Main$rollMaxElementsDropdown,
+		card.dice.historyDropState,
+		card.dice.maxHistory,
+		function (x) {
+			return $author$project$Main$MixedRollNewValue(
+				_Utils_Tuple2(card.id, x));
+		},
+		function (x) {
+			return $author$project$Main$MixedRollDropStateChange(
+				_Utils_Tuple2(card.id, x));
+		});
 };
 var $rundis$elm_bootstrap$Bootstrap$Table$RowAttr = function (a) {
 	return {$: 'RowAttr', a: a};

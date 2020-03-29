@@ -8,6 +8,8 @@ module MixedCard exposing ( MixedCard
                           , empty
                           , addRoll
                           , setExplodes
+                          , setHistoryDropState
+                          , setHistoryLength
                           )
 
 import DiceModel
@@ -15,6 +17,7 @@ import Roll
 import UUID exposing (UUID)
 import Flip
 import List.Extra as List
+import Bootstrap.Dropdown as Dropdown
 
 type alias MixedCard =
     { dice : DiceModel.DiceModel Roll.Mixed
@@ -60,6 +63,22 @@ setExplodes : Bool -> MixedCard -> MixedCard
 setExplodes explodes card =
     let 
         newDiceModel dice =
-            { dice | explodes = explodes }
+            dice |> DiceModel.setExplode explodes 
+    in
+        { card | dice = card.dice |> newDiceModel }
+
+setHistoryDropState : Dropdown.State -> MixedCard -> MixedCard
+setHistoryDropState state card =
+    let
+        newDiceModel dice = 
+            dice |> DiceModel.setHistoryDropState state
+    in
+        { card | dice = card.dice |> newDiceModel }
+
+setHistoryLength : Int -> MixedCard -> MixedCard
+setHistoryLength length card =
+    let
+        newDiceModel dice = 
+            dice |> DiceModel.setHistorySize length
     in
         { card | dice = card.dice |> newDiceModel }

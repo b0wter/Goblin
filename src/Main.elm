@@ -107,8 +107,8 @@ type Msg
     --
     | NewMixedDiceResult (UUID, Roll.Mixed)
     | RollMixedDice (UUID, List Int, Bool)
-    | MixedRollDropStateChange Dropdown.State
-    | MixedRollNewValue Int
+    | MixedRollDropStateChange (UUID, Dropdown.State)
+    | MixedRollNewValue (UUID, Int)
     | ClearMixedDiceResults UUID
     | SetMixedDiceExplode (UUID, Bool)
     | ResetNewMixedSet UUID
@@ -124,11 +124,12 @@ type Msg
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch 
-            [ Navbar.subscriptions model.navState NavMsg
-            , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
-            , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange
-            {- TODO Add subscriptions for mixed sets. -}
-        ]
+            ( List.append
+                [ Navbar.subscriptions model.navState NavMsg
+                , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
+                , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange ]
+                (model.mixedDice |> List.map (\x -> Dropdown.subscriptions x.dice.historyDropState (\z -> MixedRollDropStateChange (x.id, z))))
+            )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -235,9 +236,16 @@ update msg model =
             , Cmd.none
             )
 
-        MixedRollDropStateChange state -> (model, Cmd.none)
-        MixedRollNewValue new  -> (model, Cmd.none)
+        MixedRollDropStateChange (id, state) -> 
+            ( model |> setHistoryDropStateForMixedSet state id
+            , Cmd.none)
+
+        MixedRollNewValue (id, new) -> 
+            ( model |> setHistoryLengthForMixedSet new id
+            , Cmd.none)
+
         ClearMixedDiceResults id -> (model, Cmd.none)
+
         SetMixedDiceExplode (id, checked) -> 
             ( model |> setExplodeForMixedSet checked id
             , Cmd.none)
@@ -271,16 +279,25 @@ update msg model =
             ( { model | newMixedSet = model.newMixedSet |> MixedCard.setName name }
             , Cmd.none)
 
-setExplodeForMixedSet : Bool -> UUID -> Model -> Model
-setExplodeForMixedSet isChecked id model =
+
+setForMixedSet : (MixedCard.MixedCard -> MixedCard.MixedCard) -> UUID -> Model -> Model
+setForMixedSet f id model =
     let 
         updatedCard =
-            model.mixedDice |> List.find (\c -> c.id == id) |> Maybe.map (\c -> MixedCard.setExplodes isChecked c)
+            model.mixedDice |> List.find (\c -> c.id == id) |> Maybe.map f
     in
         case updatedCard of
             Nothing -> model
             Just card -> { model | mixedDice = model.mixedDice |> List.replaceBy (\c -> c.id == id) card }
 
+setExplodeForMixedSet : Bool -> UUID -> Model -> Model
+setExplodeForMixedSet isChecked id model = setForMixedSet (\c -> MixedCard.setExplodes isChecked c) id model
+
+setHistoryDropStateForMixedSet : Dropdown.State -> UUID -> Model -> Model
+setHistoryDropStateForMixedSet state id model = setForMixedSet (\c -> MixedCard.setHistoryDropState state c) id model
+
+setHistoryLengthForMixedSet : Int -> UUID -> Model -> Model
+setHistoryLengthForMixedSet length id model = setForMixedSet (\c -> MixedCard.setHistoryLength length c) id model
 
 addMixedSet : MixedCard.MixedCard -> Model -> Model
 addMixedSet card model =
@@ -604,9 +621,6 @@ newDiceSetList model =
     in
         div [] (model.newMixedSet.dieFaces |> List.indexedMap dieButton)
 
---mixedDiceCard: Model -> Html Msg
---mixedDiceCard model =
---    diceCard "Roll mixed dice" mixedRollMaxElementsDropdown "mixed-dice" model.mixedDice.explodes SetMixedDiceExplode ClearMixedDiceResults (div [] []) (\_ -> div [] []) model
 {- ----------------------------------------------------------------- -}
 
 {- Renders a list of results. -}
@@ -711,7 +725,7 @@ multiRollMaxElementsDropdown model =
 
 mixedRollMaxElementsDropDown : MixedCard.MixedCard -> Html Msg
 mixedRollMaxElementsDropDown card =
-    rollMaxElementsDropdown card.dice.historyDropState card.dice.maxHistory MixedRollNewValue MixedRollDropStateChange 
+    rollMaxElementsDropdown card.dice.historyDropState card.dice.maxHistory (\x -> MixedRollNewValue (card.id, x)) (\x -> MixedRollDropStateChange (card.id, x))
 
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =
