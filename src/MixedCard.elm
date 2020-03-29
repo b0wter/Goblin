@@ -10,6 +10,7 @@ module MixedCard exposing ( MixedCard
                           , setExplodes
                           , setHistoryDropState
                           , setHistoryLength
+                          , clearHistory
                           )
 
 import DiceModel
@@ -82,3 +83,11 @@ setHistoryLength length card =
             dice |> DiceModel.setHistorySize length
     in
         { card | dice = card.dice |> newDiceModel }
+
+clearHistory : MixedCard -> MixedCard
+clearHistory card =
+    let
+        newDiceModel dice = 
+            dice |> DiceModel.clearHistory 
+    in
+        { card | dice = card.dice |> newDiceModel }    

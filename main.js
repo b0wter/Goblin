@@ -7951,6 +7951,16 @@ var $author$project$DiceModel$clearHistory = function (model) {
 		model,
 		{rolls: _List_Nil});
 };
+var $author$project$MixedCard$clearHistory = function (card) {
+	var newDiceModel = function (dice) {
+		return $author$project$DiceModel$clearHistory(dice);
+	};
+	return _Utils_update(
+		card,
+		{
+			dice: newDiceModel(card.dice)
+		});
+};
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -8737,7 +8747,15 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'ClearMixedDiceResults':
 				var id = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					A3(
+						$author$project$Main$setForMixedSet,
+						function (c) {
+							return $author$project$MixedCard$clearHistory(c);
+						},
+						id,
+						model),
+					$elm$core$Platform$Cmd$none);
 			case 'SetMixedDiceExplode':
 				var _v7 = msg.a;
 				var id = _v7.a;

@@ -244,7 +244,9 @@ update msg model =
             ( model |> setHistoryLengthForMixedSet new id
             , Cmd.none)
 
-        ClearMixedDiceResults id -> (model, Cmd.none)
+        ClearMixedDiceResults id -> 
+            ( model |> setForMixedSet (\c -> c |> MixedCard.clearHistory) id
+            , Cmd.none)
 
         SetMixedDiceExplode (id, checked) -> 
             ( model |> setExplodeForMixedSet checked id
