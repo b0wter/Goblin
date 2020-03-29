@@ -632,21 +632,6 @@ multiDieResult i roll =
 mixedDieResult: Int -> Roll.Mixed -> Html Msg
 mixedDieResult i roll =
     dieResult (\r -> r |> List.head |> Maybe.map (\x -> x.die) |> Maybe.withDefault 0) (\r -> r |> List.map (\x -> x.result |> String.fromInt) |> String.join "| ") i roll
-    -- |> String.fromInt) |> Maybe.withDefault "X")
-    
-    {-
-    let
-        singleElement element =
-            div [] [ text ("d" ++ (element.die |> String.))]
-    in
-    
-    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
-    [ Html.span [] [ text "｢" ]
-    , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (result |> asDie |> String.fromInt) ++ ": ") ] 
-    , Html.span [ class "font-weight-bold"] [ text (result |> asRolls) ]
-    , Html.span [] [ text "」"]
-    ]
-    -}
 {- ----------------------------------------------------------------- -}
 
 {- Required helpers to render the table for all multi-dice buttons. -}
