@@ -5433,6 +5433,27 @@ var $author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
+	function (top, left, width, height) {
+		return {height: height, left: left, top: top, width: width};
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed = {$: 'Closed'};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$State = function (a) {
+	return {$: 'State', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = $rundis$elm_bootstrap$Bootstrap$Dropdown$State(
+	{
+		menuSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0),
+		status: $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed,
+		toggleSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0)
+	});
+var $author$project$DiceModel$withName = function (name) {
+	return {explodes: false, historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, name: name, rolls: _List_Nil};
+};
+var $author$project$DiceModel$empty = $author$project$DiceModel$withName('<unnamed>');
+var $author$project$MixedCard$empty = function (id) {
+	return {dice: $author$project$DiceModel$empty, dieFaces: _List_Nil, id: id, name: ''};
+};
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -6239,28 +6260,6 @@ var $TSFoster$elm_uuid$UUID$forName = A2(
 	A2($elm$core$Basics$composeL, $TSFoster$elm_uuid$UUID$forBytes, $elm$bytes$Bytes$Encode$encode),
 	$elm$bytes$Bytes$Encode$string);
 var $TSFoster$elm_uuid$UUID$urlNamespace = A4($TSFoster$elm_uuid$UUID$UUID, 1806153745, 2645365201, 2159280320, 1339306184);
-var $author$project$Main$debugUuid = A2($TSFoster$elm_uuid$UUID$forName, 'https://gutsman.de/debugId', $TSFoster$elm_uuid$UUID$urlNamespace);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
-	function (top, left, width, height) {
-		return {height: height, left: left, top: top, width: width};
-	});
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed = {$: 'Closed'};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$State = function (a) {
-	return {$: 'State', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState = $rundis$elm_bootstrap$Bootstrap$Dropdown$State(
-	{
-		menuSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0),
-		status: $rundis$elm_bootstrap$Bootstrap$Dropdown$Closed,
-		toggleSize: A4($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area, 0, 0, 0, 0)
-	});
-var $author$project$DiceModel$withName = function (name) {
-	return {explodes: false, historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, name: name, rolls: _List_Nil};
-};
-var $author$project$DiceModel$empty = $author$project$DiceModel$withName('<unnamed>');
-var $author$project$MixedCard$empty = function (id) {
-	return {dice: $author$project$DiceModel$empty, dieFaces: _List_Nil, id: id, name: ''};
-};
 var $author$project$MixedCard$firstEmptyCard = $author$project$MixedCard$empty(
 	A2($TSFoster$elm_uuid$UUID$forName, 'https://gutsman.de/newId', $TSFoster$elm_uuid$UUID$urlNamespace));
 var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
@@ -7085,16 +7084,7 @@ var $author$project$Main$init = F3(
 			$author$project$Main$urlUpdate,
 			url,
 			{
-				mixedDice: _List_fromArray(
-					[
-						{
-						dice: $author$project$DiceModel$empty,
-						dieFaces: _List_fromArray(
-							[20, 20, 20]),
-						id: $author$project$Main$debugUuid,
-						name: '1.Test'
-					}
-					]),
+				mixedDice: _List_Nil,
 				modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden,
 				multiDice: $author$project$DiceModel$withName('Roll multiple dice'),
 				navKey: key,
@@ -14389,7 +14379,7 @@ var $author$project$Main$view = function (model) {
 						$author$project$Main$modal(model)
 					]))
 			]),
-		title: 'Elm Bootstrap'
+		title: 'Goblin - Pen & Paper Tools'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$application(

@@ -61,9 +61,6 @@ main =
         , onUrlChange = UrlChange
         }
 
-debugUuid : UUID
-debugUuid = UUID.forName "https://gutsman.de/debugId" UUID.urlNamespace 
-
 init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init _ url key =
     let
@@ -77,7 +74,7 @@ init _ url key =
                           , modalVisibility = Modal.hidden
                           , singleDie = DiceModel.withName "Roll single die"
                           , multiDice = DiceModel.withName "Roll multiple dice"
-                          , mixedDice = [{ name = "1.Test", dieFaces = [20, 20, 20], dice = DiceModel.empty, id = debugUuid }]
+                          , mixedDice = []
                           , newMixedSet = MixedCard.firstEmptyCard
                           }
     in
@@ -324,7 +321,7 @@ routeParser =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Elm Bootstrap"
+    { title = "Goblin - Pen & Paper Tools"
     , body =
         [ div []
             [ menu model
