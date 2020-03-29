@@ -555,13 +555,13 @@ mixedSetCard card =
     let
         dieTable =
             let 
-                resultRow r =
-                    Table.tr [] (r |> List.map (\x -> Table.td [] [ text (x.result |> String.fromInt)]))
+                resultRow i r =
+                    Table.tr (if i == 0 then [ Table.rowAttr (class "text-primary font-weight-bold") ] else []) (r |> List.map (\x -> Table.td [] [ text (x.result |> String.fromInt)]))
             in
                 Table.simpleTable
                     ( Table.simpleThead
                         (card.dieFaces |> List.map (\f -> Table.th [] [ text ("d" ++ (f |> String.fromInt))]))
-                    , Table.tbody [] (if card.dice.rolls |> List.isEmpty then [ Table.tr [] [] ] else card.dice.rolls |> List.map resultRow)
+                    , Table.tbody [] (if card.dice.rolls |> List.isEmpty then [ Table.tr [] [] ] else card.dice.rolls |> List.indexedMap resultRow)
                     )
     in
         Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
