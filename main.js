@@ -8414,16 +8414,6 @@ var $author$project$Main$setForMixedSet = F3(
 				});
 		}
 	});
-var $author$project$Main$setExplodeForMixedSet = F3(
-	function (isChecked, id, model) {
-		return A3(
-			$author$project$Main$setForMixedSet,
-			function (c) {
-				return A2($author$project$MixedCard$setExplodes, isChecked, c);
-			},
-			id,
-			model);
-	});
 var $author$project$DiceModel$setHistoryDropState = F2(
 	function (state, model) {
 		return _Utils_update(
@@ -8440,16 +8430,6 @@ var $author$project$MixedCard$setHistoryDropState = F2(
 			{
 				dice: newDiceModel(card.dice)
 			});
-	});
-var $author$project$Main$setHistoryDropStateForMixedSet = F3(
-	function (state, id, model) {
-		return A3(
-			$author$project$Main$setForMixedSet,
-			function (c) {
-				return A2($author$project$MixedCard$setHistoryDropState, state, c);
-			},
-			id,
-			model);
 	});
 var $author$project$DiceModel$setHistorySize = F2(
 	function (newSize, model) {
@@ -8470,16 +8450,6 @@ var $author$project$MixedCard$setHistoryLength = F2(
 			{
 				dice: newDiceModel(card.dice)
 			});
-	});
-var $author$project$Main$setHistoryLengthForMixedSet = F3(
-	function (length, id, model) {
-		return A3(
-			$author$project$Main$setForMixedSet,
-			function (c) {
-				return A2($author$project$MixedCard$setHistoryLength, length, c);
-			},
-			id,
-			model);
 	});
 var $author$project$MixedCard$setName = F2(
 	function (name, card) {
@@ -8736,14 +8706,26 @@ var $author$project$Main$update = F2(
 				var id = _v5.a;
 				var state = _v5.b;
 				return _Utils_Tuple2(
-					A3($author$project$Main$setHistoryDropStateForMixedSet, state, id, model),
+					A3(
+						$author$project$Main$setForMixedSet,
+						function (c) {
+							return A2($author$project$MixedCard$setHistoryDropState, state, c);
+						},
+						id,
+						model),
 					$elm$core$Platform$Cmd$none);
 			case 'MixedRollNewValue':
 				var _v6 = msg.a;
 				var id = _v6.a;
-				var _new = _v6.b;
+				var length = _v6.b;
 				return _Utils_Tuple2(
-					A3($author$project$Main$setHistoryLengthForMixedSet, _new, id, model),
+					A3(
+						$author$project$Main$setForMixedSet,
+						function (c) {
+							return A2($author$project$MixedCard$setHistoryLength, length, c);
+						},
+						id,
+						model),
 					$elm$core$Platform$Cmd$none);
 			case 'ClearMixedDiceResults':
 				var id = msg.a;
@@ -8761,7 +8743,13 @@ var $author$project$Main$update = F2(
 				var id = _v7.a;
 				var checked = _v7.b;
 				return _Utils_Tuple2(
-					A3($author$project$Main$setExplodeForMixedSet, checked, id, model),
+					A3(
+						$author$project$Main$setForMixedSet,
+						function (c) {
+							return A2($author$project$MixedCard$setExplodes, checked, c);
+						},
+						id,
+						model),
 					$elm$core$Platform$Cmd$none);
 			case 'DeleteMixedSetCard':
 				var id = msg.a;

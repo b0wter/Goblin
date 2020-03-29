@@ -237,11 +237,11 @@ update msg model =
             )
 
         MixedRollDropStateChange (id, state) -> 
-            ( model |> setHistoryDropStateForMixedSet state id
+            ( model |> setForMixedSet (\c -> MixedCard.setHistoryDropState state c) id 
             , Cmd.none)
 
-        MixedRollNewValue (id, new) -> 
-            ( model |> setHistoryLengthForMixedSet new id
+        MixedRollNewValue (id, length) -> 
+            ( model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
             , Cmd.none)
 
         ClearMixedDiceResults id -> 
@@ -249,7 +249,7 @@ update msg model =
             , Cmd.none)
 
         SetMixedDiceExplode (id, checked) -> 
-            ( model |> setExplodeForMixedSet checked id
+            ( model |> setForMixedSet (\c -> MixedCard.setExplodes checked c) id 
             , Cmd.none)
 
         DeleteMixedSetCard id ->
@@ -292,14 +292,6 @@ setForMixedSet f id model =
             Nothing -> model
             Just card -> { model | mixedDice = model.mixedDice |> List.replaceBy (\c -> c.id == id) card }
 
-setExplodeForMixedSet : Bool -> UUID -> Model -> Model
-setExplodeForMixedSet isChecked id model = setForMixedSet (\c -> MixedCard.setExplodes isChecked c) id model
-
-setHistoryDropStateForMixedSet : Dropdown.State -> UUID -> Model -> Model
-setHistoryDropStateForMixedSet state id model = setForMixedSet (\c -> MixedCard.setHistoryDropState state c) id model
-
-setHistoryLengthForMixedSet : Int -> UUID -> Model -> Model
-setHistoryLengthForMixedSet length id model = setForMixedSet (\c -> MixedCard.setHistoryLength length c) id model
 
 addMixedSet : MixedCard.MixedCard -> Model -> Model
 addMixedSet card model =
