@@ -7,10 +7,11 @@ module MixedCard exposing ( MixedCard
                           , isComplete
                           , empty
                           , addRoll
+                          , mapDiceModel
+                          , clearHistory
                           , setExplodes
                           , setHistoryDropState
                           , setHistoryLength
-                          , clearHistory
                           )
 
 import DiceModel
@@ -60,34 +61,26 @@ empty id = { dice = DiceModel.empty, name = "", dieFaces = [], id = id }
 addRoll : Roll.Mixed -> MixedCard -> MixedCard
 addRoll roll card = { card | dice = card.dice |> DiceModel.addRoll roll }
 
-setExplodes : Bool -> MixedCard -> MixedCard
-setExplodes explodes card =
+mapDiceModel : (DiceModel.DiceModel Roll.Mixed -> DiceModel.DiceModel Roll.Mixed) -> MixedCard -> MixedCard
+mapDiceModel f card =
     let 
         newDiceModel dice =
-            dice |> DiceModel.setExplode explodes 
+            dice |> f
     in
         { card | dice = card.dice |> newDiceModel }
+
+setExplodes : Bool -> MixedCard -> MixedCard
+setExplodes explodes card =
+    mapDiceModel (\d -> d |> DiceModel.setExplode explodes) card
 
 setHistoryDropState : Dropdown.State -> MixedCard -> MixedCard
 setHistoryDropState state card =
-    let
-        newDiceModel dice = 
-            dice |> DiceModel.setHistoryDropState state
-    in
-        { card | dice = card.dice |> newDiceModel }
+    mapDiceModel (\d -> d |> DiceModel.setHistoryDropState state) card
 
 setHistoryLength : Int -> MixedCard -> MixedCard
 setHistoryLength length card =
-    let
-        newDiceModel dice = 
-            dice |> DiceModel.setHistorySize length
-    in
-        { card | dice = card.dice |> newDiceModel }
+    mapDiceModel (\d -> d |> DiceModel.setHistorySize length) card
 
 clearHistory : MixedCard -> MixedCard
 clearHistory card =
-    let
-        newDiceModel dice = 
-            dice |> DiceModel.clearHistory 
-    in
-        { card | dice = card.dice |> newDiceModel }    
+    mapDiceModel (\d -> d |> DiceModel.clearHistory) card

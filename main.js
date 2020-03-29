@@ -7951,15 +7951,24 @@ var $author$project$DiceModel$clearHistory = function (model) {
 		model,
 		{rolls: _List_Nil});
 };
+var $author$project$MixedCard$mapDiceModel = F2(
+	function (f, card) {
+		var newDiceModel = function (dice) {
+			return f(dice);
+		};
+		return _Utils_update(
+			card,
+			{
+				dice: newDiceModel(card.dice)
+			});
+	});
 var $author$project$MixedCard$clearHistory = function (card) {
-	var newDiceModel = function (dice) {
-		return $author$project$DiceModel$clearHistory(dice);
-	};
-	return _Utils_update(
-		card,
-		{
-			dice: newDiceModel(card.dice)
-		});
+	return A2(
+		$author$project$MixedCard$mapDiceModel,
+		function (d) {
+			return $author$project$DiceModel$clearHistory(d);
+		},
+		card);
 };
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -8367,14 +8376,12 @@ var $author$project$Main$rollMixedSet = F3(
 	});
 var $author$project$MixedCard$setExplodes = F2(
 	function (explodes, card) {
-		var newDiceModel = function (dice) {
-			return A2($author$project$DiceModel$setExplode, explodes, dice);
-		};
-		return _Utils_update(
-			card,
-			{
-				dice: newDiceModel(card.dice)
-			});
+		return A2(
+			$author$project$MixedCard$mapDiceModel,
+			function (d) {
+				return A2($author$project$DiceModel$setExplode, explodes, d);
+			},
+			card);
 	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -8422,14 +8429,12 @@ var $author$project$DiceModel$setHistoryDropState = F2(
 	});
 var $author$project$MixedCard$setHistoryDropState = F2(
 	function (state, card) {
-		var newDiceModel = function (dice) {
-			return A2($author$project$DiceModel$setHistoryDropState, state, dice);
-		};
-		return _Utils_update(
-			card,
-			{
-				dice: newDiceModel(card.dice)
-			});
+		return A2(
+			$author$project$MixedCard$mapDiceModel,
+			function (d) {
+				return A2($author$project$DiceModel$setHistoryDropState, state, d);
+			},
+			card);
 	});
 var $author$project$DiceModel$setHistorySize = F2(
 	function (newSize, model) {
@@ -8442,14 +8447,12 @@ var $author$project$DiceModel$setHistorySize = F2(
 	});
 var $author$project$MixedCard$setHistoryLength = F2(
 	function (length, card) {
-		var newDiceModel = function (dice) {
-			return A2($author$project$DiceModel$setHistorySize, length, dice);
-		};
-		return _Utils_update(
-			card,
-			{
-				dice: newDiceModel(card.dice)
-			});
+		return A2(
+			$author$project$MixedCard$mapDiceModel,
+			function (d) {
+				return A2($author$project$DiceModel$setHistorySize, length, d);
+			},
+			card);
 	});
 var $author$project$MixedCard$setName = F2(
 	function (name, card) {
