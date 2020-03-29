@@ -561,7 +561,7 @@ mixedSetCard card =
                 Table.simpleTable
                     ( Table.simpleThead
                         (card.dieFaces |> List.map (\f -> Table.th [] [ text ("d" ++ (f |> String.fromInt))]))
-                    , Table.tbody [] (if card.dice.rolls |> List.isEmpty then [ Table.tr [] [] ] else card.dice.rolls |> List.indexedMap resultRow)
+                    , Table.tbody [] (if card.dice.rolls |> List.isEmpty then [ Table.tr [] [ Table.td [ Table.cellAttr (colspan (card.dieFaces |> List.length)) ] [ text "No dice rolled."] ] ] else card.dice.rolls |> List.indexedMap resultRow)
                     )
     in
         Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
