@@ -109,8 +109,8 @@ type Msg
     | RollMixedDice (UUID, List Int, Bool)
     | MixedRollDropStateChange Dropdown.State
     | MixedRollNewValue Int
-    | ClearMixedDiceResults
-    | SetMixedDiceExplode Bool
+    | ClearMixedDiceResults UUID
+    | SetMixedDiceExplode (UUID, Bool)
     | ResetNewMixedSet UUID
     | DeleteMixedSetCard UUID
     --
@@ -237,8 +237,10 @@ update msg model =
 
         MixedRollDropStateChange state -> (model, Cmd.none)
         MixedRollNewValue new  -> (model, Cmd.none)
-        ClearMixedDiceResults -> (model, Cmd.none)
-        SetMixedDiceExplode new -> (model, Cmd.none)
+        ClearMixedDiceResults id -> (model, Cmd.none)
+        SetMixedDiceExplode (id, checked) -> 
+            ( model |> setExplodeForMixedSet checked id
+            , Cmd.none)
 
         DeleteMixedSetCard id ->
             ( { model | mixedDice = model.mixedDice |> List.filter (\x -> x.id /= id) }
@@ -268,6 +270,17 @@ update msg model =
         NewDieSetNameChanged name ->
             ( { model | newMixedSet = model.newMixedSet |> MixedCard.setName name }
             , Cmd.none)
+
+setExplodeForMixedSet : Bool -> UUID -> Model -> Model
+setExplodeForMixedSet isChecked id model =
+    let 
+        updatedCard =
+            model.mixedDice |> List.find (\c -> c.id == id) |> Maybe.map (\c -> MixedCard.setExplodes isChecked c)
+    in
+        case updatedCard of
+            Nothing -> model
+            Just card -> { model | mixedDice = model.mixedDice |> List.replaceBy (\c -> c.id == id) card }
+
 
 addMixedSet : MixedCard.MixedCard -> Model -> Model
 addMixedSet card model =
@@ -567,13 +580,19 @@ mixedSetCard card =
         Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
             |> Card.headerH4 [] [ div [ class "d-flex justify-content-between"] [ div [] [ text card.name ], div [] [ small [ class "cursor-pointer", onClick (DeleteMixedSetCard card.id) ] [ text "❌" ] ] ] ]
             |> Card.footer []
-                [ div [ class "d-flex justify-content-center" ]
-                    [ div [ class "" ]
-                        [ small [] [ text (card.id |> UUID.toString) ] ]
+                [ div [ class "d-flex justify-content-between" ] 
+                    [ div [ class ""]
+                        [ mixedRollMaxElementsDropDown card 
+                        , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
+                        ]
+                    , div [ class "mb-auto mt-auto"]
+                        [ explodeCheckbox ((card.id |> UUID.toString) ++ "-explode") card.dice.explodes (\b -> SetMixedDiceExplode (card.id, b))] 
+                    , div [ class ""] 
+                        [ Button.button [ Button.secondary, Button.small, Button.onClick (ClearMixedDiceResults card.id) ] [ text "Clear" ] ] 
                     ]
-                ]
+                ]         
             |> Card.block [ Block.attrs [ class "text-center pb-0"] ]
-                [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, False)) ] [ text "Roll" ] ]
+                [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, card.dice.explodes)) ] [ text "Roll" ] ]
                 , Block.custom <| dieTable
                 ]
             |> Card.view
@@ -690,9 +709,9 @@ multiRollMaxElementsDropdown : Model -> Html Msg
 multiRollMaxElementsDropdown model =
     rollMaxElementsDropdown model.multiDice.historyDropState model.multiDice.maxHistory MultiRollNewValue MultiRollDropStateChange
 
---mixedRollMaxElementsDropdown: Model -> List (Html Msg)
---mixedRollMaxElementsDropdown model =
---    model.mixedDice |> List.map (\md -> rollMaxElementsDropdown md.historyDropState md.maxHistory MixedRollNewValue MixedRollDropStateChange)
+mixedRollMaxElementsDropDown : MixedCard.MixedCard -> Html Msg
+mixedRollMaxElementsDropDown card =
+    rollMaxElementsDropdown card.dice.historyDropState card.dice.maxHistory MixedRollNewValue MixedRollDropStateChange 
 
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =

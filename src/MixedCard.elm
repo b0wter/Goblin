@@ -7,6 +7,7 @@ module MixedCard exposing ( MixedCard
                           , isComplete
                           , empty
                           , addRoll
+                          , setExplodes
                           )
 
 import DiceModel
@@ -54,3 +55,11 @@ empty id = { dice = DiceModel.empty, name = "", dieFaces = [], id = id }
 
 addRoll : Roll.Mixed -> MixedCard -> MixedCard
 addRoll roll card = { card | dice = card.dice |> DiceModel.addRoll roll }
+
+setExplodes : Bool -> MixedCard -> MixedCard
+setExplodes explodes card =
+    let 
+        newDiceModel dice =
+            { dice | explodes = explodes }
+    in
+        { card | dice = card.dice |> newDiceModel }
