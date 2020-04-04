@@ -24,6 +24,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Random
 import UUID exposing (UUID)
 
+import Ports
 import Roll
 import List.Extra as List
 import DiceModel
@@ -41,6 +42,7 @@ type alias Model =
     , multiDice : DiceModel.DiceModel Roll.Multi
     , mixedDice : List MixedCard.MixedCard
     , newMixedSet : MixedCard.MixedCard
+    , storageTestData : Maybe String
     }
 
 type Page
@@ -76,6 +78,7 @@ init _ url key =
                           , multiDice = DiceModel.withName "Roll multiple dice"
                           , mixedDice = []
                           , newMixedSet = MixedCard.firstEmptyCard
+                          , storageTestData = Nothing
                           }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
@@ -116,6 +119,10 @@ type Msg
     | AddNewDieToSet Int
     | RemoveDieFromNewSet Int
     | NewDieSetNameChanged String
+    --
+    | StoredData Ports.StorageObject
+    | RetrievedData Ports.StorageObject
+    | RequestRetrieval String
 
 
 subscriptions : Model -> Sub Msg
@@ -123,6 +130,7 @@ subscriptions model =
     Sub.batch 
             ( List.append
                 [ Navbar.subscriptions model.navState NavMsg
+                , Ports.retrieve (\data -> RetrievedData data)
                 , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
                 , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange ]
                 (model.mixedDice |> List.map (\x -> Dropdown.subscriptions x.dice.historyDropState (\z -> MixedRollDropStateChange (x.id, z))))
@@ -278,6 +286,18 @@ update msg model =
             ( { model | newMixedSet = model.newMixedSet |> MixedCard.setName name }
             , Cmd.none)
 
+        StoredData data ->
+            ( model
+            , Ports.store data)
+
+        RetrievedData data ->
+            ( { model | storageTestData = Just data.value }
+            , Cmd.none)
+
+        RequestRetrieval key ->
+            ( model
+            , Ports.requestRetrieval key)
+
 
 setForMixedSet : (MixedCard.MixedCard -> MixedCard.MixedCard) -> UUID -> Model -> Model
 setForMixedSet f id model =
@@ -366,6 +386,16 @@ mainContent model =
 pageHome : Model -> List (Html Msg)
 pageHome model =
     [ Grid.row []
+        [ Grid.col [ Col.xs ]
+            [
+                div [] 
+                [ Button.button [ Button.primary, Button.small, Button.onClick (StoredData {key = "key", value = "new value 2"}) ] [ text "Add" ] 
+                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "key") ] [ text "Get" ] 
+                , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
+                ]
+            ]
+        ]
+    , Grid.row []
         [ Grid.col [ Col.xs12, Col.sm6, Col.md4 ]
             [
                 singleDieCard model
@@ -424,7 +454,12 @@ modal model =
         |> Modal.h4 [] [ text "Getting started ?" ]
         |> Modal.body []
             [ Grid.containerFluid []
-                [ Grid.row []
+                [ Grid.row [] 
+                    [ Grid.col 
+                        [ Col.xs ]
+                        [ text "nice!"]
+                    ]
+                , Grid.row []
                     [ Grid.col
                         [ Col.xs6 ]
                         [ text "Col 1" ]
