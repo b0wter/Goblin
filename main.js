@@ -7091,7 +7091,8 @@ var $author$project$Main$init = F3(
 				navState: navState,
 				newMixedSet: $author$project$MixedCard$firstEmptyCard,
 				page: $author$project$Main$Home,
-				singleDie: $author$project$DiceModel$withName('Roll single die')
+				singleDie: $author$project$DiceModel$withName('Roll single die'),
+				storageTestData: $elm$core$Maybe$Nothing
 			});
 		var model = _v2.a;
 		var urlCmd = _v2.b;
@@ -7107,10 +7108,30 @@ var $author$project$Main$MixedRollDropStateChange = function (a) {
 var $author$project$Main$MultiRollDropStateChange = function (a) {
 	return {$: 'MultiRollDropStateChange', a: a};
 };
+var $author$project$Main$RetrievedData = function (a) {
+	return {$: 'RetrievedData', a: a};
+};
 var $author$project$Main$SingleRollDropStateChange = function (a) {
 	return {$: 'SingleRollDropStateChange', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Ports$retrieve = _Platform_incomingPort(
+	'retrieve',
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (value) {
+			return A2(
+				$elm$json$Json$Decode$andThen,
+				function (key) {
+					return $elm$json$Json$Decode$succeed(
+						{key: key, value: value});
+				},
+				A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+		},
+		A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$string)));
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$ListenClicks = {$: 'ListenClicks'};
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$AnimationManager$Time = function (a) {
@@ -7649,7 +7670,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$dropdownSubscriptions = F2(
 				]));
 	});
 var $elm$browser$Browser$Events$Window = {$: 'Window'};
-var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$browser$Browser$Events$onResize = function (func) {
 	return A3(
@@ -7724,6 +7744,10 @@ var $author$project$Main$subscriptions = function (model) {
 			_List_fromArray(
 				[
 					A2($rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions, model.navState, $author$project$Main$NavMsg),
+					$author$project$Ports$retrieve(
+					function (data) {
+						return $author$project$Main$RetrievedData(data);
+					}),
 					A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.singleDie.historyDropState, $author$project$Main$SingleRollDropStateChange),
 					A2($rundis$elm_bootstrap$Bootstrap$Dropdown$subscriptions, model.multiDice.historyDropState, $author$project$Main$MultiRollDropStateChange)
 				]),
@@ -8316,6 +8340,8 @@ var $author$project$List$Extra$replaceBy = F3(
 				_List_Nil,
 				items));
 	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Ports$requestRetrieval = _Platform_outgoingPort('requestRetrieval', $elm$json$Json$Encode$string);
 var $author$project$Main$mixedRandomGenerator = function (generators) {
 	var step = F2(
 		function (remaining, accumulator) {
@@ -8452,6 +8478,33 @@ var $author$project$MixedCard$setName = F2(
 	});
 var $rundis$elm_bootstrap$Bootstrap$Modal$Show = {$: 'Show'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$shown = $rundis$elm_bootstrap$Bootstrap$Modal$Show;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $author$project$Ports$store = _Platform_outgoingPort(
+	'store',
+	function ($) {
+		return $elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'key',
+					$elm$json$Json$Encode$string($.key)),
+					_Utils_Tuple2(
+					'value',
+					$elm$json$Json$Encode$string($.value))
+				]));
+	});
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
 		if (maybePort.$ === 'Nothing') {
@@ -8798,7 +8851,7 @@ var $author$project$Main$update = F2(
 							newMixedSet: A2($author$project$MixedCard$removeDie, index, model.newMixedSet)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'NewDieSetNameChanged':
 				var name = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -8807,10 +8860,28 @@ var $author$project$Main$update = F2(
 							newMixedSet: A2($author$project$MixedCard$setName, name, model.newMixedSet)
 						}),
 					$elm$core$Platform$Cmd$none);
+			case 'StoredData':
+				var data = msg.a;
+				return _Utils_Tuple2(
+					model,
+					$author$project$Ports$store(data));
+			case 'RetrievedData':
+				var data = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							storageTestData: $elm$core$Maybe$Just(data.value)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var key = msg.a;
+				return _Utils_Tuple2(
+					model,
+					$author$project$Ports$requestRetrieval(key));
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -9066,6 +9137,12 @@ var $author$project$Main$pageGettingStarted = function (_v0) {
 					$elm$html$Html$text('Click me')
 				]))
 		]);
+};
+var $author$project$Main$RequestRetrieval = function (a) {
+	return {$: 'RequestRetrieval', a: a};
+};
+var $author$project$Main$StoredData = function (a) {
+	return {$: 'StoredData', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Column = function (a) {
 	return {$: 'Column', a: a};
@@ -9553,7 +9630,6 @@ var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$html$Html$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -10519,7 +10595,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdown = F2(
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$DropdownToggle = function (a) {
 	return {$: 'DropdownToggle', a: a};
 };
-var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$Open = {$: 'Open'};
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
 	switch (status.$) {
@@ -12849,9 +12924,64 @@ var $author$project$Main$singleDieCard = function (model) {
 			]));
 	return A9($author$project$Main$diceCard, model.singleDie.name, $author$project$Main$singleRollMaxElementsDropdown, 'single-die', model.singleDie.explodes, $author$project$Main$SetSingleDieExplode, $author$project$Main$ClearSingleDieResults, buttons, $author$project$Main$singleDieResultList, model);
 };
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col);
 var $author$project$Main$pageHome = function (model) {
 	return _List_fromArray(
 		[
+			A2(
+			$rundis$elm_bootstrap$Bootstrap$Grid$row,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Grid$col,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$rundis$elm_bootstrap$Bootstrap$Button$button,
+									_List_fromArray(
+										[
+											$rundis$elm_bootstrap$Bootstrap$Button$primary,
+											$rundis$elm_bootstrap$Bootstrap$Button$small,
+											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+											$author$project$Main$StoredData(
+												{key: 'key', value: 'new value 3'}))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Add')
+										])),
+									A2(
+									$rundis$elm_bootstrap$Bootstrap$Button$button,
+									_List_fromArray(
+										[
+											$rundis$elm_bootstrap$Bootstrap$Button$primary,
+											$rundis$elm_bootstrap$Bootstrap$Button$small,
+											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
+											$author$project$Main$RequestRetrieval('key'))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Get')
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($elm$core$Maybe$withDefault, '<>', model.storageTestData))
+										]))
+								]))
+						]))
+				])),
 			A2(
 			$rundis$elm_bootstrap$Bootstrap$Grid$row,
 			_List_Nil,
@@ -14331,6 +14461,20 @@ var $author$project$Main$modal = function (model) {
 					_List_Nil,
 					_List_fromArray(
 						[
+							A2(
+							$rundis$elm_bootstrap$Bootstrap$Grid$row,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$rundis$elm_bootstrap$Bootstrap$Grid$col,
+									_List_fromArray(
+										[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('nice!')
+										]))
+								])),
 							A2(
 							$rundis$elm_bootstrap$Bootstrap$Grid$row,
 							_List_Nil,

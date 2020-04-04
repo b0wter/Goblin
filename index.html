@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="dice.css">
     <link rel="manifest" href="/manifest.json">
 
-    <script src="localstorage.js.js"></script>
+    <script src="localstorage.js"></script>
     <script src="main.js"></script>
     <script>
         navigator.serviceWorker.register('service-worker.js', {
@@ -43,11 +43,11 @@
     <script>
         var app = Elm.Main.init({})
         app.ports.store.subscribe(function({key, value}) {
-          localStorage.setItem(key, value);
+          saveToLocalStorage(key, value);
         });
         
         app.ports.requestRetrieval.subscribe(function(key) {
-          const item = localStorage.getItem(key);
+          const item = loadFromLocalStorage(key);
           app.ports.retrieve.send({key: key, value: item});
         });
     </script>
