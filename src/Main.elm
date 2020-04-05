@@ -389,8 +389,8 @@ pageHome model =
         [ Grid.col [ Col.xs ]
             [
                 div [] 
-                [ Button.button [ Button.primary, Button.small, Button.onClick (StoredData {key = "key", value = "new value 3"}) ] [ text "Add" ] 
-                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "key") ] [ text "Get" ] 
+                [ Button.button [ Button.primary, Button.small, Button.onClick (StoredData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "mixedCards")) ] [ text "Add" ] 
+                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "mixedCards") ] [ text "Get" ] 
                 , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
                 ]
             ]

@@ -10069,6 +10069,152 @@ var $author$project$Main$createMixedSetCard = function (model) {
 									]))
 							]))))));
 };
+var $author$project$Ports$createStorageObject = F2(
+	function (key, value) {
+		return {
+			key: key,
+			value: A2($elm$json$Json$Encode$encode, 0, value)
+		};
+	});
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)),
+			string);
+	});
+var $elm$core$String$fromList = _String_fromList;
+var $TSFoster$elm_uuid$UUID$toHex = F2(
+	function (acc, _int) {
+		toHex:
+		while (true) {
+			if (!_int) {
+				return $elm$core$String$fromList(acc);
+			} else {
+				var _char = function () {
+					var _v0 = 15 & _int;
+					switch (_v0) {
+						case 0:
+							return _Utils_chr('0');
+						case 1:
+							return _Utils_chr('1');
+						case 2:
+							return _Utils_chr('2');
+						case 3:
+							return _Utils_chr('3');
+						case 4:
+							return _Utils_chr('4');
+						case 5:
+							return _Utils_chr('5');
+						case 6:
+							return _Utils_chr('6');
+						case 7:
+							return _Utils_chr('7');
+						case 8:
+							return _Utils_chr('8');
+						case 9:
+							return _Utils_chr('9');
+						case 10:
+							return _Utils_chr('a');
+						case 11:
+							return _Utils_chr('b');
+						case 12:
+							return _Utils_chr('c');
+						case 13:
+							return _Utils_chr('d');
+						case 14:
+							return _Utils_chr('e');
+						default:
+							return _Utils_chr('f');
+					}
+				}();
+				var $temp$acc = A2($elm$core$List$cons, _char, acc),
+					$temp$int = _int >>> 4;
+				acc = $temp$acc;
+				_int = $temp$int;
+				continue toHex;
+			}
+		}
+	});
+var $TSFoster$elm_uuid$UUID$toString = function (_v0) {
+	var a = _v0.a;
+	var b = _v0.b;
+	var c = _v0.c;
+	var d = _v0.d;
+	return A3(
+		$elm$core$String$padLeft,
+		8,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, a)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, b >>> 16)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & b)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, c >>> 16)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & c)) + A3(
+		$elm$core$String$padLeft,
+		8,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, d))))))))));
+};
+var $author$project$MixedCard$encode = function (card) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(card.name)),
+				_Utils_Tuple2(
+				'dieFaces',
+				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, card.dieFaces)),
+				_Utils_Tuple2(
+				'id',
+				$elm$json$Json$Encode$string(
+					$TSFoster$elm_uuid$UUID$toString(card.id)))
+			]));
+};
+var $author$project$MixedCard$encodeMultiple = function (cards) {
+	return A2($elm$json$Json$Encode$list, $author$project$MixedCard$encode, cards);
+};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4 = {$: 'Col4'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth = function (a) {
 	return {$: 'ColWidth', a: a};
@@ -11390,116 +11536,6 @@ var $rundis$elm_bootstrap$Bootstrap$Table$th = F2(
 		return $rundis$elm_bootstrap$Bootstrap$Table$Th(
 			{children: children, options: options});
 	});
-var $elm$core$String$cons = _String_cons;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var $elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			$elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var $elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3($elm$core$String$repeatHelp, n, chunk, '');
-	});
-var $elm$core$String$padLeft = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)),
-			string);
-	});
-var $elm$core$String$fromList = _String_fromList;
-var $TSFoster$elm_uuid$UUID$toHex = F2(
-	function (acc, _int) {
-		toHex:
-		while (true) {
-			if (!_int) {
-				return $elm$core$String$fromList(acc);
-			} else {
-				var _char = function () {
-					var _v0 = 15 & _int;
-					switch (_v0) {
-						case 0:
-							return _Utils_chr('0');
-						case 1:
-							return _Utils_chr('1');
-						case 2:
-							return _Utils_chr('2');
-						case 3:
-							return _Utils_chr('3');
-						case 4:
-							return _Utils_chr('4');
-						case 5:
-							return _Utils_chr('5');
-						case 6:
-							return _Utils_chr('6');
-						case 7:
-							return _Utils_chr('7');
-						case 8:
-							return _Utils_chr('8');
-						case 9:
-							return _Utils_chr('9');
-						case 10:
-							return _Utils_chr('a');
-						case 11:
-							return _Utils_chr('b');
-						case 12:
-							return _Utils_chr('c');
-						case 13:
-							return _Utils_chr('d');
-						case 14:
-							return _Utils_chr('e');
-						default:
-							return _Utils_chr('f');
-					}
-				}();
-				var $temp$acc = A2($elm$core$List$cons, _char, acc),
-					$temp$int = _int >>> 4;
-				acc = $temp$acc;
-				_int = $temp$int;
-				continue toHex;
-			}
-		}
-	});
-var $TSFoster$elm_uuid$UUID$toString = function (_v0) {
-	var a = _v0.a;
-	var b = _v0.b;
-	var c = _v0.c;
-	var d = _v0.d;
-	return A3(
-		$elm$core$String$padLeft,
-		8,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, a)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, b >>> 16)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & b)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, c >>> 16)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & c)) + A3(
-		$elm$core$String$padLeft,
-		8,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, d))))))))));
-};
 var $author$project$Main$mixedSetCard = function (card) {
 	var dieTable = function () {
 		var resultRow = F2(
@@ -12952,7 +12988,10 @@ var $author$project$Main$pageHome = function (model) {
 											$rundis$elm_bootstrap$Bootstrap$Button$small,
 											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
 											$author$project$Main$StoredData(
-												{key: 'key', value: 'new value 3'}))
+												A2(
+													$author$project$Ports$createStorageObject,
+													'mixedCards',
+													$author$project$MixedCard$encodeMultiple(model.mixedDice))))
 										]),
 									_List_fromArray(
 										[
@@ -12965,7 +13004,7 @@ var $author$project$Main$pageHome = function (model) {
 											$rundis$elm_bootstrap$Bootstrap$Button$primary,
 											$rundis$elm_bootstrap$Bootstrap$Button$small,
 											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-											$author$project$Main$RequestRetrieval('key'))
+											$author$project$Main$RequestRetrieval('mixedCards'))
 										]),
 									_List_fromArray(
 										[

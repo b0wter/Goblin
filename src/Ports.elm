@@ -1,6 +1,6 @@
-port module Ports exposing (StorageObject, store, retrieve, requestRetrieval)
+port module Ports exposing (StorageObject, store, retrieve, requestRetrieval, createStorageObject)
 
-import Json.Encode as E
+import Json.Encode as Encode
 
 type alias StorageObject = 
     {
@@ -8,7 +8,13 @@ type alias StorageObject =
         value: String
     }
 
---port store : E.Value -> Cmd msg
+createStorageObject : String -> Encode.Value -> StorageObject
+createStorageObject key value =
+    {
+        key = key,
+        value = value |> Encode.encode 0
+    }
+
 port store : StorageObject -> Cmd msg
 
 port retrieve : (StorageObject -> msg) -> Sub msg
