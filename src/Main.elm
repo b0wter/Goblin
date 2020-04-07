@@ -23,6 +23,7 @@ import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Utilities.Spacing as Spacing
 import Random
 import UUID exposing (UUID)
+import Json.Decode as Decode
 
 import Ports
 import Roll
@@ -31,7 +32,9 @@ import DiceModel
 import MixedCard
 
 type alias Flags =
-    {}
+    {
+        serializedMixedCards : Decode.Value
+    }
 
 type alias Model =
     { navKey : Navigation.Key
@@ -64,10 +67,15 @@ main =
         }
 
 init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init _ url key =
+init flags url key =
     let
         ( navState, navCmd ) =
             Navbar.initialState NavMsg
+
+        ( serializedMixedCardError, serializedMixedCards ) = 
+            case flags.serializedMixedCards |> MixedCard.decodeMultiple of
+                Ok cards -> (Nothing, cards)
+                Err e -> (Just e, [])
 
         ( model, urlCmd ) =
             urlUpdate url { navKey = key
@@ -76,9 +84,9 @@ init _ url key =
                           , modalVisibility = Modal.hidden
                           , singleDie = DiceModel.withName "Roll single die"
                           , multiDice = DiceModel.withName "Roll multiple dice"
-                          , mixedDice = []
+                          , mixedDice = serializedMixedCards
                           , newMixedSet = MixedCard.firstEmptyCard
-                          , storageTestData = Nothing
+                          , storageTestData = Just (serializedMixedCardError |> Maybe.map Decode.errorToString |> Maybe.withDefault "")
                           }
     in
         ( model, Cmd.batch [ urlCmd, navCmd ] )
@@ -389,8 +397,8 @@ pageHome model =
         [ Grid.col [ Col.xs ]
             [
                 div [] 
-                [ Button.button [ Button.primary, Button.small, Button.onClick (StoredData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "mixedCards")) ] [ text "Add" ] 
-                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "mixedCards") ] [ text "Get" ] 
+                [ Button.button [ Button.primary, Button.small, Button.onClick (StoredData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
+                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
                 , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
                 ]
             ]

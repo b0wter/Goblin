@@ -1,4 +1,4 @@
-port module Ports exposing (StorageObject, store, retrieve, requestRetrieval, createStorageObject)
+port module Ports exposing (StorageObject, store, retrieve, requestRetrieval, createStorageObject, createSerializedStorageObject)
 
 import Json.Encode as Encode
 
@@ -13,6 +13,13 @@ createStorageObject key value =
     {
         key = key,
         value = value |> Encode.encode 0
+    }
+
+createSerializedStorageObject : String -> String -> StorageObject
+createSerializedStorageObject key value =
+    { 
+        key = key,
+        value = value
     }
 
 port store : StorageObject -> Cmd msg

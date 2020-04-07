@@ -80,271 +80,6 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
 console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.');
 
 
-// EQUALITY
-
-function _Utils_eq(x, y)
-{
-	for (
-		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
-		isEqual && (pair = stack.pop());
-		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
-		)
-	{}
-
-	return isEqual;
-}
-
-function _Utils_eqHelp(x, y, depth, stack)
-{
-	if (x === y)
-	{
-		return true;
-	}
-
-	if (typeof x !== 'object' || x === null || y === null)
-	{
-		typeof x === 'function' && _Debug_crash(5);
-		return false;
-	}
-
-	if (depth > 100)
-	{
-		stack.push(_Utils_Tuple2(x,y));
-		return true;
-	}
-
-	/**/
-	if (x.$ === 'Set_elm_builtin')
-	{
-		x = $elm$core$Set$toList(x);
-		y = $elm$core$Set$toList(y);
-	}
-	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	/**_UNUSED/
-	if (x.$ < 0)
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	for (var key in x)
-	{
-		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-var _Utils_equal = F2(_Utils_eq);
-var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
-
-
-
-// COMPARISONS
-
-// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
-// the particular integer values assigned to LT, EQ, and GT.
-
-function _Utils_cmp(x, y, ord)
-{
-	if (typeof x !== 'object')
-	{
-		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
-	}
-
-	/**/
-	if (x instanceof String)
-	{
-		var a = x.valueOf();
-		var b = y.valueOf();
-		return a === b ? 0 : a < b ? -1 : 1;
-	}
-	//*/
-
-	/**_UNUSED/
-	if (typeof x.$ === 'undefined')
-	//*/
-	/**/
-	if (x.$[0] === '#')
-	//*/
-	{
-		return (ord = _Utils_cmp(x.a, y.a))
-			? ord
-			: (ord = _Utils_cmp(x.b, y.b))
-				? ord
-				: _Utils_cmp(x.c, y.c);
-	}
-
-	// traverse conses until end of a list or a mismatch
-	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
-	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
-}
-
-var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
-var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
-var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
-var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
-
-var _Utils_compare = F2(function(x, y)
-{
-	var n = _Utils_cmp(x, y);
-	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
-});
-
-
-// COMMON VALUES
-
-var _Utils_Tuple0_UNUSED = 0;
-var _Utils_Tuple0 = { $: '#0' };
-
-function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
-
-function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
-
-function _Utils_chr_UNUSED(c) { return c; }
-function _Utils_chr(c) { return new String(c); }
-
-
-// RECORDS
-
-function _Utils_update(oldRecord, updatedFields)
-{
-	var newRecord = {};
-
-	for (var key in oldRecord)
-	{
-		newRecord[key] = oldRecord[key];
-	}
-
-	for (var key in updatedFields)
-	{
-		newRecord[key] = updatedFields[key];
-	}
-
-	return newRecord;
-}
-
-
-// APPEND
-
-var _Utils_append = F2(_Utils_ap);
-
-function _Utils_ap(xs, ys)
-{
-	// append Strings
-	if (typeof xs === 'string')
-	{
-		return xs + ys;
-	}
-
-	// append Lists
-	if (!xs.b)
-	{
-		return ys;
-	}
-	var root = _List_Cons(xs.a, ys);
-	xs = xs.b
-	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		curr = curr.b = _List_Cons(xs.a, ys);
-	}
-	return root;
-}
-
-
-
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
-
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
-{
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
-}
-
-function _List_toArray(xs)
-{
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
-}
-
-var _List_map2 = F3(function(f, xs, ys)
-{
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map3 = F4(function(f, xs, ys, zs)
-{
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
-{
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
-{
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_sortBy = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
-});
-
-var _List_sortWith = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
-	}));
-});
-
-
-
 var _JsArray_empty = [];
 
 function _JsArray_singleton(value)
@@ -790,6 +525,271 @@ function _Debug_regionToString(region)
 	}
 	return 'on lines ' + region.start.line + ' through ' + region.end.line;
 }
+
+
+
+// EQUALITY
+
+function _Utils_eq(x, y)
+{
+	for (
+		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
+		isEqual && (pair = stack.pop());
+		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
+		)
+	{}
+
+	return isEqual;
+}
+
+function _Utils_eqHelp(x, y, depth, stack)
+{
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (typeof x !== 'object' || x === null || y === null)
+	{
+		typeof x === 'function' && _Debug_crash(5);
+		return false;
+	}
+
+	if (depth > 100)
+	{
+		stack.push(_Utils_Tuple2(x,y));
+		return true;
+	}
+
+	/**/
+	if (x.$ === 'Set_elm_builtin')
+	{
+		x = $elm$core$Set$toList(x);
+		y = $elm$core$Set$toList(y);
+	}
+	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	/**_UNUSED/
+	if (x.$ < 0)
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	for (var key in x)
+	{
+		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+var _Utils_equal = F2(_Utils_eq);
+var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
+
+
+
+// COMPARISONS
+
+// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
+// the particular integer values assigned to LT, EQ, and GT.
+
+function _Utils_cmp(x, y, ord)
+{
+	if (typeof x !== 'object')
+	{
+		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
+	}
+
+	/**/
+	if (x instanceof String)
+	{
+		var a = x.valueOf();
+		var b = y.valueOf();
+		return a === b ? 0 : a < b ? -1 : 1;
+	}
+	//*/
+
+	/**_UNUSED/
+	if (typeof x.$ === 'undefined')
+	//*/
+	/**/
+	if (x.$[0] === '#')
+	//*/
+	{
+		return (ord = _Utils_cmp(x.a, y.a))
+			? ord
+			: (ord = _Utils_cmp(x.b, y.b))
+				? ord
+				: _Utils_cmp(x.c, y.c);
+	}
+
+	// traverse conses until end of a list or a mismatch
+	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
+	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
+}
+
+var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
+var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
+var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
+var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
+
+var _Utils_compare = F2(function(x, y)
+{
+	var n = _Utils_cmp(x, y);
+	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
+});
+
+
+// COMMON VALUES
+
+var _Utils_Tuple0_UNUSED = 0;
+var _Utils_Tuple0 = { $: '#0' };
+
+function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
+
+function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
+
+function _Utils_chr_UNUSED(c) { return c; }
+function _Utils_chr(c) { return new String(c); }
+
+
+// RECORDS
+
+function _Utils_update(oldRecord, updatedFields)
+{
+	var newRecord = {};
+
+	for (var key in oldRecord)
+	{
+		newRecord[key] = oldRecord[key];
+	}
+
+	for (var key in updatedFields)
+	{
+		newRecord[key] = updatedFields[key];
+	}
+
+	return newRecord;
+}
+
+
+// APPEND
+
+var _Utils_append = F2(_Utils_ap);
+
+function _Utils_ap(xs, ys)
+{
+	// append Strings
+	if (typeof xs === 'string')
+	{
+		return xs + ys;
+	}
+
+	// append Lists
+	if (!xs.b)
+	{
+		return ys;
+	}
+	var root = _List_Cons(xs.a, ys);
+	xs = xs.b
+	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		curr = curr.b = _List_Cons(xs.a, ys);
+	}
+	return root;
+}
+
+
+
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
+
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
+	}));
+});
 
 
 
@@ -4357,6 +4357,43 @@ function _Browser_load(url)
 }
 
 
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
+
+
 // BYTES
 
 function _Bytes_width(bytes)
@@ -4535,43 +4572,6 @@ var _Bytes_read_string = F3(function(len, bytes, offset)
 var _Bytes_decodeFailure = F2(function() { throw 0; });
 
 
-
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
 function _Url_percentEncode(string)
 {
 	return encodeURIComponent(string);
@@ -4639,10 +4639,31 @@ var $author$project$Main$ClickedLink = function (a) {
 var $author$project$Main$UrlChange = function (a) {
 	return {$: 'UrlChange', a: a};
 };
-var $elm$core$Basics$EQ = {$: 'EQ'};
-var $elm$core$Basics$GT = {$: 'GT'};
-var $elm$core$Basics$LT = {$: 'LT'};
 var $elm$core$List$cons = _List_cons;
+var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
+var $elm$core$Array$foldr = F3(
+	function (func, baseCase, _v0) {
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = F2(
+			function (node, acc) {
+				if (node.$ === 'SubTree') {
+					var subTree = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+				} else {
+					var values = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
+				}
+			});
+		return A3(
+			$elm$core$Elm$JsArray$foldr,
+			helper,
+			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
+			tree);
+	});
+var $elm$core$Array$toList = function (array) {
+	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
+};
 var $elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
 		foldr:
@@ -4695,30 +4716,9 @@ var $elm$core$Set$toList = function (_v0) {
 	var dict = _v0.a;
 	return $elm$core$Dict$keys(dict);
 };
-var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
-var $elm$core$Array$foldr = F3(
-	function (func, baseCase, _v0) {
-		var tree = _v0.c;
-		var tail = _v0.d;
-		var helper = F2(
-			function (node, acc) {
-				if (node.$ === 'SubTree') {
-					var subTree = node.a;
-					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
-				} else {
-					var values = node.a;
-					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
-				}
-			});
-		return A3(
-			$elm$core$Elm$JsArray$foldr,
-			helper,
-			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
-			tree);
-	});
-var $elm$core$Array$toList = function (array) {
-	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
-};
+var $elm$core$Basics$EQ = {$: 'EQ'};
+var $elm$core$Basics$GT = {$: 'GT'};
+var $elm$core$Basics$LT = {$: 'LT'};
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -5114,6 +5114,7 @@ var $elm$core$Result$isOk = function (result) {
 		return false;
 	}
 };
+var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$map = _Json_map1;
 var $elm$json$Json$Decode$map2 = _Json_map2;
 var $elm$json$Json$Decode$succeed = _Json_succeed;
@@ -5428,11 +5429,30 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
+var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Main$Home = {$: 'Home'};
 var $author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$MixedCard$JsonModel = F3(
+	function (name, dieFaces, id) {
+		return {dieFaces: dieFaces, id: id, name: name};
+	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$MixedCard$decoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$MixedCard$JsonModel,
+	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'dieFaces',
+		$elm$json$Json$Decode$list($elm$json$Json$Decode$int)),
+	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
 	function (top, left, width, height) {
 		return {height: height, left: left, top: top, width: width};
@@ -5451,6 +5471,250 @@ var $author$project$DiceModel$withName = function (name) {
 	return {explodes: false, historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, name: name, rolls: _List_Nil};
 };
 var $author$project$DiceModel$empty = $author$project$DiceModel$withName('<unnamed>');
+var $author$project$MixedCard$createWithoutHistory = F3(
+	function (name, dieFaces, id) {
+		return {dice: $author$project$DiceModel$empty, dieFaces: dieFaces, id: id, name: name};
+	});
+var $TSFoster$elm_uuid$UUID$WrongFormat = {$: 'WrongFormat'};
+var $TSFoster$elm_uuid$UUID$WrongLength = {$: 'WrongLength'};
+var $elm$core$String$endsWith = _String_endsWith;
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $TSFoster$elm_uuid$UUID$IsNil = {$: 'IsNil'};
+var $TSFoster$elm_uuid$UUID$NoVersion = {$: 'NoVersion'};
+var $TSFoster$elm_uuid$UUID$UUID = F4(
+	function (a, b, c, d) {
+		return {$: 'UUID', a: a, b: b, c: c, d: d};
+	});
+var $TSFoster$elm_uuid$UUID$UnsupportedVariant = {$: 'UnsupportedVariant'};
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $TSFoster$elm_uuid$UUID$isVariant1 = function (_v0) {
+	var c = _v0.c;
+	return (c >>> 30) === 2;
+};
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $TSFoster$elm_uuid$UUID$version = function (_v0) {
+	var b = _v0.b;
+	return 15 & (b >>> 12);
+};
+var $TSFoster$elm_uuid$UUID$fromInt32s = F4(
+	function (a, b, c, d) {
+		var wouldBeUUID = A4($TSFoster$elm_uuid$UUID$UUID, a, b, c, d);
+		return ((!a) && ((!b) && ((!c) && (!d)))) ? $elm$core$Result$Err($TSFoster$elm_uuid$UUID$IsNil) : (($TSFoster$elm_uuid$UUID$version(wouldBeUUID) > 5) ? $elm$core$Result$Err($TSFoster$elm_uuid$UUID$NoVersion) : ((!$TSFoster$elm_uuid$UUID$isVariant1(wouldBeUUID)) ? $elm$core$Result$Err($TSFoster$elm_uuid$UUID$UnsupportedVariant) : $elm$core$Result$Ok(wouldBeUUID)));
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $TSFoster$elm_uuid$UUID$forceUnsigned = $elm$core$Bitwise$shiftRightZfBy(0);
+var $elm$core$Bitwise$or = _Bitwise_or;
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $TSFoster$elm_uuid$UUID$nibbleValuesToU32 = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return $TSFoster$elm_uuid$UUID$forceUnsigned((a << 28) | ((b << 24) | ((c << 20) | ((d << 16) | ((e << 12) | ((f << 8) | ((g << 4) | h)))))));
+	});
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $elm$core$String$toLower = _String_toLower;
+var $TSFoster$elm_uuid$UUID$toNibbleValue = function (_char) {
+	switch (_char.valueOf()) {
+		case '0':
+			return $elm$core$Maybe$Just(0);
+		case '1':
+			return $elm$core$Maybe$Just(1);
+		case '2':
+			return $elm$core$Maybe$Just(2);
+		case '3':
+			return $elm$core$Maybe$Just(3);
+		case '4':
+			return $elm$core$Maybe$Just(4);
+		case '5':
+			return $elm$core$Maybe$Just(5);
+		case '6':
+			return $elm$core$Maybe$Just(6);
+		case '7':
+			return $elm$core$Maybe$Just(7);
+		case '8':
+			return $elm$core$Maybe$Just(8);
+		case '9':
+			return $elm$core$Maybe$Just(9);
+		case 'a':
+			return $elm$core$Maybe$Just(10);
+		case 'b':
+			return $elm$core$Maybe$Just(11);
+		case 'c':
+			return $elm$core$Maybe$Just(12);
+		case 'd':
+			return $elm$core$Maybe$Just(13);
+		case 'e':
+			return $elm$core$Maybe$Just(14);
+		case 'f':
+			return $elm$core$Maybe$Just(15);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $TSFoster$elm_uuid$UUID$fromString = function (string) {
+	var normalized = function (str) {
+		return A2($elm$core$String$startsWith, 'urn:uuid:', str) ? A2($elm$core$String$dropLeft, 9, str) : ((A2($elm$core$String$startsWith, '{', str) && A2($elm$core$String$endsWith, '}', str)) ? A3($elm$core$String$slice, 1, -1, str) : str);
+	}(
+		$elm$core$String$toLower(
+			A3(
+				$elm$core$String$replace,
+				'-',
+				'',
+				A3(
+					$elm$core$String$replace,
+					' ',
+					'',
+					A3(
+						$elm$core$String$replace,
+						'\t',
+						'',
+						A3($elm$core$String$replace, '\n', '', string))))));
+	if ($elm$core$String$length(normalized) !== 32) {
+		return $elm$core$Result$Err($TSFoster$elm_uuid$UUID$WrongLength);
+	} else {
+		var _v0 = A2(
+			$elm$core$List$filterMap,
+			$TSFoster$elm_uuid$UUID$toNibbleValue,
+			$elm$core$String$toList(normalized));
+		if ((((((((((((((((((((((((((((((((_v0.b && _v0.b.b) && _v0.b.b.b) && _v0.b.b.b.b) && _v0.b.b.b.b.b) && _v0.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && _v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b) && (!_v0.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b.b)) {
+			var a1 = _v0.a;
+			var _v1 = _v0.b;
+			var a2 = _v1.a;
+			var _v2 = _v1.b;
+			var a3 = _v2.a;
+			var _v3 = _v2.b;
+			var a4 = _v3.a;
+			var _v4 = _v3.b;
+			var a5 = _v4.a;
+			var _v5 = _v4.b;
+			var a6 = _v5.a;
+			var _v6 = _v5.b;
+			var a7 = _v6.a;
+			var _v7 = _v6.b;
+			var a8 = _v7.a;
+			var _v8 = _v7.b;
+			var b1 = _v8.a;
+			var _v9 = _v8.b;
+			var b2 = _v9.a;
+			var _v10 = _v9.b;
+			var b3 = _v10.a;
+			var _v11 = _v10.b;
+			var b4 = _v11.a;
+			var _v12 = _v11.b;
+			var b5 = _v12.a;
+			var _v13 = _v12.b;
+			var b6 = _v13.a;
+			var _v14 = _v13.b;
+			var b7 = _v14.a;
+			var _v15 = _v14.b;
+			var b8 = _v15.a;
+			var _v16 = _v15.b;
+			var c1 = _v16.a;
+			var _v17 = _v16.b;
+			var c2 = _v17.a;
+			var _v18 = _v17.b;
+			var c3 = _v18.a;
+			var _v19 = _v18.b;
+			var c4 = _v19.a;
+			var _v20 = _v19.b;
+			var c5 = _v20.a;
+			var _v21 = _v20.b;
+			var c6 = _v21.a;
+			var _v22 = _v21.b;
+			var c7 = _v22.a;
+			var _v23 = _v22.b;
+			var c8 = _v23.a;
+			var _v24 = _v23.b;
+			var d1 = _v24.a;
+			var _v25 = _v24.b;
+			var d2 = _v25.a;
+			var _v26 = _v25.b;
+			var d3 = _v26.a;
+			var _v27 = _v26.b;
+			var d4 = _v27.a;
+			var _v28 = _v27.b;
+			var d5 = _v28.a;
+			var _v29 = _v28.b;
+			var d6 = _v29.a;
+			var _v30 = _v29.b;
+			var d7 = _v30.a;
+			var _v31 = _v30.b;
+			var d8 = _v31.a;
+			return A4(
+				$TSFoster$elm_uuid$UUID$fromInt32s,
+				A8($TSFoster$elm_uuid$UUID$nibbleValuesToU32, a1, a2, a3, a4, a5, a6, a7, a8),
+				A8($TSFoster$elm_uuid$UUID$nibbleValuesToU32, b1, b2, b3, b4, b5, b6, b7, b8),
+				A8($TSFoster$elm_uuid$UUID$nibbleValuesToU32, c1, c2, c3, c4, c5, c6, c7, c8),
+				A8($TSFoster$elm_uuid$UUID$nibbleValuesToU32, d1, d2, d3, d4, d5, d6, d7, d8));
+		} else {
+			return $elm$core$Result$Err($TSFoster$elm_uuid$UUID$WrongFormat);
+		}
+	}
+};
+var $author$project$MixedCard$fromJsonModel = function (json) {
+	var _v0 = $TSFoster$elm_uuid$UUID$fromString(json.id);
+	if (_v0.$ === 'Ok') {
+		var parsedId = _v0.a;
+		return $elm$core$Maybe$Just(
+			A3($author$project$MixedCard$createWithoutHistory, json.name, json.dieFaces, parsedId));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm_community$maybe_extra$Maybe$Extra$cons = F2(
+	function (item, list) {
+		if (item.$ === 'Just') {
+			var v = item.a;
+			return A2($elm$core$List$cons, v, list);
+		} else {
+			return list;
+		}
+	});
+var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$cons, _List_Nil);
+var $author$project$MixedCard$decodeMultiple = function (json) {
+	var d = A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$List$map($author$project$MixedCard$fromJsonModel),
+		$elm$json$Json$Decode$list($author$project$MixedCard$decoder));
+	var _v0 = A2($elm$json$Json$Decode$decodeValue, d, json);
+	if (_v0.$ === 'Ok') {
+		var cards = _v0.a;
+		return $elm$core$Result$Ok(
+			$elm_community$maybe_extra$Maybe$Extra$values(cards));
+	} else {
+		var e = _v0.a;
+		return $elm$core$Result$Err(e);
+	}
+};
 var $author$project$MixedCard$empty = function (id) {
 	return {dice: $author$project$DiceModel$empty, dieFaces: _List_Nil, id: id, name: ''};
 };
@@ -5583,10 +5847,6 @@ var $elm$bytes$Bytes$Encode$writeSequence = F3(
 		}
 	});
 var $elm$bytes$Bytes$Encode$encode = _Bytes_encode;
-var $TSFoster$elm_uuid$UUID$UUID = F4(
-	function (a, b, c, d) {
-		return {$: 'UUID', a: a, b: b, c: c, d: d};
-	});
 var $elm$bytes$Bytes$Encode$Bytes = function (a) {
 	return {$: 'Bytes', a: a};
 };
@@ -5746,7 +6006,6 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
 var $elm$bytes$Bytes$Encode$U8 = function (a) {
 	return {$: 'U8', a: a};
 };
@@ -5917,10 +6176,7 @@ var $TSFoster$elm_sha1$SHA1$Tuple5 = F5(
 	function (a, b, c, d, e) {
 		return {a: a, b: b, c: c, d: d, e: e};
 	});
-var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$complement = _Bitwise_complement;
-var $elm$core$Bitwise$or = _Bitwise_or;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $TSFoster$elm_sha1$SHA1$rotateLeftBy = F2(
 	function (amount, i) {
 		return ((i >>> (32 - amount)) | (i << amount)) >>> 0;
@@ -6196,7 +6452,6 @@ var $TSFoster$elm_sha1$SHA1$toInt32s = function (_v0) {
 	var digest = _v0.a;
 	return digest;
 };
-var $TSFoster$elm_uuid$UUID$forceUnsigned = $elm$core$Bitwise$shiftRightZfBy(0);
 var $TSFoster$elm_uuid$UUID$toVariant1 = function (_v0) {
 	var a = _v0.a;
 	var b = _v0.b;
@@ -6303,6 +6558,16 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$initialState = function (toMsg) {
 		state,
 		A2($rundis$elm_bootstrap$Bootstrap$Navbar$initWindowSize, toMsg, state));
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Main$NotFound = {$: 'NotFound'};
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
@@ -7076,15 +7341,29 @@ var $author$project$Main$urlUpdate = F2(
 		}
 	});
 var $author$project$Main$init = F3(
-	function (_v0, url, key) {
-		var _v1 = $rundis$elm_bootstrap$Bootstrap$Navbar$initialState($author$project$Main$NavMsg);
-		var navState = _v1.a;
-		var navCmd = _v1.b;
-		var _v2 = A2(
+	function (flags, url, key) {
+		var _v0 = function () {
+			var _v1 = $author$project$MixedCard$decodeMultiple(flags.serializedMixedCards);
+			if (_v1.$ === 'Ok') {
+				var cards = _v1.a;
+				return _Utils_Tuple2($elm$core$Maybe$Nothing, cards);
+			} else {
+				var e = _v1.a;
+				return _Utils_Tuple2(
+					$elm$core$Maybe$Just(e),
+					_List_Nil);
+			}
+		}();
+		var serializedMixedCardError = _v0.a;
+		var serializedMixedCards = _v0.b;
+		var _v2 = $rundis$elm_bootstrap$Bootstrap$Navbar$initialState($author$project$Main$NavMsg);
+		var navState = _v2.a;
+		var navCmd = _v2.b;
+		var _v3 = A2(
 			$author$project$Main$urlUpdate,
 			url,
 			{
-				mixedDice: _List_Nil,
+				mixedDice: serializedMixedCards,
 				modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden,
 				multiDice: $author$project$DiceModel$withName('Roll multiple dice'),
 				navKey: key,
@@ -7092,10 +7371,14 @@ var $author$project$Main$init = F3(
 				newMixedSet: $author$project$MixedCard$firstEmptyCard,
 				page: $author$project$Main$Home,
 				singleDie: $author$project$DiceModel$withName('Roll single die'),
-				storageTestData: $elm$core$Maybe$Nothing
+				storageTestData: $elm$core$Maybe$Just(
+					A2(
+						$elm$core$Maybe$withDefault,
+						'',
+						A2($elm$core$Maybe$map, $elm$json$Json$Decode$errorToString, serializedMixedCardError)))
 			});
-		var model = _v2.a;
-		var urlCmd = _v2.b;
+		var model = _v3.a;
+		var urlCmd = _v3.b;
 		return _Utils_Tuple2(
 			model,
 			$elm$core$Platform$Cmd$batch(
@@ -7115,9 +7398,6 @@ var $author$project$Main$SingleRollDropStateChange = function (a) {
 	return {$: 'SingleRollDropStateChange', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Ports$retrieve = _Platform_incomingPort(
 	'retrieve',
 	A2(
@@ -7490,24 +7770,6 @@ var $elm$browser$Browser$Events$onEffects = F3(
 				$elm$core$Task$sequence(
 					A2($elm$core$List$map, $elm$core$Process$kill, deadPids))));
 	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var $elm$browser$Browser$Events$onSelfMsg = F3(
 	function (router, _v0, state) {
 		var key = _v0.key;
@@ -7670,7 +7932,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$dropdownSubscriptions = F2(
 				]));
 	});
 var $elm$browser$Browser$Events$Window = {$: 'Window'};
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$browser$Browser$Events$onResize = function (func) {
 	return A3(
 		$elm$browser$Browser$Events$on,
@@ -8148,9 +8409,6 @@ var $elm$random$Random$map4 = F5(
 					seed4);
 			});
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$random$Random$peel = function (_v0) {
 	var state = _v0.a;
 	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
@@ -8208,7 +8466,6 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$MixedCard$isComplete = function (card) {
 	return !($elm$core$List$isEmpty(card.dieFaces) || $elm$core$String$isEmpty(card.name));
 };
@@ -8281,7 +8538,6 @@ var $author$project$Main$multiDiceGenerator = F3(
 			diceCount,
 			A3($author$project$Main$singleDieGenerator, explode, 0, faceCount));
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var $author$project$List$Extra$removeIndex = F2(
 	function (i, list) {
@@ -8398,16 +8654,6 @@ var $author$project$MixedCard$setExplodes = F2(
 				return A2($author$project$DiceModel$setExplode, explodes, d);
 			},
 			card);
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
 	});
 var $author$project$Main$setForMixedSet = F3(
 	function (f, id, model) {
@@ -8881,6 +9127,7 @@ var $author$project$Main$update = F2(
 					$author$project$Ports$requestRetrieval(key));
 		}
 	});
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -10752,7 +10999,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
 			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Open;
 	}
 };
-var $elm$json$Json$Decode$map3 = _Json_map3;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight = A2($elm$json$Json$Decode$field, 'offsetHeight', $elm$json$Json$Decode$float);
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth = A2($elm$json$Json$Decode$field, 'offsetWidth', $elm$json$Json$Decode$float);
@@ -12990,7 +13236,7 @@ var $author$project$Main$pageHome = function (model) {
 											$author$project$Main$StoredData(
 												A2(
 													$author$project$Ports$createStorageObject,
-													'mixedCards',
+													'serializedMixedCards',
 													$author$project$MixedCard$encodeMultiple(model.mixedDice))))
 										]),
 									_List_fromArray(
@@ -13004,7 +13250,7 @@ var $author$project$Main$pageHome = function (model) {
 											$rundis$elm_bootstrap$Bootstrap$Button$primary,
 											$rundis$elm_bootstrap$Bootstrap$Button$small,
 											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-											$author$project$Main$RequestRetrieval('mixedCards'))
+											$author$project$Main$RequestRetrieval('serializedMixedCards'))
 										]),
 									_List_fromArray(
 										[
@@ -13877,14 +14123,12 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$renderNav = F3(
 				},
 				navItems));
 	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$parentElement = function (decoder) {
 	return A2($elm$json$Json$Decode$field, 'parentElement', decoder);
 };
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$target = function (decoder) {
 	return A2($elm$json$Json$Decode$field, 'target', decoder);
 };
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $rundis$elm_bootstrap$Bootstrap$Navbar$heightDecoder = function () {
 	var tagDecoder = A3(
 		$elm$json$Json$Decode$map2,
@@ -14568,5 +14812,10 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$application(
 	{init: $author$project$Main$init, onUrlChange: $author$project$Main$UrlChange, onUrlRequest: $author$project$Main$ClickedLink, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(
-		{}))(0)}});}(this));
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (serializedMixedCards) {
+			return $elm$json$Json$Decode$succeed(
+				{serializedMixedCards: serializedMixedCards});
+		},
+		A2($elm$json$Json$Decode$field, 'serializedMixedCards', $elm$json$Json$Decode$value)))(0)}});}(this));

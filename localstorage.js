@@ -23,3 +23,14 @@ function removeFromLocalStorage(key) {
         console.log(ex);
     }
 }
+
+function doesLocalStorageKeyExist(key) {
+    try {
+        const item = localStorage.getItem(key);
+        return !(item === null);
+    }
+    catch(ex) {
+        console.log(ex);
+        return false;
+    }
+}

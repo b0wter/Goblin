@@ -14,6 +14,7 @@ module MixedCard exposing ( MixedCard
                           , setHistoryLength
                           , encodeMultiple
                           , decodeMultiple
+                          , decodeMultipleFromString
                           )
 
 import DiceModel
@@ -133,7 +134,6 @@ fromJsonModel json =
 decode : Decode.Value -> Maybe MixedCard
 decode json =
     case Decode.decodeValue decoder json of
-    --case Decode.decodeString decoder json of
         Result.Ok jsonModel ->
             case UUID.fromString jsonModel.id of
                 Ok parsedId ->
@@ -142,10 +142,16 @@ decode json =
                     Nothing
         Result.Err _ -> Nothing
 
-decodeMultiple : String -> List MixedCard
+decodeMultipleFromString : String -> Result Decode.Error (List MixedCard)
+decodeMultipleFromString json =
+    case Decode.decodeString Decode.value json of
+       Ok j -> decodeMultiple j
+       Err e -> Err e
+
+decodeMultiple : Decode.Value -> Result Decode.Error (List MixedCard)
 decodeMultiple json =
     let d = Decode.map (List.map fromJsonModel) (Decode.list decoder)
     in
-        case Decode.decodeString d json of
-            Ok cards -> cards |> Maybe.Extra.values
-            Err _ -> []
+        case Decode.decodeValue d json of
+            Ok cards -> Ok (cards |> Maybe.Extra.values)
+            Err e -> Err e

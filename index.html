@@ -41,7 +41,22 @@
   </head>
   <body>
     <script>
-        var app = Elm.Main.init({})
+        const SERIALIZED_MIXED_CARDS_KEY = "serializedMixedCards";
+        let serializedMixedCards = [];
+
+        if (doesLocalStorageKeyExist(SERIALIZED_MIXED_CARDS_KEY))
+        {
+          serializedMixedCards = JSON.parse(loadFromLocalStorage(SERIALIZED_MIXED_CARDS_KEY));
+          console.log("Previously serialized mixed cards have been found.");
+        } 
+        else 
+        {
+          console.log("Didn't find any previous mixed cards.");
+        }
+
+        var app = Elm.Main.init({
+          flags: { serializedMixedCards : serializedMixedCards }
+        });
         app.ports.store.subscribe(function({key, value}) {
           saveToLocalStorage(key, value);
         });
