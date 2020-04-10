@@ -8971,6 +8971,23 @@ var $author$project$Main$addNewSet = function (model) {
 			_List_fromArray(
 				[newCmd, additionalCommand])));
 };
+var $author$project$Main$removeMixedCard = F2(
+	function (id, model) {
+		var newModel = _Utils_update(
+			model,
+			{
+				mixedDice: A2(
+					$elm$core$List$filter,
+					function (x) {
+						return !_Utils_eq(x.id, id);
+					},
+					model.mixedDice)
+			});
+		return A2(
+			$author$project$Main$update,
+			$author$project$Main$saveMixedCardsToLocalStorage(newModel),
+			newModel);
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -9219,20 +9236,9 @@ var $author$project$Main$update = F2(
 						id,
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 'DeleteMixedSetCard':
+			case 'DeleteMixedCard':
 				var id = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							mixedDice: A2(
-								$elm$core$List$filter,
-								function (x) {
-									return !_Utils_eq(x.id, id);
-								},
-								model.mixedDice)
-						}),
-					$elm$core$Platform$Cmd$none);
+				return A2($author$project$Main$removeMixedCard, id, model);
 			case 'ResetNewMixedSet':
 				var id = msg.a;
 				return _Utils_Tuple2(
@@ -10728,8 +10734,8 @@ var $author$project$DebugOutput$messageAsAlert = function (message) {
 var $author$project$Main$ClearMixedDiceResults = function (a) {
 	return {$: 'ClearMixedDiceResults', a: a};
 };
-var $author$project$Main$DeleteMixedSetCard = function (a) {
-	return {$: 'DeleteMixedSetCard', a: a};
+var $author$project$Main$DeleteMixedCard = function (a) {
+	return {$: 'DeleteMixedCard', a: a};
 };
 var $author$project$Main$RollMixedDice = function (a) {
 	return {$: 'RollMixedDice', a: a};
@@ -12254,7 +12260,7 @@ var $author$project$Main$mixedSetCard = function (card) {
 												[
 													$elm$html$Html$Attributes$class('cursor-pointer'),
 													$elm$html$Html$Events$onClick(
-													$author$project$Main$DeleteMixedSetCard(card.id))
+													$author$project$Main$DeleteMixedCard(card.id))
 												]),
 											_List_fromArray(
 												[

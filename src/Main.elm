@@ -124,7 +124,7 @@ type Msg
     | ClearMixedDiceResults UUID
     | SetMixedDiceExplode (UUID, Bool)
     | ResetNewMixedSet UUID
-    | DeleteMixedSetCard UUID
+    | DeleteMixedCard UUID
     --
     | ClearNewSet
     | AddNewSet
@@ -268,9 +268,12 @@ update msg model =
             ( model |> setForMixedSet (\c -> MixedCard.setExplodes checked c) id 
             , Cmd.none)
 
-        DeleteMixedSetCard id ->
+        DeleteMixedCard id ->
+            removeMixedCard id model
+        {-
             ( { model | mixedDice = model.mixedDice |> List.filter (\x -> x.id /= id) }
             , Cmd.none)
+        -}
 
         ResetNewMixedSet id ->
             ( { model | newMixedSet = MixedCard.empty id }
@@ -338,6 +341,13 @@ addNewSet model =
     in 
         (newModel, Cmd.batch [ newCmd, additionalCommand ])
             
+removeMixedCard : UUID -> Model -> (Model, Cmd Msg)
+removeMixedCard id model =
+    let
+        newModel =
+            { model | mixedDice = model.mixedDice |> List.filter (\x -> x.id /= id) }
+    in
+        newModel |> update (saveMixedCardsToLocalStorage newModel)
 
 setForMixedSet : (MixedCard.MixedCard -> MixedCard.MixedCard) -> UUID -> Model -> Model
 setForMixedSet f id model =
@@ -670,7 +680,7 @@ mixedSetCard card =
                     )
     in
         Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
-            |> Card.headerH4 [] [ div [ class "d-flex justify-content-between"] [ div [] [ text card.name ], div [] [ small [ class "cursor-pointer", onClick (DeleteMixedSetCard card.id) ] [ text "❌" ] ] ] ]
+            |> Card.headerH4 [] [ div [ class "d-flex justify-content-between"] [ div [] [ text card.name ], div [] [ small [ class "cursor-pointer", onClick (DeleteMixedCard card.id) ] [ text "❌" ] ] ] ]
             |> Card.footer []
                 [ div [ class "d-flex justify-content-between" ] 
                     [ div [ class ""]
