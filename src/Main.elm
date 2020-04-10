@@ -433,11 +433,13 @@ pageHome model =
     [ Grid.row []
         [ Grid.col [ Col.xs ]
             [
-                div [] 
+                div [] []
+                {- Put debug elements here :)
                 [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
                 , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
                 , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
                 ]
+                -}
             ]
         ]
     , Grid.row []

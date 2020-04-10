@@ -9559,9 +9559,6 @@ var $author$project$Main$pageGettingStarted = function (_v0) {
 				]))
 		]);
 };
-var $author$project$Main$RequestRetrieval = function (a) {
-	return {$: 'RequestRetrieval', a: a};
-};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Column = function (a) {
 	return {$: 'Column', a: a};
 };
@@ -13481,50 +13478,7 @@ var $author$project$Main$pageHome = function (model) {
 						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs]),
 					_List_fromArray(
 						[
-							A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									A2(
-									$rundis$elm_bootstrap$Bootstrap$Button$button,
-									_List_fromArray(
-										[
-											$rundis$elm_bootstrap$Bootstrap$Button$primary,
-											$rundis$elm_bootstrap$Bootstrap$Button$small,
-											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-											$author$project$Main$StoreData(
-												A2(
-													$author$project$Ports$createStorageObject,
-													'serializedMixedCards',
-													$author$project$MixedCard$encodeMultiple(model.mixedDice))))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Add')
-										])),
-									A2(
-									$rundis$elm_bootstrap$Bootstrap$Button$button,
-									_List_fromArray(
-										[
-											$rundis$elm_bootstrap$Bootstrap$Button$primary,
-											$rundis$elm_bootstrap$Bootstrap$Button$small,
-											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-											$author$project$Main$RequestRetrieval('serializedMixedCards'))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Get')
-										])),
-									A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($elm$core$Maybe$withDefault, '<>', model.storageTestData))
-										]))
-								]))
+							A2($elm$html$Html$div, _List_Nil, _List_Nil)
 						]))
 				])),
 			A2(
