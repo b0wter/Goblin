@@ -21,7 +21,6 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Utilities.Spacing as Spacing
-import Bootstrap.Alert as Alert
 import Random
 import UUID exposing (UUID)
 import Json.Decode as Decode
@@ -270,10 +269,6 @@ update msg model =
 
         DeleteMixedCard id ->
             removeMixedCard id model
-        {-
-            ( { model | mixedDice = model.mixedDice |> List.filter (\x -> x.id /= id) }
-            , Cmd.none)
-        -}
 
         ResetNewMixedSet id ->
             ( { model | newMixedSet = MixedCard.empty id }
