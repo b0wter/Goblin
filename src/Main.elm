@@ -687,7 +687,6 @@ mixedSetCard card =
                     , div [ class ""] 
                         [ Button.button [ Button.secondary, Button.small, Button.onClick (ClearMixedDiceResults card.id) ] [ text "Clear" ] ] 
                     ]
-                , div [ class "text-muted"] [ small [] [ text (card.id |> UUID.toString) ] ]
                 ]         
             |> Card.block [ Block.attrs [ class "text-center pb-0"] ]
                 [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, card.dice.explodes)) ] [ text "Roll" ] ]

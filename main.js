@@ -12210,23 +12210,6 @@ var $author$project$Main$mixedSetCard = function (card) {
 												$elm$html$Html$text('Clear')
 											]))
 									]))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('text-muted')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$small,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text(
-										$TSFoster$elm_uuid$UUID$toString(card.id))
-									]))
 							]))
 					]),
 				A3(
