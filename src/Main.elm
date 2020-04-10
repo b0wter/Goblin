@@ -400,6 +400,8 @@ view model =
 
 menu : Model -> Html Msg
 menu model =
+    div [ class "mb-4" ] []
+    {-
     Navbar.config NavMsg
         |> Navbar.withAnimation
         |> Navbar.container
@@ -409,6 +411,7 @@ menu model =
             , Navbar.itemLink [ href "#modules" ] [ text "Modules" ]
             ]
         |> Navbar.view model.navState
+    -}
 
 
 mainContent : Model -> Html Msg
