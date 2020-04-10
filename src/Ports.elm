@@ -1,4 +1,4 @@
-port module Ports exposing (StorageObject, store, retrieve, createStorageObject, createSerializedStorageObject)
+port module Ports exposing (StorageObject, store, requestRetrieval, retrieve, createStorageObject, createSerializedStorageObject)
 
 import Json.Encode as Encode
 
@@ -25,3 +25,5 @@ createSerializedStorageObject key value =
 port store : StorageObject -> Cmd msg
 
 port retrieve : (StorageObject -> msg) -> Sub msg
+
+port requestRetrieval : String -> Cmd msg
