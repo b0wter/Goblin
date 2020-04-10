@@ -134,7 +134,6 @@ type Msg
     --
     | StoreData Ports.StorageObject
     | RetrievedData Ports.StorageObject
-    | RequestRetrieval String
 
 
 subscriptions : Model -> Sub Msg
@@ -303,10 +302,6 @@ update msg model =
         RetrievedData data ->
             ( { model | storageTestData = Just data.value }
             , Cmd.none)
-
-        RequestRetrieval key ->
-            ( model
-            , Ports.requestRetrieval key)
 
 
 addNewSet : Model -> (Model, Cmd Msg)

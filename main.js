@@ -8601,8 +8601,6 @@ var $author$project$List$Extra$replaceBy = F3(
 				_List_Nil,
 				items));
 	});
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Ports$requestRetrieval = _Platform_outgoingPort('requestRetrieval', $elm$json$Json$Encode$string);
 var $author$project$Main$mixedRandomGenerator = function (generators) {
 	var step = F2(
 		function (remaining, accumulator) {
@@ -8684,6 +8682,7 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
+var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
@@ -9285,7 +9284,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					model,
 					$author$project$Ports$store(data));
-			case 'RetrievedData':
+			default:
 				var data = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -9294,11 +9293,6 @@ var $author$project$Main$update = F2(
 							storageTestData: $elm$core$Maybe$Just(data.value)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
-				var key = msg.a;
-				return _Utils_Tuple2(
-					model,
-					$author$project$Ports$requestRetrieval(key));
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
