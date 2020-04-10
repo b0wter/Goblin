@@ -4572,23 +4572,6 @@ var _Bytes_read_string = F3(function(len, bytes, offset)
 var _Bytes_decodeFailure = F2(function() { throw 0; });
 
 
-function _Url_percentEncode(string)
-{
-	return encodeURIComponent(string);
-}
-
-function _Url_percentDecode(string)
-{
-	try
-	{
-		return $elm$core$Maybe$Just(decodeURIComponent(string));
-	}
-	catch (e)
-	{
-		return $elm$core$Maybe$Nothing;
-	}
-}
-
 
 function _Time_now(millisToPosix)
 {
@@ -4633,7 +4616,24 @@ function _Time_getZoneName()
 		callback(_Scheduler_succeed(name));
 	});
 }
-var $author$project$Main$ClickedLink = function (a) {
+
+
+function _Url_percentEncode(string)
+{
+	return encodeURIComponent(string);
+}
+
+function _Url_percentDecode(string)
+{
+	try
+	{
+		return $elm$core$Maybe$Just(decodeURIComponent(string));
+	}
+	catch (e)
+	{
+		return $elm$core$Maybe$Nothing;
+	}
+}var $author$project$Main$ClickedLink = function (a) {
 	return {$: 'ClickedLink', a: a};
 };
 var $author$project$Main$UrlChange = function (a) {
@@ -5433,6 +5433,9 @@ var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Main$Home = {$: 'Home'};
 var $author$project$Main$NavMsg = function (a) {
 	return {$: 'NavMsg', a: a};
+};
+var $author$project$Main$ResetNewMixedSet = function (a) {
+	return {$: 'ResetNewMixedSet', a: a};
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
@@ -6517,6 +6520,192 @@ var $TSFoster$elm_uuid$UUID$forName = A2(
 var $TSFoster$elm_uuid$UUID$urlNamespace = A4($TSFoster$elm_uuid$UUID$UUID, 1806153745, 2645365201, 2159280320, 1339306184);
 var $author$project$MixedCard$firstEmptyCard = $author$project$MixedCard$empty(
 	A2($TSFoster$elm_uuid$UUID$forName, 'https://gutsman.de/newId', $TSFoster$elm_uuid$UUID$urlNamespace));
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
+};
+var $elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
+	});
+var $elm$random$Random$next = function (_v0) {
+	var state0 = _v0.a;
+	var incr = _v0.b;
+	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var $elm$random$Random$initialSeed = function (x) {
+	var _v0 = $elm$random$Random$next(
+		A2($elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _v0.a;
+	var incr = _v0.b;
+	var state2 = (state1 + x) >>> 0;
+	return $elm$random$Random$next(
+		A2($elm$random$Random$Seed, state2, incr));
+};
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$random$Random$init = A2(
+	$elm$core$Task$andThen,
+	function (time) {
+		return $elm$core$Task$succeed(
+			$elm$random$Random$initialSeed(
+				$elm$time$Time$posixToMillis(time)));
+	},
+	$elm$time$Time$now);
+var $elm$random$Random$step = F2(
+	function (_v0, seed) {
+		var generator = _v0.a;
+		return generator(seed);
+	});
+var $elm$random$Random$onEffects = F3(
+	function (router, commands, seed) {
+		if (!commands.b) {
+			return $elm$core$Task$succeed(seed);
+		} else {
+			var generator = commands.a.a;
+			var rest = commands.b;
+			var _v1 = A2($elm$random$Random$step, generator, seed);
+			var value = _v1.a;
+			var newSeed = _v1.b;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$random$Random$onEffects, router, rest, newSeed);
+				},
+				A2($elm$core$Platform$sendToApp, router, value));
+		}
+	});
+var $elm$random$Random$onSelfMsg = F3(
+	function (_v0, _v1, seed) {
+		return $elm$core$Task$succeed(seed);
+	});
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$map = F2(
+	function (func, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v1 = genA(seed0);
+				var a = _v1.a;
+				var seed1 = _v1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var $elm$random$Random$cmdMap = F2(
+	function (func, _v0) {
+		var generator = _v0.a;
+		return $elm$random$Random$Generate(
+			A2($elm$random$Random$map, func, generator));
+	});
+_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
+var $elm$random$Random$command = _Platform_leaf('Random');
+var $elm$random$Random$generate = F2(
+	function (tagger, generator) {
+		return $elm$random$Random$command(
+			$elm$random$Random$Generate(
+				A2($elm$random$Random$map, tagger, generator)));
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$random$Random$map4 = F5(
+	function (func, _v0, _v1, _v2, _v3) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		var genD = _v3.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v4 = genA(seed0);
+				var a = _v4.a;
+				var seed1 = _v4.b;
+				var _v5 = genB(seed1);
+				var b = _v5.a;
+				var seed2 = _v5.b;
+				var _v6 = genC(seed2);
+				var c = _v6.a;
+				var seed3 = _v6.b;
+				var _v7 = genD(seed3);
+				var d = _v7.a;
+				var seed4 = _v7.b;
+				return _Utils_Tuple2(
+					A4(func, a, b, c, d),
+					seed4);
+			});
+	});
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$maxInt = 2147483647;
+var $elm$random$Random$minInt = -2147483648;
+var $TSFoster$elm_uuid$UUID$randomU32 = A2(
+	$elm$random$Random$map,
+	$TSFoster$elm_uuid$UUID$forceUnsigned,
+	A2($elm$random$Random$int, $elm$random$Random$minInt, $elm$random$Random$maxInt));
+var $TSFoster$elm_uuid$UUID$generator = A2(
+	$elm$random$Random$map,
+	A2(
+		$elm$core$Basics$composeR,
+		$TSFoster$elm_uuid$UUID$toVersion(4),
+		$TSFoster$elm_uuid$UUID$toVariant1),
+	A5($elm$random$Random$map4, $TSFoster$elm_uuid$UUID$UUID, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32));
 var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$hidden = $rundis$elm_bootstrap$Bootstrap$Modal$Hide;
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Hidden = {$: 'Hidden'};
@@ -7363,6 +7552,7 @@ var $author$project$Main$init = F3(
 			$author$project$Main$urlUpdate,
 			url,
 			{
+				debugMessages: _List_Nil,
 				mixedDice: serializedMixedCards,
 				modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden,
 				multiDice: $author$project$DiceModel$withName('Roll multiple dice'),
@@ -7383,7 +7573,11 @@ var $author$project$Main$init = F3(
 			model,
 			$elm$core$Platform$Cmd$batch(
 				_List_fromArray(
-					[urlCmd, navCmd])));
+					[
+						urlCmd,
+						navCmd,
+						A2($elm$random$Random$generate, $author$project$Main$ResetNewMixedSet, $TSFoster$elm_uuid$UUID$generator)
+					])));
 	});
 var $author$project$Main$MixedRollDropStateChange = function (a) {
 	return {$: 'MixedRollDropStateChange', a: a};
@@ -7475,10 +7669,6 @@ var $elm$browser$Browser$AnimationManager$onEffects = F3(
 			}
 		}
 	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
 	function (router, newTime, _v0) {
 		var subs = _v0.subs;
@@ -8034,9 +8224,6 @@ var $author$project$Main$NewMultiDiceResult = function (a) {
 var $author$project$Main$NewSingleDieResult = function (a) {
 	return {$: 'NewSingleDieResult', a: a};
 };
-var $author$project$Main$ResetNewMixedSet = function (a) {
-	return {$: 'ResetNewMixedSet', a: a};
-};
 var $author$project$MixedCard$addDie = F2(
 	function (face, card) {
 		return _Utils_update(
@@ -8277,188 +8464,6 @@ var $author$project$List$Extra$find = F2(
 			}
 		}
 	});
-var $elm$random$Random$Generate = function (a) {
-	return {$: 'Generate', a: a};
-};
-var $elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 'Seed', a: a, b: b};
-	});
-var $elm$random$Random$next = function (_v0) {
-	var state0 = _v0.a;
-	var incr = _v0.b;
-	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var $elm$random$Random$initialSeed = function (x) {
-	var _v0 = $elm$random$Random$next(
-		A2($elm$random$Random$Seed, 0, 1013904223));
-	var state1 = _v0.a;
-	var incr = _v0.b;
-	var state2 = (state1 + x) >>> 0;
-	return $elm$random$Random$next(
-		A2($elm$random$Random$Seed, state2, incr));
-};
-var $elm$time$Time$Name = function (a) {
-	return {$: 'Name', a: a};
-};
-var $elm$time$Time$Offset = function (a) {
-	return {$: 'Offset', a: a};
-};
-var $elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 'Zone', a: a, b: b};
-	});
-var $elm$time$Time$customZone = $elm$time$Time$Zone;
-var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0.a;
-	return millis;
-};
-var $elm$random$Random$init = A2(
-	$elm$core$Task$andThen,
-	function (time) {
-		return $elm$core$Task$succeed(
-			$elm$random$Random$initialSeed(
-				$elm$time$Time$posixToMillis(time)));
-	},
-	$elm$time$Time$now);
-var $elm$random$Random$step = F2(
-	function (_v0, seed) {
-		var generator = _v0.a;
-		return generator(seed);
-	});
-var $elm$random$Random$onEffects = F3(
-	function (router, commands, seed) {
-		if (!commands.b) {
-			return $elm$core$Task$succeed(seed);
-		} else {
-			var generator = commands.a.a;
-			var rest = commands.b;
-			var _v1 = A2($elm$random$Random$step, generator, seed);
-			var value = _v1.a;
-			var newSeed = _v1.b;
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v2) {
-					return A3($elm$random$Random$onEffects, router, rest, newSeed);
-				},
-				A2($elm$core$Platform$sendToApp, router, value));
-		}
-	});
-var $elm$random$Random$onSelfMsg = F3(
-	function (_v0, _v1, seed) {
-		return $elm$core$Task$succeed(seed);
-	});
-var $elm$random$Random$Generator = function (a) {
-	return {$: 'Generator', a: a};
-};
-var $elm$random$Random$map = F2(
-	function (func, _v0) {
-		var genA = _v0.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v1 = genA(seed0);
-				var a = _v1.a;
-				var seed1 = _v1.b;
-				return _Utils_Tuple2(
-					func(a),
-					seed1);
-			});
-	});
-var $elm$random$Random$cmdMap = F2(
-	function (func, _v0) {
-		var generator = _v0.a;
-		return $elm$random$Random$Generate(
-			A2($elm$random$Random$map, func, generator));
-	});
-_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
-var $elm$random$Random$command = _Platform_leaf('Random');
-var $elm$random$Random$generate = F2(
-	function (tagger, generator) {
-		return $elm$random$Random$command(
-			$elm$random$Random$Generate(
-				A2($elm$random$Random$map, tagger, generator)));
-	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $elm$random$Random$map4 = F5(
-	function (func, _v0, _v1, _v2, _v3) {
-		var genA = _v0.a;
-		var genB = _v1.a;
-		var genC = _v2.a;
-		var genD = _v3.a;
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v4 = genA(seed0);
-				var a = _v4.a;
-				var seed1 = _v4.b;
-				var _v5 = genB(seed1);
-				var b = _v5.a;
-				var seed2 = _v5.b;
-				var _v6 = genC(seed2);
-				var c = _v6.a;
-				var seed3 = _v6.b;
-				var _v7 = genD(seed3);
-				var d = _v7.a;
-				var seed4 = _v7.b;
-				return _Utils_Tuple2(
-					A4(func, a, b, c, d),
-					seed4);
-			});
-	});
-var $elm$random$Random$peel = function (_v0) {
-	var state = _v0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var $elm$random$Random$int = F2(
-	function (a, b) {
-		return $elm$random$Random$Generator(
-			function (seed0) {
-				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
-				var lo = _v0.a;
-				var hi = _v0.b;
-				var range = (hi - lo) + 1;
-				if (!((range - 1) & range)) {
-					return _Utils_Tuple2(
-						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
-						$elm$random$Random$next(seed0));
-				} else {
-					var threshhold = (((-range) >>> 0) % range) >>> 0;
-					var accountForBias = function (seed) {
-						accountForBias:
-						while (true) {
-							var x = $elm$random$Random$peel(seed);
-							var seedN = $elm$random$Random$next(seed);
-							if (_Utils_cmp(x, threshhold) < 0) {
-								var $temp$seed = seedN;
-								seed = $temp$seed;
-								continue accountForBias;
-							} else {
-								return _Utils_Tuple2((x % range) + lo, seedN);
-							}
-						}
-					};
-					return accountForBias(seed0);
-				}
-			});
-	});
-var $elm$random$Random$maxInt = 2147483647;
-var $elm$random$Random$minInt = -2147483648;
-var $TSFoster$elm_uuid$UUID$randomU32 = A2(
-	$elm$random$Random$map,
-	$TSFoster$elm_uuid$UUID$forceUnsigned,
-	A2($elm$random$Random$int, $elm$random$Random$minInt, $elm$random$Random$maxInt));
-var $TSFoster$elm_uuid$UUID$generator = A2(
-	$elm$random$Random$map,
-	A2(
-		$elm$core$Basics$composeR,
-		$TSFoster$elm_uuid$UUID$toVersion(4),
-		$TSFoster$elm_uuid$UUID$toVariant1),
-	A5($elm$random$Random$map4, $TSFoster$elm_uuid$UUID$UUID, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32));
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
@@ -8646,6 +8651,175 @@ var $author$project$Main$rollMixedSet = F3(
 			},
 			generator);
 	});
+var $author$project$Main$StoreData = function (a) {
+	return {$: 'StoreData', a: a};
+};
+var $author$project$Ports$createStorageObject = F2(
+	function (key, value) {
+		return {
+			key: key,
+			value: A2($elm$json$Json$Encode$encode, 0, value)
+		};
+	});
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)),
+			string);
+	});
+var $elm$core$String$fromList = _String_fromList;
+var $TSFoster$elm_uuid$UUID$toHex = F2(
+	function (acc, _int) {
+		toHex:
+		while (true) {
+			if (!_int) {
+				return $elm$core$String$fromList(acc);
+			} else {
+				var _char = function () {
+					var _v0 = 15 & _int;
+					switch (_v0) {
+						case 0:
+							return _Utils_chr('0');
+						case 1:
+							return _Utils_chr('1');
+						case 2:
+							return _Utils_chr('2');
+						case 3:
+							return _Utils_chr('3');
+						case 4:
+							return _Utils_chr('4');
+						case 5:
+							return _Utils_chr('5');
+						case 6:
+							return _Utils_chr('6');
+						case 7:
+							return _Utils_chr('7');
+						case 8:
+							return _Utils_chr('8');
+						case 9:
+							return _Utils_chr('9');
+						case 10:
+							return _Utils_chr('a');
+						case 11:
+							return _Utils_chr('b');
+						case 12:
+							return _Utils_chr('c');
+						case 13:
+							return _Utils_chr('d');
+						case 14:
+							return _Utils_chr('e');
+						default:
+							return _Utils_chr('f');
+					}
+				}();
+				var $temp$acc = A2($elm$core$List$cons, _char, acc),
+					$temp$int = _int >>> 4;
+				acc = $temp$acc;
+				_int = $temp$int;
+				continue toHex;
+			}
+		}
+	});
+var $TSFoster$elm_uuid$UUID$toString = function (_v0) {
+	var a = _v0.a;
+	var b = _v0.b;
+	var c = _v0.c;
+	var d = _v0.d;
+	return A3(
+		$elm$core$String$padLeft,
+		8,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, a)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, b >>> 16)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & b)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, c >>> 16)) + ('-' + (A3(
+		$elm$core$String$padLeft,
+		4,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & c)) + A3(
+		$elm$core$String$padLeft,
+		8,
+		_Utils_chr('0'),
+		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, d))))))))));
+};
+var $author$project$MixedCard$encode = function (card) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(card.name)),
+				_Utils_Tuple2(
+				'dieFaces',
+				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, card.dieFaces)),
+				_Utils_Tuple2(
+				'id',
+				$elm$json$Json$Encode$string(
+					$TSFoster$elm_uuid$UUID$toString(card.id)))
+			]));
+};
+var $author$project$MixedCard$encodeMultiple = function (cards) {
+	return A2($elm$json$Json$Encode$list, $author$project$MixedCard$encode, cards);
+};
+var $author$project$Main$saveMixedCardsToLocalStorage = function (model) {
+	return $author$project$Main$StoreData(
+		A2(
+			$author$project$Ports$createStorageObject,
+			'serializedMixedCards',
+			$author$project$MixedCard$encodeMultiple(model.mixedDice)));
+};
 var $author$project$MixedCard$setExplodes = F2(
 	function (explodes, card) {
 		return A2(
@@ -8724,19 +8898,6 @@ var $author$project$MixedCard$setName = F2(
 	});
 var $rundis$elm_bootstrap$Bootstrap$Modal$Show = {$: 'Show'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$shown = $rundis$elm_bootstrap$Bootstrap$Modal$Show;
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
 var $author$project$Ports$store = _Platform_outgoingPort(
 	'store',
 	function ($) {
@@ -8794,6 +8955,22 @@ var $elm$url$Url$toString = function (url) {
 					url.port_,
 					_Utils_ap(http, url.host)),
 				url.path)));
+};
+var $author$project$Main$addNewSet = function (model) {
+	var isComplete = $author$project$MixedCard$isComplete(model.newMixedSet);
+	var modelWithNewSet = isComplete ? A2($author$project$Main$addMixedSet, model.newMixedSet, model) : model;
+	var additionalCommand = isComplete ? A2($elm$random$Random$generate, $author$project$Main$ResetNewMixedSet, $TSFoster$elm_uuid$UUID$generator) : $elm$core$Platform$Cmd$none;
+	var _v8 = isComplete ? A2(
+		$author$project$Main$update,
+		$author$project$Main$saveMixedCardsToLocalStorage(modelWithNewSet),
+		modelWithNewSet) : _Utils_Tuple2(modelWithNewSet, $elm$core$Platform$Cmd$none);
+	var newModel = _v8.a;
+	var newCmd = _v8.b;
+	return _Utils_Tuple2(
+		newModel,
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[newCmd, additionalCommand])));
 };
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -9075,10 +9252,7 @@ var $author$project$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'AddNewSet':
-				var isIncomplete = A3($elm$core$Basics$composeL, $elm$core$Basics$not, $author$project$MixedCard$isComplete, model.newMixedSet);
-				return _Utils_Tuple2(
-					isIncomplete ? model : A2($author$project$Main$addMixedSet, model.newMixedSet, model),
-					isIncomplete ? $elm$core$Platform$Cmd$none : A2($elm$random$Random$generate, $author$project$Main$ResetNewMixedSet, $TSFoster$elm_uuid$UUID$generator));
+				return $author$project$Main$addNewSet(model);
 			case 'AddNewDieToSet':
 				var d = msg.a;
 				return _Utils_Tuple2(
@@ -9106,7 +9280,7 @@ var $author$project$Main$update = F2(
 							newMixedSet: A2($author$project$MixedCard$setName, name, model.newMixedSet)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'StoredData':
+			case 'StoreData':
 				var data = msg.a;
 				return _Utils_Tuple2(
 					model,
@@ -9387,9 +9561,6 @@ var $author$project$Main$pageGettingStarted = function (_v0) {
 };
 var $author$project$Main$RequestRetrieval = function (a) {
 	return {$: 'RequestRetrieval', a: a};
-};
-var $author$project$Main$StoredData = function (a) {
-	return {$: 'StoredData', a: a};
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Column = function (a) {
 	return {$: 'Column', a: a};
@@ -10316,152 +10487,6 @@ var $author$project$Main$createMixedSetCard = function (model) {
 									]))
 							]))))));
 };
-var $author$project$Ports$createStorageObject = F2(
-	function (key, value) {
-		return {
-			key: key,
-			value: A2($elm$json$Json$Encode$encode, 0, value)
-		};
-	});
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var $elm$core$String$cons = _String_cons;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var $elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			$elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var $elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3($elm$core$String$repeatHelp, n, chunk, '');
-	});
-var $elm$core$String$padLeft = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)),
-			string);
-	});
-var $elm$core$String$fromList = _String_fromList;
-var $TSFoster$elm_uuid$UUID$toHex = F2(
-	function (acc, _int) {
-		toHex:
-		while (true) {
-			if (!_int) {
-				return $elm$core$String$fromList(acc);
-			} else {
-				var _char = function () {
-					var _v0 = 15 & _int;
-					switch (_v0) {
-						case 0:
-							return _Utils_chr('0');
-						case 1:
-							return _Utils_chr('1');
-						case 2:
-							return _Utils_chr('2');
-						case 3:
-							return _Utils_chr('3');
-						case 4:
-							return _Utils_chr('4');
-						case 5:
-							return _Utils_chr('5');
-						case 6:
-							return _Utils_chr('6');
-						case 7:
-							return _Utils_chr('7');
-						case 8:
-							return _Utils_chr('8');
-						case 9:
-							return _Utils_chr('9');
-						case 10:
-							return _Utils_chr('a');
-						case 11:
-							return _Utils_chr('b');
-						case 12:
-							return _Utils_chr('c');
-						case 13:
-							return _Utils_chr('d');
-						case 14:
-							return _Utils_chr('e');
-						default:
-							return _Utils_chr('f');
-					}
-				}();
-				var $temp$acc = A2($elm$core$List$cons, _char, acc),
-					$temp$int = _int >>> 4;
-				acc = $temp$acc;
-				_int = $temp$int;
-				continue toHex;
-			}
-		}
-	});
-var $TSFoster$elm_uuid$UUID$toString = function (_v0) {
-	var a = _v0.a;
-	var b = _v0.b;
-	var c = _v0.c;
-	var d = _v0.d;
-	return A3(
-		$elm$core$String$padLeft,
-		8,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, a)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, b >>> 16)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & b)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, c >>> 16)) + ('-' + (A3(
-		$elm$core$String$padLeft,
-		4,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, 65535 & c)) + A3(
-		$elm$core$String$padLeft,
-		8,
-		_Utils_chr('0'),
-		A2($TSFoster$elm_uuid$UUID$toHex, _List_Nil, d))))))))));
-};
-var $author$project$MixedCard$encode = function (card) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'name',
-				$elm$json$Json$Encode$string(card.name)),
-				_Utils_Tuple2(
-				'dieFaces',
-				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$int, card.dieFaces)),
-				_Utils_Tuple2(
-				'id',
-				$elm$json$Json$Encode$string(
-					$TSFoster$elm_uuid$UUID$toString(card.id)))
-			]));
-};
-var $author$project$MixedCard$encodeMultiple = function (cards) {
-	return A2($elm$json$Json$Encode$list, $author$project$MixedCard$encode, cards);
-};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4 = {$: 'Col4'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth = function (a) {
 	return {$: 'ColWidth', a: a};
@@ -10480,6 +10505,235 @@ var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
+var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Danger = {$: 'Danger'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$Shown = {$: 'Shown'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$Config = function (a) {
+	return {$: 'Config', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Alert$attrs = F2(
+	function (attributes, _v0) {
+		var configRec = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Alert$Config(
+			_Utils_update(
+				configRec,
+				{attributes: attributes}));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Alert$children = F2(
+	function (children_, _v0) {
+		var configRec = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Alert$Config(
+			_Utils_update(
+				configRec,
+				{children: children_}));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Secondary = {$: 'Secondary'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$config = $rundis$elm_bootstrap$Bootstrap$Alert$Config(
+	{attributes: _List_Nil, children: _List_Nil, dismissable: $elm$core$Maybe$Nothing, role: $rundis$elm_bootstrap$Bootstrap$Internal$Role$Secondary, visibility: $rundis$elm_bootstrap$Bootstrap$Alert$Shown, withAnimation: false});
+var $rundis$elm_bootstrap$Bootstrap$Alert$role = F2(
+	function (role_, _v0) {
+		var configRec = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Alert$Config(
+			_Utils_update(
+				configRec,
+				{role: role_}));
+	});
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $rundis$elm_bootstrap$Bootstrap$Alert$Closed = {$: 'Closed'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$StartClose = {$: 'StartClose'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$clickHandler = F2(
+	function (visibility, configRec) {
+		var handleClick = F2(
+			function (viz, toMsg) {
+				return $elm$html$Html$Events$onClick(
+					toMsg(viz));
+			});
+		var _v0 = configRec.dismissable;
+		if (_v0.$ === 'Just') {
+			var dismissMsg = _v0.a;
+			return _List_fromArray(
+				[
+					configRec.withAnimation ? A2(handleClick, $rundis$elm_bootstrap$Bootstrap$Alert$StartClose, dismissMsg) : A2(handleClick, $rundis$elm_bootstrap$Bootstrap$Alert$Closed, dismissMsg)
+				]);
+		} else {
+			return _List_Nil;
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Alert$injectButton = F2(
+	function (btn, children_) {
+		if (children_.b) {
+			var head = children_.a;
+			var tail = children_.b;
+			return A2(
+				$elm$core$List$cons,
+				head,
+				A2($elm$core$List$cons, btn, tail));
+		} else {
+			return _List_fromArray(
+				[btn]);
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Alert$isDismissable = function (configRec) {
+	var _v0 = configRec.dismissable;
+	if (_v0.$ === 'Just') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $rundis$elm_bootstrap$Bootstrap$Alert$maybeAddDismissButton = F3(
+	function (visibilty, configRec, children_) {
+		return $rundis$elm_bootstrap$Bootstrap$Alert$isDismissable(configRec) ? A2(
+			$rundis$elm_bootstrap$Bootstrap$Alert$injectButton,
+			A2(
+				$elm$html$Html$button,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Attributes$class('close'),
+							A2($elm$html$Html$Attributes$attribute, 'aria-label', 'close')
+						]),
+					A2($rundis$elm_bootstrap$Bootstrap$Alert$clickHandler, visibilty, configRec)),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('×')
+							]))
+					])),
+			children_) : children_;
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $rundis$elm_bootstrap$Bootstrap$Alert$viewAttributes = F2(
+	function (visibility, configRec) {
+		var visibiltyAttributes = _Utils_eq(visibility, $rundis$elm_bootstrap$Bootstrap$Alert$Closed) ? _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'display', 'none')
+			]) : _List_Nil;
+		var animationAttributes = function () {
+			if (configRec.withAnimation) {
+				var _v0 = configRec.dismissable;
+				if (_v0.$ === 'Just') {
+					var dismissMsg = _v0.a;
+					return _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$Events$on,
+							'transitionend',
+							$elm$json$Json$Decode$succeed(
+								dismissMsg($rundis$elm_bootstrap$Bootstrap$Alert$Closed)))
+						]);
+				} else {
+					return _List_Nil;
+				}
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var alertAttributes = _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$attribute, 'role', 'alert'),
+				$elm$html$Html$Attributes$classList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('alert', true),
+						_Utils_Tuple2(
+						'alert-dismissible',
+						$rundis$elm_bootstrap$Bootstrap$Alert$isDismissable(configRec)),
+						_Utils_Tuple2('fade', configRec.withAnimation),
+						_Utils_Tuple2(
+						'show',
+						_Utils_eq(visibility, $rundis$elm_bootstrap$Bootstrap$Alert$Shown))
+					])),
+				A2($rundis$elm_bootstrap$Bootstrap$Internal$Role$toClass, 'alert', configRec.role)
+			]);
+		return $elm$core$List$concat(
+			_List_fromArray(
+				[configRec.attributes, alertAttributes, visibiltyAttributes, animationAttributes]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Alert$view = F2(
+	function (visibility, _v0) {
+		var configRec = _v0.a;
+		return A2(
+			$elm$html$Html$div,
+			A2($rundis$elm_bootstrap$Bootstrap$Alert$viewAttributes, visibility, configRec),
+			A3($rundis$elm_bootstrap$Bootstrap$Alert$maybeAddDismissButton, visibility, configRec, configRec.children));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Alert$simple = F3(
+	function (role_, attributes, children_) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$Alert$view,
+			$rundis$elm_bootstrap$Bootstrap$Alert$Shown,
+			A2(
+				$rundis$elm_bootstrap$Bootstrap$Alert$children,
+				children_,
+				A2(
+					$rundis$elm_bootstrap$Bootstrap$Alert$attrs,
+					attributes,
+					A2($rundis$elm_bootstrap$Bootstrap$Alert$role, role_, $rundis$elm_bootstrap$Bootstrap$Alert$config))));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Alert$simpleDanger = $rundis$elm_bootstrap$Bootstrap$Alert$simple($rundis$elm_bootstrap$Bootstrap$Internal$Role$Danger);
+var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Info = {$: 'Info'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$simpleInfo = $rundis$elm_bootstrap$Bootstrap$Alert$simple($rundis$elm_bootstrap$Bootstrap$Internal$Role$Info);
+var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Success = {$: 'Success'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$simpleSuccess = $rundis$elm_bootstrap$Bootstrap$Alert$simple($rundis$elm_bootstrap$Bootstrap$Internal$Role$Success);
+var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Warning = {$: 'Warning'};
+var $rundis$elm_bootstrap$Bootstrap$Alert$simpleWarning = $rundis$elm_bootstrap$Bootstrap$Alert$simple($rundis$elm_bootstrap$Bootstrap$Internal$Role$Warning);
+var $author$project$DebugOutput$messageAsAlert = function (message) {
+	switch (message.$) {
+		case 'Info':
+			var t = message.a;
+			return A2(
+				$rundis$elm_bootstrap$Bootstrap$Alert$simpleInfo,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(t)
+					]));
+		case 'Warning':
+			var t = message.a;
+			return A2(
+				$rundis$elm_bootstrap$Bootstrap$Alert$simpleWarning,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(t)
+					]));
+		case 'Error':
+			var t = message.a;
+			return A2(
+				$rundis$elm_bootstrap$Bootstrap$Alert$simpleDanger,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(t)
+					]));
+		default:
+			var t = message.a;
+			return A2(
+				$rundis$elm_bootstrap$Bootstrap$Alert$simpleSuccess,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(t)
+					]));
+	}
+};
 var $author$project$Main$ClearMixedDiceResults = function (a) {
 	return {$: 'ClearMixedDiceResults', a: a};
 };
@@ -10580,14 +10834,6 @@ var $elm$html$Html$Events$onCheck = function (tagger) {
 		'change',
 		A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetChecked));
 };
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$stateAttribute = function (state) {
 	switch (state.$) {
@@ -10815,8 +11061,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes = F2(
 				config.attributes));
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles = F2(
 	function (_v0, config) {
 		var status = _v0.a.status;
@@ -11766,7 +12010,6 @@ var $rundis$elm_bootstrap$Bootstrap$Table$simpleThead = function (cells) {
 				A2($rundis$elm_bootstrap$Bootstrap$Table$tr, _List_Nil, cells)
 			]));
 };
-var $elm$html$Html$span = _VirtualDom_node('span');
 var $rundis$elm_bootstrap$Bootstrap$Table$tbody = F2(
 	function (attributes, rows) {
 		return $rundis$elm_bootstrap$Bootstrap$Table$TBody(
@@ -11969,6 +12212,23 @@ var $author$project$Main$mixedSetCard = function (card) {
 											[
 												$elm$html$Html$text('Clear')
 											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('text-muted')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$small,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
+										$TSFoster$elm_uuid$UUID$toString(card.id))
 									]))
 							]))
 					]),
@@ -13233,7 +13493,7 @@ var $author$project$Main$pageHome = function (model) {
 											$rundis$elm_bootstrap$Bootstrap$Button$primary,
 											$rundis$elm_bootstrap$Bootstrap$Button$small,
 											$rundis$elm_bootstrap$Bootstrap$Button$onClick(
-											$author$project$Main$StoredData(
+											$author$project$Main$StoreData(
 												A2(
 													$author$project$Ports$createStorageObject,
 													'serializedMixedCards',
@@ -13304,6 +13564,17 @@ var $author$project$Main$pageHome = function (model) {
 						[
 							$author$project$Main$mixedSetCards(model)
 						]))
+				])),
+			A2(
+			$rundis$elm_bootstrap$Bootstrap$Grid$row,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Grid$col,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12]),
+					A2($elm$core$List$map, $author$project$DebugOutput$messageAsAlert, model.debugMessages))
 				]))
 		]);
 };

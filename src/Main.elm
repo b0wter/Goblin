@@ -21,6 +21,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Utilities.Spacing as Spacing
+import Bootstrap.Alert as Alert
 import Random
 import UUID exposing (UUID)
 import Json.Decode as Decode
@@ -30,6 +31,7 @@ import Roll
 import List.Extra as List
 import DiceModel
 import MixedCard
+import DebugOutput
 
 type alias Flags =
     {
@@ -46,6 +48,7 @@ type alias Model =
     , mixedDice : List MixedCard.MixedCard
     , newMixedSet : MixedCard.MixedCard
     , storageTestData : Maybe String
+    , debugMessages : List DebugOutput.Message
     }
 
 type Page
@@ -87,9 +90,10 @@ init flags url key =
                           , mixedDice = serializedMixedCards
                           , newMixedSet = MixedCard.firstEmptyCard
                           , storageTestData = Just (serializedMixedCardError |> Maybe.map Decode.errorToString |> Maybe.withDefault "")
+                          , debugMessages = []
                           }
     in
-        ( model, Cmd.batch [ urlCmd, navCmd ] )
+        ( model, Cmd.batch [ urlCmd, navCmd, Random.generate ResetNewMixedSet UUID.generator ] )
 
 
 type Msg
@@ -128,7 +132,7 @@ type Msg
     | RemoveDieFromNewSet Int
     | NewDieSetNameChanged String
     --
-    | StoredData Ports.StorageObject
+    | StoreData Ports.StorageObject
     | RetrievedData Ports.StorageObject
     | RequestRetrieval String
 
@@ -278,12 +282,10 @@ update msg model =
             , Cmd.none)
 
         AddNewSet -> 
-            let isIncomplete = model.newMixedSet |> not << MixedCard.isComplete in 
-                ( if isIncomplete then model else model |> addMixedSet model.newMixedSet 
-                , if isIncomplete then Cmd.none else Random.generate ResetNewMixedSet UUID.generator)
-        
+            model |> addNewSet
+
         AddNewDieToSet d -> 
-            ( { model | newMixedSet = model.newMixedSet |> MixedCard.addDie d } 
+            ( { model | newMixedSet = model.newMixedSet |> MixedCard.addDie d }
             , Cmd.none)
         
         RemoveDieFromNewSet index -> 
@@ -294,7 +296,7 @@ update msg model =
             ( { model | newMixedSet = model.newMixedSet |> MixedCard.setName name }
             , Cmd.none)
 
-        StoredData data ->
+        StoreData data ->
             ( model
             , Ports.store data)
 
@@ -306,6 +308,41 @@ update msg model =
             ( model
             , Ports.requestRetrieval key)
 
+
+addNewSet : Model -> (Model, Cmd Msg)
+addNewSet model =
+    let 
+        isComplete = 
+            model.newMixedSet |> MixedCard.isComplete 
+
+        -- Update the model to include the new mixed set. 
+        modelWithNewSet = 
+            if isComplete then 
+                model |> addMixedSet model.newMixedSet 
+            else 
+                model
+
+        {- 
+        Create the save command if the mixed set is complete.
+        `newModel` should be equal to `modelWithSet` but  we will use `newModel`
+        just in case the save command will do something extravagant in the future. 
+        -}
+        (newModel, newCmd) = 
+            if isComplete then 
+                modelWithNewSet |> update (saveMixedCardsToLocalStorage modelWithNewSet) 
+            else 
+                (modelWithNewSet, Cmd.none) 
+
+        -- In case a new card was created we need to generate a new UUID.
+        -- This will also reset the temporary fields.
+        additionalCommand =
+            if isComplete then
+                Random.generate ResetNewMixedSet UUID.generator
+            else
+                Cmd.none
+    in 
+        (newModel, Cmd.batch [ newCmd, additionalCommand ])
+            
 
 setForMixedSet : (MixedCard.MixedCard -> MixedCard.MixedCard) -> UUID -> Model -> Model
 setForMixedSet f id model =
@@ -397,7 +434,7 @@ pageHome model =
         [ Grid.col [ Col.xs ]
             [
                 div [] 
-                [ Button.button [ Button.primary, Button.small, Button.onClick (StoredData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
+                [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
                 , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
                 , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
                 ]
@@ -420,6 +457,9 @@ pageHome model =
             [
                 model |> mixedSetCards
             ]
+        ]
+    , Grid.row []
+        [ Grid.col [ Col.xs12 ] (model.debugMessages |> List.map DebugOutput.messageAsAlert)
         ]
     ]
 
@@ -479,6 +519,10 @@ modal model =
             ]
         |> Modal.view model.modalVisibility
 
+
+saveMixedCardsToLocalStorage : Model -> Msg
+saveMixedCardsToLocalStorage model =
+    StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")
 
 {--
     Code necessary to render the single die and multi die cards.
@@ -641,6 +685,7 @@ mixedSetCard card =
                     , div [ class ""] 
                         [ Button.button [ Button.secondary, Button.small, Button.onClick (ClearMixedDiceResults card.id) ] [ text "Clear" ] ] 
                     ]
+                , div [ class "text-muted"] [ small [] [ text (card.id |> UUID.toString) ] ]
                 ]         
             |> Card.block [ Block.attrs [ class "text-center pb-0"] ]
                 [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, card.dice.explodes)) ] [ text "Roll" ] ]
@@ -764,3 +809,7 @@ mixedRollMaxElementsDropDown card =
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =
     Checkbox.advancedCustom [ Checkbox.id id, Checkbox.checked val, Checkbox.onCheck cmd ] (Checkbox.label [] [ small [ class "text-muted" ] [ text "Explode"] ])
+
+addDebugMessage : DebugOutput.Message -> Model -> Model
+addDebugMessage text model =
+    { model | debugMessages = text :: model.debugMessages }
