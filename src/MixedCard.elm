@@ -38,12 +38,14 @@ type alias JsonModel =
     { name : String
     , dieFaces : List Int
     , id : String
+    , explodes : Bool
+    , maxHistory : Int
     }
 
-createWithoutHistory : String -> (List Int) -> UUID -> MixedCard
-createWithoutHistory name dieFaces id =
+createWithoutHistory : String -> (List Int) -> Bool -> Int -> UUID -> MixedCard
+createWithoutHistory name dieFaces explodes maxHistory id =
     {
-        dice = DiceModel.empty,
+        dice = DiceModel.empty |> DiceModel.setExplode explodes |> DiceModel.setHistorySize maxHistory,
         name = name,
         dieFaces = dieFaces,
         id = id
@@ -112,6 +114,8 @@ encode card =
         [ ("name", Encode.string card.name)
         , ("dieFaces", Encode.list Encode.int card.dieFaces)
         , ("id", Encode.string (card.id |> UUID.toString))
+        , ("explodes", Encode.bool card.dice.explodes)
+        , ("maxHistory", Encode.int card.dice.maxHistory)
         ]
 
 encodeMultiple : List MixedCard -> Encode.Value
@@ -120,27 +124,18 @@ encodeMultiple cards =
 
 decoder : Decode.Decoder JsonModel
 decoder =
-    Decode.map3 JsonModel
-        (Decode.field  "name" Decode.string)
-        (Decode.field  "dieFaces" (Decode.list Decode.int))
-        (Decode.field  "id" Decode.string)
+    Decode.map5 JsonModel
+        (Decode.field "name" Decode.string)
+        (Decode.field "dieFaces" (Decode.list Decode.int))
+        (Decode.field "id" Decode.string)
+        (Decode.field "explodes" Decode.bool)
+        (Decode.field "maxHistory" Decode.int)
 
 fromJsonModel : JsonModel -> Maybe MixedCard
 fromJsonModel json =
     case UUID.fromString json.id of
-       Ok parsedId -> Just (createWithoutHistory json.name json.dieFaces parsedId)
+       Ok parsedId -> Just (createWithoutHistory json.name json.dieFaces json.explodes json.maxHistory parsedId)
        Err _ -> Nothing
-
-decode : Decode.Value -> Maybe MixedCard
-decode json =
-    case Decode.decodeValue decoder json of
-        Result.Ok jsonModel ->
-            case UUID.fromString jsonModel.id of
-                Ok parsedId ->
-                    Just (createWithoutHistory jsonModel.name jsonModel.dieFaces parsedId)
-                Err _ ->
-                    Nothing
-        Result.Err _ -> Nothing
 
 decodeMultipleFromString : String -> Result Decode.Error (List MixedCard)
 decodeMultipleFromString json =

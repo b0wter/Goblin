@@ -5439,23 +5439,26 @@ var $author$project$Main$ResetNewMixedCard = function (a) {
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$MixedCard$JsonModel = F3(
-	function (name, dieFaces, id) {
-		return {dieFaces: dieFaces, id: id, name: name};
+var $author$project$MixedCard$JsonModel = F5(
+	function (name, dieFaces, id, explodes, maxHistory) {
+		return {dieFaces: dieFaces, explodes: explodes, id: id, maxHistory: maxHistory, name: name};
 	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$map5 = _Json_map5;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$MixedCard$decoder = A4(
-	$elm$json$Json$Decode$map3,
+var $author$project$MixedCard$decoder = A6(
+	$elm$json$Json$Decode$map5,
 	$author$project$MixedCard$JsonModel,
 	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
 	A2(
 		$elm$json$Json$Decode$field,
 		'dieFaces',
 		$elm$json$Json$Decode$list($elm$json$Json$Decode$int)),
-	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
+	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'explodes', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'maxHistory', $elm$json$Json$Decode$int));
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$Area = F4(
 	function (top, left, width, height) {
 		return {height: height, left: left, top: top, width: width};
@@ -5474,9 +5477,165 @@ var $author$project$DiceModel$withName = function (name) {
 	return {explodes: false, historyDropState: $rundis$elm_bootstrap$Bootstrap$Dropdown$initialState, lastRoll: $elm$core$Maybe$Nothing, maxHistory: 4, name: name, rolls: _List_Nil};
 };
 var $author$project$DiceModel$empty = $author$project$DiceModel$withName('<unnamed>');
-var $author$project$MixedCard$createWithoutHistory = F3(
-	function (name, dieFaces, id) {
-		return {dice: $author$project$DiceModel$empty, dieFaces: dieFaces, id: id, name: name};
+var $author$project$DiceModel$setExplode = F2(
+	function (state, model) {
+		return _Utils_update(
+			model,
+			{explodes: state});
+	});
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$List$Extra$limit = F2(
+	function (max, list) {
+		return (_Utils_cmp(
+			$elm$core$List$length(list),
+			max) > -1) ? A2($elm$core$List$take, max - 1, list) : list;
+	});
+var $author$project$DiceModel$setHistorySize = F2(
+	function (newSize, model) {
+		return _Utils_update(
+			model,
+			{
+				maxHistory: newSize,
+				rolls: A2($author$project$List$Extra$limit, newSize + 1, model.rolls)
+			});
+	});
+var $author$project$MixedCard$createWithoutHistory = F5(
+	function (name, dieFaces, explodes, maxHistory, id) {
+		return {
+			dice: A2(
+				$author$project$DiceModel$setHistorySize,
+				maxHistory,
+				A2($author$project$DiceModel$setExplode, explodes, $author$project$DiceModel$empty)),
+			dieFaces: dieFaces,
+			id: id,
+			name: name
+		};
 	});
 var $TSFoster$elm_uuid$UUID$WrongFormat = {$: 'WrongFormat'};
 var $TSFoster$elm_uuid$UUID$WrongLength = {$: 'WrongLength'};
@@ -5688,7 +5847,7 @@ var $author$project$MixedCard$fromJsonModel = function (json) {
 	if (_v0.$ === 'Ok') {
 		var parsedId = _v0.a;
 		return $elm$core$Maybe$Just(
-			A3($author$project$MixedCard$createWithoutHistory, json.name, json.dieFaces, parsedId));
+			A5($author$project$MixedCard$createWithoutHistory, json.name, json.dieFaces, json.explodes, json.maxHistory, parsedId));
 	} else {
 		return $elm$core$Maybe$Nothing;
 	}
@@ -8301,139 +8460,6 @@ var $author$project$Main$addMixedSet = F2(
 				mixedCards: A2($elm$core$List$cons, card, model.mixedCards)
 			});
 	});
-var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2($elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return $elm$core$List$reverse(
-			A3($elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var $elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _v0 = _Utils_Tuple2(n, list);
-			_v0$1:
-			while (true) {
-				_v0$5:
-				while (true) {
-					if (!_v0.b.b) {
-						return list;
-					} else {
-						if (_v0.b.b.b) {
-							switch (_v0.a) {
-								case 1:
-									break _v0$1;
-								case 2:
-									var _v2 = _v0.b;
-									var x = _v2.a;
-									var _v3 = _v2.b;
-									var y = _v3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_v0.b.b.b.b) {
-										var _v4 = _v0.b;
-										var x = _v4.a;
-										var _v5 = _v4.b;
-										var y = _v5.a;
-										var _v6 = _v5.b;
-										var z = _v6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _v0$5;
-									}
-								default:
-									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
-										var _v7 = _v0.b;
-										var x = _v7.a;
-										var _v8 = _v7.b;
-										var y = _v8.a;
-										var _v9 = _v8.b;
-										var z = _v9.a;
-										var _v10 = _v9.b;
-										var w = _v10.a;
-										var tl = _v10.b;
-										return (ctr > 1000) ? A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _v0$5;
-									}
-							}
-						} else {
-							if (_v0.a === 1) {
-								break _v0$1;
-							} else {
-								break _v0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _v1 = _v0.b;
-			var x = _v1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var $elm$core$List$take = F2(
-	function (n, list) {
-		return A3($elm$core$List$takeFast, 0, n, list);
-	});
-var $author$project$List$Extra$limit = F2(
-	function (max, list) {
-		return (_Utils_cmp(
-			$elm$core$List$length(list),
-			max) > -1) ? A2($elm$core$List$take, max - 1, list) : list;
-	});
 var $author$project$List$Extra$addAndDrop = F3(
 	function (max, element, list) {
 		return A2(
@@ -8461,12 +8487,6 @@ var $author$project$MixedCard$addRoll = F2(
 var $pilatch$flip$Flip$flip = F3(
 	function (_function, argB, argA) {
 		return A2(_function, argA, argB);
-	});
-var $author$project$DiceModel$setExplode = F2(
-	function (state, model) {
-		return _Utils_update(
-			model,
-			{explodes: state});
 	});
 var $author$project$DiceModel$asExplode = $pilatch$flip$Flip$flip($author$project$DiceModel$setExplode);
 var $author$project$DiceModel$clearHistory = function (model) {
@@ -8722,6 +8742,7 @@ var $author$project$Ports$createStorageObject = F2(
 			value: A2($elm$json$Json$Encode$encode, 0, value)
 		};
 	});
+var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
@@ -8868,7 +8889,13 @@ var $author$project$MixedCard$encode = function (card) {
 				_Utils_Tuple2(
 				'id',
 				$elm$json$Json$Encode$string(
-					$TSFoster$elm_uuid$UUID$toString(card.id)))
+					$TSFoster$elm_uuid$UUID$toString(card.id))),
+				_Utils_Tuple2(
+				'explodes',
+				$elm$json$Json$Encode$bool(card.dice.explodes)),
+				_Utils_Tuple2(
+				'maxHistory',
+				$elm$json$Json$Encode$int(card.dice.maxHistory))
 			]));
 };
 var $author$project$MixedCard$encodeMultiple = function (cards) {
@@ -8932,15 +8959,6 @@ var $author$project$MixedCard$setHistoryDropState = F2(
 				return A2($author$project$DiceModel$setHistoryDropState, state, d);
 			},
 			card);
-	});
-var $author$project$DiceModel$setHistorySize = F2(
-	function (newSize, model) {
-		return _Utils_update(
-			model,
-			{
-				maxHistory: newSize,
-				rolls: A2($author$project$List$Extra$limit, newSize + 1, model.rolls)
-			});
 	});
 var $author$project$MixedCard$setHistoryLength = F2(
 	function (length, card) {
@@ -9466,7 +9484,6 @@ var $elm$html$Html$Attributes$classList = function (classes) {
 				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
 };
 var $rundis$elm_bootstrap$Bootstrap$Internal$Button$defaultOptions = {attributes: _List_Nil, block: false, coloring: $elm$core$Maybe$Nothing, disabled: false, size: $elm$core$Maybe$Nothing};
-var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -11317,7 +11334,6 @@ var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off = {$: 'Off'};
 var $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$defaultOptions = {attributes: _List_Nil, custom: false, disabled: false, id: $elm$core$Maybe$Nothing, inline: false, onChecked: $elm$core$Maybe$Nothing, state: $rundis$elm_bootstrap$Bootstrap$Form$Checkbox$Off, validation: $elm$core$Maybe$Nothing};
 var $elm$html$Html$Attributes$for = $elm$html$Html$Attributes$stringProperty('htmlFor');
 var $elm$html$Html$label = _VirtualDom_node('label');
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$html$Html$Events$targetChecked = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -11737,6 +11753,7 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
 			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Open;
 	}
 };
+var $elm$json$Json$Decode$map3 = _Json_map3;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth = A2($elm$json$Json$Decode$field, 'offsetWidth', $elm$json$Json$Decode$float);
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft = A2($elm$json$Json$Decode$field, 'offsetLeft', $elm$json$Json$Decode$float);
