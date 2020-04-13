@@ -45,7 +45,7 @@ type alias Model =
     , singleDie : DiceModel.DiceModel Roll.Single
     , multiDice : DiceModel.DiceModel Roll.Multi
     , mixedCards : List MixedCard.MixedCard
-    , newMixedSet : MixedCard.MixedCard
+    , newMixedCard : MixedCard.MixedCard
     , storageTestData : Maybe String
     , debugMessages : List DebugOutput.Message
     }
@@ -87,12 +87,12 @@ init flags url key =
                           , singleDie = DiceModel.withName "Roll single die"
                           , multiDice = DiceModel.withName "Roll multiple dice"
                           , mixedCards = serializedMixedCards
-                          , newMixedSet = MixedCard.firstEmptyCard
+                          , newMixedCard = MixedCard.firstEmptyCard
                           , storageTestData = Just (serializedMixedCardError |> Maybe.map Decode.errorToString |> Maybe.withDefault "")
                           , debugMessages = []
                           }
     in
-        ( model, Cmd.batch [ urlCmd, navCmd, Random.generate ResetNewMixedSet UUID.generator ] )
+        ( model, Cmd.batch [ urlCmd, navCmd, Random.generate ResetNewMixedCard UUID.generator ] )
 
 
 type Msg
@@ -116,15 +116,16 @@ type Msg
     | ClearMultiDiceResults
     | SetMultiDiceExplode Bool
     --
-    | NewMixedDiceResult (UUID, Roll.Mixed)
-    | RollMixedDice (UUID, List Int, Bool)
-    | MixedRollDropStateChange (UUID, Dropdown.State)
-    | MixedRollNewValue (UUID, Int)
-    | ClearMixedDiceResults UUID
-    | SetMixedDiceExplode (UUID, Bool)
-    | ResetNewMixedSet UUID
+    | NewMixedCardResult (UUID, Roll.Mixed)
+    | RollMixedCard (UUID, List Int, Bool)
+    | MixedCardDropStateChange (UUID, Dropdown.State)
+    | MixedCardNewValue (UUID, Int)
+    | ClearMixedCardResults UUID
+    | SetMixedCardExplode (UUID, Bool)
+    | ResetNewMixedCard UUID
     | DeleteMixedCard UUID
     --
+    -- These messages are used for the creation of a new MixedCard.
     | ClearNewSet
     | AddNewSet
     | AddNewDieToSet Int
@@ -144,7 +145,7 @@ subscriptions model =
                 , Ports.retrieve (\data -> RetrievedData data)
                 , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
                 , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange ]
-                (model.mixedCards |> List.map (\x -> Dropdown.subscriptions x.dice.historyDropState (\z -> MixedRollDropStateChange (x.id, z))))
+                (model.mixedCards |> List.map (\x -> Dropdown.subscriptions x.dice.historyDropState (\z -> MixedCardDropStateChange (x.id, z))))
             )
 
 
@@ -207,9 +208,9 @@ update msg model =
             , Random.generate NewMultiDiceResult (Random.map (\n -> { die = faceCount, result = n}) (multiDiceGenerator model.multiDice.explodes faceCount diceCount)) 
             )
 
-        RollMixedDice (id, dice, explode) -> 
+        RollMixedCard (id, dice, explode) -> 
             ( model
-            , Random.generate NewMixedDiceResult (rollMixedSet id explode dice) 
+            , Random.generate NewMixedCardResult (rollMixedSet id explode dice) 
             )
 
         SingleRollDropStateChange new ->
@@ -236,7 +237,7 @@ update msg model =
             ( { model | multiDice = new |> DiceModel.asExplode model.multiDice }
             , Cmd.none )
 
-        NewMixedDiceResult (id, result) -> 
+        NewMixedCardResult (id, result) -> 
             ( let
                 card = model.mixedCards |> List.find (\x -> x.id == id)
               in
@@ -252,46 +253,46 @@ update msg model =
             , Cmd.none
             )
 
-        MixedRollDropStateChange (id, state) -> 
+        MixedCardDropStateChange (id, state) -> 
             ( model |> setForMixedSet (\c -> MixedCard.setHistoryDropState state c) id 
             , Cmd.none)
 
-        MixedRollNewValue (id, length) -> 
+        MixedCardNewValue (id, length) -> 
             ( model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
             , Cmd.none)
 
-        ClearMixedDiceResults id -> 
+        ClearMixedCardResults id -> 
             ( model |> setForMixedSet (\c -> c |> MixedCard.clearHistory) id
             , Cmd.none)
 
-        SetMixedDiceExplode (id, checked) -> 
+        SetMixedCardExplode (id, checked) -> 
             ( model |> setForMixedSet (\c -> MixedCard.setExplodes checked c) id 
             , Cmd.none)
 
         DeleteMixedCard id ->
             removeMixedCard id model
 
-        ResetNewMixedSet id ->
-            ( { model | newMixedSet = MixedCard.empty id }
+        ResetNewMixedCard id ->
+            ( { model | newMixedCard = MixedCard.empty id }
             , Cmd.none)
 
         ClearNewSet -> 
-            ( { model | newMixedSet = MixedCard.empty model.newMixedSet.id }
+            ( { model | newMixedCard = MixedCard.empty model.newMixedCard.id }
             , Cmd.none)
 
         AddNewSet -> 
             model |> addNewSet
 
         AddNewDieToSet d -> 
-            ( { model | newMixedSet = model.newMixedSet |> MixedCard.addDie d }
+            ( { model | newMixedCard = model.newMixedCard |> MixedCard.addDie d }
             , Cmd.none)
         
         RemoveDieFromNewSet index -> 
-            ( { model | newMixedSet = model.newMixedSet |> MixedCard.removeDie index }
+            ( { model | newMixedCard = model.newMixedCard |> MixedCard.removeDie index }
             , Cmd.none)
         
         NewDieSetNameChanged name ->
-            ( { model | newMixedSet = model.newMixedSet |> MixedCard.setName name }
+            ( { model | newMixedCard = model.newMixedCard |> MixedCard.setName name }
             , Cmd.none)
 
         StoreData data ->
@@ -310,12 +311,12 @@ addNewSet : Model -> (Model, Cmd Msg)
 addNewSet model =
     let 
         isComplete = 
-            model.newMixedSet |> MixedCard.isComplete 
+            model.newMixedCard |> MixedCard.isComplete 
 
         -- Update the model to include the new mixed set. 
         modelWithNewSet = 
             if isComplete then 
-                model |> addMixedSet model.newMixedSet 
+                model |> addMixedSet model.newMixedCard 
             else 
                 model
 
@@ -334,7 +335,7 @@ addNewSet model =
         -- This will also reset the temporary fields.
         additionalCommand =
             if isComplete then
-                Random.generate ResetNewMixedSet UUID.generator
+                Random.generate ResetNewMixedCard UUID.generator
             else
                 Cmd.none
     in 
@@ -653,7 +654,7 @@ createMixedSetCard model =
                 [ Block.custom <| div [] []
                 , Block.custom <| Form.form [] 
                     [ Form.group []
-                        [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newMixedSet.name, Input.attrs [ placeholder "Name" ] ]
+                        [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newMixedCard.name, Input.attrs [ placeholder "Name" ] ]
                         ]
                     , div [] [ text "Add die" ]
                     , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ] ([4, 6, 8, 10, 12, 20] |> List.indexedMap createAddDieButton)
@@ -690,13 +691,13 @@ mixedSetCard card =
                         , span [ class "text-muted ml-2" ] [ small [] [ text "History" ] ]
                         ]
                     , div [ class "mb-auto mt-auto"]
-                        [ explodeCheckbox ((card.id |> UUID.toString) ++ "-explode") card.dice.explodes (\b -> SetMixedDiceExplode (card.id, b))] 
+                        [ explodeCheckbox ((card.id |> UUID.toString) ++ "-explode") card.dice.explodes (\b -> SetMixedCardExplode (card.id, b))] 
                     , div [ class ""] 
-                        [ Button.button [ Button.secondary, Button.small, Button.onClick (ClearMixedDiceResults card.id) ] [ text "Clear" ] ] 
+                        [ Button.button [ Button.secondary, Button.small, Button.onClick (ClearMixedCardResults card.id) ] [ text "Clear" ] ] 
                     ]
                 ]         
             |> Card.block [ Block.attrs [ class "text-center pb-0"] ]
-                [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedDice (card.id, card.dieFaces, card.dice.explodes)) ] [ text "Roll" ] ]
+                [ Block.custom <| div [ class "mb-3" ] [ Button.button [ Button.attrs [ class "w-100" ], Button.primary, Button.small, Button.onClick (RollMixedCard (card.id, card.dieFaces, card.dice.explodes)) ] [ text "Roll" ] ]
                 , Block.custom <| dieTable
                 ]
             |> Card.view
@@ -706,7 +707,7 @@ newDiceSetList model =
     let dieButton i d =
          Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs [ Spacing.mb1, Spacing.mr1 ] ] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
     in
-        div [] (model.newMixedSet.dieFaces |> List.indexedMap dieButton)
+        div [] (model.newMixedCard.dieFaces |> List.indexedMap dieButton)
 
 {- ----------------------------------------------------------------- -}
 
@@ -734,7 +735,7 @@ mixedDieResultList card =
 {- Renders the results of single and multi dice rolls. -}
 dieResult: (result -> Int) -> (result -> String) -> Int -> result -> Html Msg
 dieResult asDie asRolls i result =
-    Html.span [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
+    Html.div [ class ("no-wrap " ++ if i == 0 then "text-primary" else "")]
     [ Html.span [] [ text "｢" ]
     , Html.span [ class ("font-italic " ++ if i /= 0 then "font-muted" else "") ] [ text ("d" ++ (result |> asDie |> String.fromInt) ++ ": ") ] 
     , Html.span [ class "font-weight-bold"] [ text (result |> asRolls) ]
@@ -812,7 +813,7 @@ multiRollMaxElementsDropdown model =
 
 mixedRollMaxElementsDropDown : MixedCard.MixedCard -> Html Msg
 mixedRollMaxElementsDropDown card =
-    rollMaxElementsDropdown card.dice.historyDropState card.dice.maxHistory (\x -> MixedRollNewValue (card.id, x)) (\x -> MixedRollDropStateChange (card.id, x))
+    rollMaxElementsDropdown card.dice.historyDropState card.dice.maxHistory (\x -> MixedCardNewValue (card.id, x)) (\x -> MixedCardDropStateChange (card.id, x))
 
 explodeCheckbox: String -> Bool -> (Bool -> Msg) -> Html Msg
 explodeCheckbox id val cmd =
