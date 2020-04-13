@@ -44,7 +44,7 @@ type alias Model =
     , modalVisibility : Modal.Visibility
     , singleDie : DiceModel.DiceModel Roll.Single
     , multiDice : DiceModel.DiceModel Roll.Multi
-    , mixedDice : List MixedCard.MixedCard
+    , mixedCards : List MixedCard.MixedCard
     , newMixedSet : MixedCard.MixedCard
     , storageTestData : Maybe String
     , debugMessages : List DebugOutput.Message
@@ -86,7 +86,7 @@ init flags url key =
                           , modalVisibility = Modal.hidden
                           , singleDie = DiceModel.withName "Roll single die"
                           , multiDice = DiceModel.withName "Roll multiple dice"
-                          , mixedDice = serializedMixedCards
+                          , mixedCards = serializedMixedCards
                           , newMixedSet = MixedCard.firstEmptyCard
                           , storageTestData = Just (serializedMixedCardError |> Maybe.map Decode.errorToString |> Maybe.withDefault "")
                           , debugMessages = []
@@ -144,7 +144,7 @@ subscriptions model =
                 , Ports.retrieve (\data -> RetrievedData data)
                 , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
                 , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange ]
-                (model.mixedDice |> List.map (\x -> Dropdown.subscriptions x.dice.historyDropState (\z -> MixedRollDropStateChange (x.id, z))))
+                (model.mixedCards |> List.map (\x -> Dropdown.subscriptions x.dice.historyDropState (\z -> MixedRollDropStateChange (x.id, z))))
             )
 
 
@@ -238,7 +238,7 @@ update msg model =
 
         NewMixedDiceResult (id, result) -> 
             ( let
-                card = model.mixedDice |> List.find (\x -> x.id == id)
+                card = model.mixedCards |> List.find (\x -> x.id == id)
               in
                 case card of
                     Just c ->
@@ -246,7 +246,7 @@ update msg model =
                             updatedCard =
                                 c |> MixedCard.addRoll result  
                         in
-                            { model | mixedDice = model.mixedDice |> List.replaceBy (\x -> x.id == id) updatedCard }
+                            { model | mixedCards = model.mixedCards |> List.replaceBy (\x -> x.id == id) updatedCard }
                     Nothing ->
                         model
             , Cmd.none
@@ -344,7 +344,7 @@ removeMixedCard : UUID -> Model -> (Model, Cmd Msg)
 removeMixedCard id model =
     let
         newModel =
-            { model | mixedDice = model.mixedDice |> List.filter (\x -> x.id /= id) }
+            { model | mixedCards = model.mixedCards |> List.filter (\x -> x.id /= id) }
     in
         newModel |> update (saveMixedCardsToLocalStorage newModel)
 
@@ -352,16 +352,16 @@ setForMixedSet : (MixedCard.MixedCard -> MixedCard.MixedCard) -> UUID -> Model -
 setForMixedSet f id model =
     let 
         updatedCard =
-            model.mixedDice |> List.find (\c -> c.id == id) |> Maybe.map f
+            model.mixedCards |> List.find (\c -> c.id == id) |> Maybe.map f
     in
         case updatedCard of
             Nothing -> model
-            Just card -> { model | mixedDice = model.mixedDice |> List.replaceBy (\c -> c.id == id) card }
+            Just card -> { model | mixedCards = model.mixedCards |> List.replaceBy (\c -> c.id == id) card }
 
 
 addMixedSet : MixedCard.MixedCard -> Model -> Model
 addMixedSet card model =
-    { model | mixedDice = card :: model.mixedDice }
+    { model | mixedCards = card :: model.mixedCards }
 
 urlUpdate : Url -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
@@ -531,7 +531,7 @@ modal model =
 
 saveMixedCardsToLocalStorage : Model -> Msg
 saveMixedCardsToLocalStorage model =
-    StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")
+    StoreData (model.mixedCards |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")
 
 {--
     Code necessary to render the single die and multi die cards.
@@ -665,7 +665,7 @@ createMixedSetCard model =
 mixedSetCards: Model -> Html Msg
 mixedSetCards model =
     let makeColumn card = Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ] [ card ] in
-        Grid.row [] (model.mixedDice |> List.map (mixedSetCard >> makeColumn))
+        Grid.row [] (model.mixedCards |> List.map (mixedSetCard >> makeColumn))
 
 mixedSetCard : MixedCard.MixedCard -> Html Msg
 mixedSetCard card =
