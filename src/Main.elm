@@ -266,16 +266,22 @@ update msg model =
             , Cmd.none)
 
         MixedCardNewValue (id, length) -> 
-            ( model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
-            , Cmd.none)
+            let 
+                newModel = model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
+            in
+                update (saveMixedCardsToLocalStorage newModel) newModel
+            --( model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
+            --, Cmd.none)
 
         ClearMixedCardResults id -> 
             ( model |> setForMixedSet (\c -> c |> MixedCard.clearHistory) id
             , Cmd.none)
 
         SetMixedCardExplode (id, checked) -> 
-            ( model |> setForMixedSet (\c -> MixedCard.setExplodes checked c) id 
-            , Cmd.none)
+            let
+                newModel = model |> setForMixedSet (\c -> MixedCard.setExplodes checked c) id
+            in
+                update (saveMixedCardsToLocalStorage newModel) newModel
 
         DeleteMixedCard id ->
             removeMixedCard id model

@@ -9070,327 +9070,336 @@ var $author$project$Main$removeMixedCard = F2(
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		switch (msg.$) {
-			case 'ClickedLink':
-				var req = msg.a;
-				if (req.$ === 'Internal') {
-					var url = req.a;
+		update:
+		while (true) {
+			switch (msg.$) {
+				case 'ClickedLink':
+					var req = msg.a;
+					if (req.$ === 'Internal') {
+						var url = req.a;
+						return _Utils_Tuple2(
+							model,
+							A2(
+								$elm$browser$Browser$Navigation$pushUrl,
+								model.navKey,
+								$elm$url$Url$toString(url)));
+					} else {
+						var href = req.a;
+						return _Utils_Tuple2(
+							model,
+							$elm$browser$Browser$Navigation$load(href));
+					}
+				case 'UrlChange':
+					var url = msg.a;
+					return A2($author$project$Main$urlUpdate, url, model);
+				case 'NavMsg':
+					var state = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{navState: state}),
+						$elm$core$Platform$Cmd$none);
+				case 'CloseModal':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden}),
+						$elm$core$Platform$Cmd$none);
+				case 'ShowModal':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$shown}),
+						$elm$core$Platform$Cmd$none);
+				case 'ClearSingleDieResults':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								singleDie: $author$project$DiceModel$clearHistory(model.singleDie)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'ClearMultiDiceResults':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								multiDice: $author$project$DiceModel$clearHistory(model.multiDice)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'NewSingleDieResult':
+					var result = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								singleDie: A2($author$project$DiceModel$addRoll, result, model.singleDie)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'NewMultiDiceResult':
+					var result = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								multiDice: A2($author$project$DiceModel$addRoll, result, model.multiDice)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'RollSingleDie':
+					var faceCount = msg.a;
 					return _Utils_Tuple2(
 						model,
 						A2(
-							$elm$browser$Browser$Navigation$pushUrl,
-							model.navKey,
-							$elm$url$Url$toString(url)));
-				} else {
-					var href = req.a;
+							$elm$random$Random$generate,
+							$author$project$Main$NewSingleDieResult,
+							A2(
+								$elm$random$Random$map,
+								function (n) {
+									return {die: faceCount, result: n};
+								},
+								A3($author$project$Main$singleDieGenerator, model.singleDie.explodes, 0, faceCount))));
+				case 'RollMultiDice':
+					var faceCount = msg.a;
+					var diceCount = msg.b;
 					return _Utils_Tuple2(
 						model,
-						$elm$browser$Browser$Navigation$load(href));
-				}
-			case 'UrlChange':
-				var url = msg.a;
-				return A2($author$project$Main$urlUpdate, url, model);
-			case 'NavMsg':
-				var state = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{navState: state}),
-					$elm$core$Platform$Cmd$none);
-			case 'CloseModal':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden}),
-					$elm$core$Platform$Cmd$none);
-			case 'ShowModal':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$shown}),
-					$elm$core$Platform$Cmd$none);
-			case 'ClearSingleDieResults':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							singleDie: $author$project$DiceModel$clearHistory(model.singleDie)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'ClearMultiDiceResults':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							multiDice: $author$project$DiceModel$clearHistory(model.multiDice)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'NewSingleDieResult':
-				var result = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							singleDie: A2($author$project$DiceModel$addRoll, result, model.singleDie)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'NewMultiDiceResult':
-				var result = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							multiDice: A2($author$project$DiceModel$addRoll, result, model.multiDice)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'RollSingleDie':
-				var faceCount = msg.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$random$Random$generate,
-						$author$project$Main$NewSingleDieResult,
 						A2(
-							$elm$random$Random$map,
-							function (n) {
-								return {die: faceCount, result: n};
-							},
-							A3($author$project$Main$singleDieGenerator, model.singleDie.explodes, 0, faceCount))));
-			case 'RollMultiDice':
-				var faceCount = msg.a;
-				var diceCount = msg.b;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$random$Random$generate,
-						$author$project$Main$NewMultiDiceResult,
+							$elm$random$Random$generate,
+							$author$project$Main$NewMultiDiceResult,
+							A2(
+								$elm$random$Random$map,
+								function (n) {
+									return {die: faceCount, result: n};
+								},
+								A3($author$project$Main$multiDiceGenerator, model.multiDice.explodes, faceCount, diceCount))));
+				case 'RollMixedCard':
+					var _v2 = msg.a;
+					var id = _v2.a;
+					var dice = _v2.b;
+					var explode = _v2.c;
+					return _Utils_Tuple2(
+						model,
 						A2(
-							$elm$random$Random$map,
-							function (n) {
-								return {die: faceCount, result: n};
+							$elm$random$Random$generate,
+							$author$project$Main$NewMixedCardResult,
+							A3($author$project$Main$rollMixedSet, id, explode, dice)));
+				case 'SingleRollDropStateChange':
+					var _new = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								singleDie: A2($author$project$DiceModel$setHistoryDropState, _new, model.singleDie)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'MultiRollDropStateChange':
+					var _new = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								multiDice: A2($author$project$DiceModel$setHistoryDropState, _new, model.multiDice)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'SingleRollNewValue':
+					var _new = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								singleDie: A2($author$project$DiceModel$setHistorySize, _new, model.singleDie)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'MultiRollNewValue':
+					var _new = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								multiDice: A2($author$project$DiceModel$setHistorySize, _new, model.multiDice)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'SetSingleDieExplode':
+					var _new = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								singleDie: A2($author$project$DiceModel$asExplode, model.singleDie, _new)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'SetMultiDiceExplode':
+					var _new = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								multiDice: A2($author$project$DiceModel$asExplode, model.multiDice, _new)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'NewMixedCardResult':
+					var _v3 = msg.a;
+					var id = _v3.a;
+					var result = _v3.b;
+					return _Utils_Tuple2(
+						function () {
+							var card = A2(
+								$author$project$List$Extra$find,
+								function (x) {
+									return _Utils_eq(x.id, id);
+								},
+								model.mixedCards);
+							if (card.$ === 'Just') {
+								var c = card.a;
+								var updatedCard = A2($author$project$MixedCard$addRoll, result, c);
+								return _Utils_update(
+									model,
+									{
+										mixedCards: A3(
+											$author$project$List$Extra$replaceBy,
+											function (x) {
+												return _Utils_eq(x.id, id);
+											},
+											updatedCard,
+											model.mixedCards)
+									});
+							} else {
+								return model;
+							}
+						}(),
+						$elm$core$Platform$Cmd$none);
+				case 'MixedCardDropStateChange':
+					var _v5 = msg.a;
+					var id = _v5.a;
+					var state = _v5.b;
+					return _Utils_Tuple2(
+						A3(
+							$author$project$Main$setForMixedSet,
+							function (c) {
+								return A2($author$project$MixedCard$setHistoryDropState, state, c);
 							},
-							A3($author$project$Main$multiDiceGenerator, model.multiDice.explodes, faceCount, diceCount))));
-			case 'RollMixedCard':
-				var _v2 = msg.a;
-				var id = _v2.a;
-				var dice = _v2.b;
-				var explode = _v2.c;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$random$Random$generate,
-						$author$project$Main$NewMixedCardResult,
-						A3($author$project$Main$rollMixedSet, id, explode, dice)));
-			case 'SingleRollDropStateChange':
-				var _new = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							singleDie: A2($author$project$DiceModel$setHistoryDropState, _new, model.singleDie)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'MultiRollDropStateChange':
-				var _new = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							multiDice: A2($author$project$DiceModel$setHistoryDropState, _new, model.multiDice)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'SingleRollNewValue':
-				var _new = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							singleDie: A2($author$project$DiceModel$setHistorySize, _new, model.singleDie)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'MultiRollNewValue':
-				var _new = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							multiDice: A2($author$project$DiceModel$setHistorySize, _new, model.multiDice)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'SetSingleDieExplode':
-				var _new = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							singleDie: A2($author$project$DiceModel$asExplode, model.singleDie, _new)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'SetMultiDiceExplode':
-				var _new = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							multiDice: A2($author$project$DiceModel$asExplode, model.multiDice, _new)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'NewMixedCardResult':
-				var _v3 = msg.a;
-				var id = _v3.a;
-				var result = _v3.b;
-				return _Utils_Tuple2(
-					function () {
-						var card = A2(
-							$author$project$List$Extra$find,
-							function (x) {
-								return _Utils_eq(x.id, id);
-							},
-							model.mixedCards);
-						if (card.$ === 'Just') {
-							var c = card.a;
-							var updatedCard = A2($author$project$MixedCard$addRoll, result, c);
-							return _Utils_update(
-								model,
-								{
-									mixedCards: A3(
-										$author$project$List$Extra$replaceBy,
-										function (x) {
-											return _Utils_eq(x.id, id);
-										},
-										updatedCard,
-										model.mixedCards)
-								});
-						} else {
-							return model;
-						}
-					}(),
-					$elm$core$Platform$Cmd$none);
-			case 'MixedCardDropStateChange':
-				var _v5 = msg.a;
-				var id = _v5.a;
-				var state = _v5.b;
-				return _Utils_Tuple2(
-					A3(
-						$author$project$Main$setForMixedSet,
-						function (c) {
-							return A2($author$project$MixedCard$setHistoryDropState, state, c);
-						},
-						id,
-						model),
-					$elm$core$Platform$Cmd$none);
-			case 'MixedCardNewValue':
-				var _v6 = msg.a;
-				var id = _v6.a;
-				var length = _v6.b;
-				return _Utils_Tuple2(
-					A3(
+							id,
+							model),
+						$elm$core$Platform$Cmd$none);
+				case 'MixedCardNewValue':
+					var _v6 = msg.a;
+					var id = _v6.a;
+					var length = _v6.b;
+					var newModel = A3(
 						$author$project$Main$setForMixedSet,
 						function (c) {
 							return A2($author$project$MixedCard$setHistoryLength, length, c);
 						},
 						id,
-						model),
-					$elm$core$Platform$Cmd$none);
-			case 'ClearMixedCardResults':
-				var id = msg.a;
-				return _Utils_Tuple2(
-					A3(
-						$author$project$Main$setForMixedSet,
-						function (c) {
-							return $author$project$MixedCard$clearHistory(c);
-						},
-						id,
-						model),
-					$elm$core$Platform$Cmd$none);
-			case 'SetMixedCardExplode':
-				var _v7 = msg.a;
-				var id = _v7.a;
-				var checked = _v7.b;
-				return _Utils_Tuple2(
-					A3(
+						model);
+					var $temp$msg = $author$project$Main$saveMixedCardsToLocalStorage(newModel),
+						$temp$model = newModel;
+					msg = $temp$msg;
+					model = $temp$model;
+					continue update;
+				case 'ClearMixedCardResults':
+					var id = msg.a;
+					return _Utils_Tuple2(
+						A3(
+							$author$project$Main$setForMixedSet,
+							function (c) {
+								return $author$project$MixedCard$clearHistory(c);
+							},
+							id,
+							model),
+						$elm$core$Platform$Cmd$none);
+				case 'SetMixedCardExplode':
+					var _v7 = msg.a;
+					var id = _v7.a;
+					var checked = _v7.b;
+					var newModel = A3(
 						$author$project$Main$setForMixedSet,
 						function (c) {
 							return A2($author$project$MixedCard$setExplodes, checked, c);
 						},
 						id,
-						model),
-					$elm$core$Platform$Cmd$none);
-			case 'DeleteMixedCard':
-				var id = msg.a;
-				return A2($author$project$Main$removeMixedCard, id, model);
-			case 'ResetNewMixedCard':
-				var id = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
+						model);
+					var $temp$msg = $author$project$Main$saveMixedCardsToLocalStorage(newModel),
+						$temp$model = newModel;
+					msg = $temp$msg;
+					model = $temp$model;
+					continue update;
+				case 'DeleteMixedCard':
+					var id = msg.a;
+					return A2($author$project$Main$removeMixedCard, id, model);
+				case 'ResetNewMixedCard':
+					var id = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newMixedCard: $author$project$MixedCard$empty(id)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'ClearNewSet':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newMixedCard: $author$project$MixedCard$empty(model.newMixedCard.id)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'AddNewSet':
+					return $author$project$Main$addNewSet(model);
+				case 'AddNewDieToSet':
+					var d = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newMixedCard: A2($author$project$MixedCard$addDie, d, model.newMixedCard)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'RemoveDieFromNewSet':
+					var index = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newMixedCard: A2($author$project$MixedCard$removeDie, index, model.newMixedCard)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'NewDieSetNameChanged':
+					var name = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								newMixedCard: A2($author$project$MixedCard$setName, name, model.newMixedCard)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'StoreData':
+					var data = msg.a;
+					return _Utils_Tuple2(
 						model,
-						{
-							newMixedCard: $author$project$MixedCard$empty(id)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'ClearNewSet':
-				return _Utils_Tuple2(
-					_Utils_update(
+						$author$project$Ports$store(data));
+				case 'RetrievedData':
+					var data = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								storageTestData: $elm$core$Maybe$Just(data.value)
+							}),
+						$elm$core$Platform$Cmd$none);
+				case 'RequestRetrieval':
+					var key = msg.a;
+					return _Utils_Tuple2(
 						model,
-						{
-							newMixedCard: $author$project$MixedCard$empty(model.newMixedCard.id)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'AddNewSet':
-				return $author$project$Main$addNewSet(model);
-			case 'AddNewDieToSet':
-				var d = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							newMixedCard: A2($author$project$MixedCard$addDie, d, model.newMixedCard)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'RemoveDieFromNewSet':
-				var index = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							newMixedCard: A2($author$project$MixedCard$removeDie, index, model.newMixedCard)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'NewDieSetNameChanged':
-				var name = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							newMixedCard: A2($author$project$MixedCard$setName, name, model.newMixedCard)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'StoreData':
-				var data = msg.a;
-				return _Utils_Tuple2(
-					model,
-					$author$project$Ports$store(data));
-			case 'RetrievedData':
-				var data = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							storageTestData: $elm$core$Maybe$Just(data.value)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'RequestRetrieval':
-				var key = msg.a;
-				return _Utils_Tuple2(
-					model,
-					$author$project$Ports$requestRetrieval(key));
-			default:
-				var state = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{instructionsToggleState: state}),
-					$elm$core$Platform$Cmd$none);
+						$author$project$Ports$requestRetrieval(key));
+				default:
+					var state = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{instructionsToggleState: state}),
+						$elm$core$Platform$Cmd$none);
+			}
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
