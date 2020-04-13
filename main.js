@@ -11224,6 +11224,10 @@ var $author$project$DebugOutput$messageAsAlert = function (message) {
 					]));
 	}
 };
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
 var $author$project$Main$ClearMixedCardResults = function (a) {
 	return {$: 'ClearMixedCardResults', a: a};
 };
@@ -13499,25 +13503,39 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$row = F2(
 			$rundis$elm_bootstrap$Bootstrap$Grid$Internal$rowAttributes(options),
 			A2($elm$core$List$map, $rundis$elm_bootstrap$Bootstrap$Grid$renderCol, cols));
 	});
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$SM, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$SM, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
 var $author$project$Main$mixedSetCards = function (model) {
-	var makeColumn = function (card) {
-		return A2(
-			$rundis$elm_bootstrap$Bootstrap$Grid$col,
-			_List_fromArray(
-				[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
-			_List_fromArray(
-				[card]));
-	};
+	var regularSize = _List_fromArray(
+		[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]);
+	var largerSize = _List_fromArray(
+		[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg6]);
+	var makeColumn = F2(
+		function (diceCount, card) {
+			return (diceCount > 6) ? A2(
+				$rundis$elm_bootstrap$Bootstrap$Grid$col,
+				largerSize,
+				_List_fromArray(
+					[card])) : A2(
+				$rundis$elm_bootstrap$Bootstrap$Grid$col,
+				regularSize,
+				_List_fromArray(
+					[card]));
+		});
 	return A2(
 		$rundis$elm_bootstrap$Bootstrap$Grid$row,
 		_List_Nil,
 		A2(
 			$elm$core$List$map,
-			A2($elm$core$Basics$composeR, $author$project$Main$mixedSetCard, makeColumn),
+			function (c) {
+				return A3(
+					$elm$core$Basics$composeR,
+					$author$project$Main$mixedSetCard,
+					makeColumn(
+						$elm$core$List$length(c.dieFaces)),
+					c);
+			},
 			model.mixedCards));
 };
 var $author$project$Main$ClearMultiDiceResults = {$: 'ClearMultiDiceResults'};
@@ -14155,7 +14173,7 @@ var $author$project$Main$mainContent = function (model) {
 			}
 		}());
 };
-var $author$project$Main$menu = function (model) {
+var $author$project$Main$menu = function (_v0) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(

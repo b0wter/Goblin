@@ -677,8 +677,20 @@ createMixedSetCard model =
 
 mixedSetCards: Model -> Html Msg
 mixedSetCards model =
-    let makeColumn card = Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ] [ card ] in
-        Grid.row [] (model.mixedCards |> List.map (mixedSetCard >> makeColumn))
+    let 
+        regularSize =  [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
+
+        largerSize = [ Col.xs12, Col.sm12, Col.md12, Col.lg6 ]
+
+        diceInCard c = c.dieFaces |> List.length
+
+        makeColumn diceCount card = 
+            if diceCount > 6 then
+                Grid.col largerSize [ card ] 
+            else
+                Grid.col regularSize [ card ] 
+    in
+        Grid.row [] (model.mixedCards |> List.map (\c -> c |> (mixedSetCard >> makeColumn (c |> diceInCard))))
 
 mixedSetCard : MixedCard.MixedCard -> Html Msg
 mixedSetCard card =
