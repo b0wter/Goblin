@@ -11224,9 +11224,10 @@ var $author$project$DebugOutput$messageAsAlert = function (message) {
 					]));
 	}
 };
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
 var $author$project$Main$ClearMixedCardResults = function (a) {
 	return {$: 'ClearMixedCardResults', a: a};
@@ -13509,20 +13510,29 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12 = A2($rundis$elm_bootstrap$Boo
 var $author$project$Main$mixedSetCards = function (model) {
 	var regularSize = _List_fromArray(
 		[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]);
-	var largerSize = _List_fromArray(
+	var largeSize = _List_fromArray(
 		[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg6]);
+	var extraLargeSize = _List_fromArray(
+		[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg12]);
 	var makeColumn = F2(
 		function (diceCount, card) {
-			return (diceCount > 6) ? A2(
+			return (diceCount > 8) ? A2(
 				$rundis$elm_bootstrap$Bootstrap$Grid$col,
-				largerSize,
+				extraLargeSize,
+				_List_fromArray(
+					[card])) : ((diceCount > 6) ? A2(
+				$rundis$elm_bootstrap$Bootstrap$Grid$col,
+				largeSize,
 				_List_fromArray(
 					[card])) : A2(
 				$rundis$elm_bootstrap$Bootstrap$Grid$col,
 				regularSize,
 				_List_fromArray(
-					[card]));
+					[card])));
 		});
+	var diceInCard = function (c) {
+		return $elm$core$List$length(c.dieFaces);
+	};
 	return A2(
 		$rundis$elm_bootstrap$Bootstrap$Grid$row,
 		_List_Nil,
@@ -13533,7 +13543,7 @@ var $author$project$Main$mixedSetCards = function (model) {
 					$elm$core$Basics$composeR,
 					$author$project$Main$mixedSetCard,
 					makeColumn(
-						$elm$core$List$length(c.dieFaces)),
+						diceInCard(c)),
 					c);
 			},
 			model.mixedCards));

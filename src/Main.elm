@@ -680,13 +680,17 @@ mixedSetCards model =
     let 
         regularSize =  [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
 
-        largerSize = [ Col.xs12, Col.sm12, Col.md12, Col.lg6 ]
+        largeSize = [ Col.xs12, Col.sm12, Col.md12, Col.lg6 ]
+
+        extraLargeSize = [ Col.xs12, Col.sm12, Col.md12, Col.lg12 ]
 
         diceInCard c = c.dieFaces |> List.length
 
         makeColumn diceCount card = 
-            if diceCount > 6 then
-                Grid.col largerSize [ card ] 
+            if diceCount > 8 then
+                Grid.col extraLargeSize [ card ] 
+            else if diceCount > 6 then
+                Grid.col largeSize [ card ] 
             else
                 Grid.col regularSize [ card ] 
     in
