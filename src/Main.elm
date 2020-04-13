@@ -416,7 +416,7 @@ view model =
 
 
 menu : Model -> Html Msg
-menu model =
+menu _ =
     div [ class "mb-3" ] []
     {-
     Navbar.config NavMsg
