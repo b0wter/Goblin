@@ -854,6 +854,7 @@ instructionsAccordion model =
         |> Accordion.view model.instructionsToggleState
     ]
 
+instructions : Block.Item msg
 instructions =
     Block.text []
     [ p [] [ span [ class "font-weight-bold" ] [ text "Custom dice sets"  ], span [ Spacing.ml1Sm ] [ text " - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the 'Create new set' box and use the buttons below to add dice to the set. Afterwards click the 'Add' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the 'X' button in the top right corner of a card to delete a custom set."] ]
