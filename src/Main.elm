@@ -21,6 +21,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Utilities.Spacing as Spacing
+import Bootstrap.Accordion as Accordion
 import Random
 import UUID exposing (UUID)
 import Json.Decode as Decode
@@ -48,6 +49,7 @@ type alias Model =
     , newMixedCard : MixedCard.MixedCard
     , storageTestData : Maybe String
     , debugMessages : List DebugOutput.Message
+    , instructionsToggleState : Accordion.State
     }
 
 type Page
@@ -90,6 +92,7 @@ init flags url key =
                           , newMixedCard = MixedCard.firstEmptyCard
                           , storageTestData = Just (serializedMixedCardError |> Maybe.map Decode.errorToString |> Maybe.withDefault "")
                           , debugMessages = []
+                          , instructionsToggleState = Accordion.initialState
                           }
     in
         ( model, Cmd.batch [ urlCmd, navCmd, Random.generate ResetNewMixedCard UUID.generator ] )
@@ -132,9 +135,13 @@ type Msg
     | RemoveDieFromNewSet Int
     | NewDieSetNameChanged String
     --
+    -- Ports related messages
     | StoreData Ports.StorageObject
     | RetrievedData Ports.StorageObject
     | RequestRetrieval String
+    --
+    -- Messages not fitting into other categories
+    | ToggleInstructions Accordion.State
 
 
 subscriptions : Model -> Sub Msg
@@ -142,6 +149,7 @@ subscriptions model =
     Sub.batch 
             ( List.append
                 [ Navbar.subscriptions model.navState NavMsg
+                , Accordion.subscriptions model.instructionsToggleState ToggleInstructions
                 , Ports.retrieve (\data -> RetrievedData data)
                 , Dropdown.subscriptions model.singleDie.historyDropState SingleRollDropStateChange
                 , Dropdown.subscriptions model.multiDice.historyDropState MultiRollDropStateChange ]
@@ -307,6 +315,10 @@ update msg model =
             ( model
             , Ports.requestRetrieval key)
 
+        ToggleInstructions state ->
+            ( {model | instructionsToggleState = state }
+            , Cmd.none)
+
 addNewSet : Model -> (Model, Cmd Msg)
 addNewSet model =
     let 
@@ -405,7 +417,7 @@ view model =
 
 menu : Model -> Html Msg
 menu model =
-    div [ class "mb-4" ] []
+    div [ class "mb-3" ] []
     {-
     Navbar.config NavMsg
         |> Navbar.withAnimation
@@ -441,7 +453,7 @@ pageHome model =
     [ Grid.row []
         [ Grid.col [ Col.xs ]
             [
-                div [] []
+                instructionsAccordion model
                 {- Put debug elements here :)
                 [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
                 , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
@@ -822,3 +834,28 @@ explodeCheckbox id val cmd =
 addDebugMessage : DebugOutput.Message -> Model -> Model
 addDebugMessage text model =
     { model | debugMessages = text :: model.debugMessages }
+
+instructionsAccordion : Model -> Html Msg
+instructionsAccordion model =
+    div [ Spacing.mb3 ]
+    [ Accordion.config ToggleInstructions
+        |> Accordion.withAnimation
+        |> Accordion.cards
+            [ Accordion.card
+                { id = "instruction"
+                , options = []
+                , header =
+                    Accordion.header [] <| Accordion.toggle [] [ text "Click here to expand instructions." ]
+                , blocks =
+                    [ Accordion.block [] [ instructions ]
+                    ]
+                }
+            ]
+        |> Accordion.view model.instructionsToggleState
+    ]
+
+instructions =
+    Block.text []
+    [ p [] [ span [ class "font-weight-bold" ] [ text "Custom dice sets"  ], span [ Spacing.ml1Sm ] [ text " - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the 'Create new set' box and use the buttons below to add dice to the set. Afterwards click the 'Add' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the 'X' button in the top right corner of a card to delete a custom set."] ]
+    , p [] [ span [ class "font-weight-bold" ] [ text "Explode"  ], span [ Spacing.ml1Sm ] [ text " - you can set the option for dice to 'explode'. This will cause a die to be rolled again if its maximum face count has been rolled (can trigger multiple times for a single row)."] ]
+    ]

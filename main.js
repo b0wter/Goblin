@@ -6708,12 +6708,16 @@ var $TSFoster$elm_uuid$UUID$generator = A2(
 	A5($elm$random$Random$map4, $TSFoster$elm_uuid$UUID$UUID, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32, $TSFoster$elm_uuid$UUID$randomU32));
 var $rundis$elm_bootstrap$Bootstrap$Modal$Hide = {$: 'Hide'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$hidden = $rundis$elm_bootstrap$Bootstrap$Modal$Hide;
-var $rundis$elm_bootstrap$Bootstrap$Navbar$Hidden = {$: 'Hidden'};
-var $rundis$elm_bootstrap$Bootstrap$Navbar$State = function (a) {
+var $rundis$elm_bootstrap$Bootstrap$Accordion$State = function (a) {
 	return {$: 'State', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $rundis$elm_bootstrap$Bootstrap$Accordion$initialState = $rundis$elm_bootstrap$Bootstrap$Accordion$State($elm$core$Dict$empty);
+var $rundis$elm_bootstrap$Bootstrap$Navbar$Hidden = {$: 'Hidden'};
+var $rundis$elm_bootstrap$Bootstrap$Navbar$State = function (a) {
+	return {$: 'State', a: a};
+};
 var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
 var $rundis$elm_bootstrap$Bootstrap$Navbar$mapState = F2(
 	function (mapper, _v0) {
@@ -7553,6 +7557,7 @@ var $author$project$Main$init = F3(
 			url,
 			{
 				debugMessages: _List_Nil,
+				instructionsToggleState: $rundis$elm_bootstrap$Bootstrap$Accordion$initialState,
 				mixedCards: serializedMixedCards,
 				modalVisibility: $rundis$elm_bootstrap$Bootstrap$Modal$hidden,
 				multiDice: $author$project$DiceModel$withName('Roll multiple dice'),
@@ -7591,6 +7596,9 @@ var $author$project$Main$RetrievedData = function (a) {
 var $author$project$Main$SingleRollDropStateChange = function (a) {
 	return {$: 'SingleRollDropStateChange', a: a};
 };
+var $author$project$Main$ToggleInstructions = function (a) {
+	return {$: 'ToggleInstructions', a: a};
+};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $author$project$Ports$retrieve = _Platform_incomingPort(
 	'retrieve',
@@ -7606,7 +7614,59 @@ var $author$project$Ports$retrieve = _Platform_incomingPort(
 				A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
 		},
 		A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$string)));
-var $rundis$elm_bootstrap$Bootstrap$Dropdown$ListenClicks = {$: 'ListenClicks'};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden = {$: 'Hidden'};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$Shown = {$: 'Shown'};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$StartDown = {$: 'StartDown'};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$StartUp = {$: 'StartUp'};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$browser$Browser$AnimationManager$Time = function (a) {
 	return {$: 'Time', a: a};
@@ -7733,6 +7793,46 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrame = function (tagger) {
 		$elm$browser$Browser$AnimationManager$Time(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrame = $elm$browser$Browser$AnimationManager$onAnimationFrame;
+var $rundis$elm_bootstrap$Bootstrap$Accordion$subscriptions = F2(
+	function (_v0, toMsg) {
+		var cardStates = _v0.a;
+		var updState = $rundis$elm_bootstrap$Bootstrap$Accordion$State(
+			A2(
+				$elm$core$Dict$map,
+				F2(
+					function (id, state) {
+						var _v3 = state.visibility;
+						switch (_v3.$) {
+							case 'StartDown':
+								return _Utils_update(
+									state,
+									{visibility: $rundis$elm_bootstrap$Bootstrap$Accordion$Shown});
+							case 'StartUp':
+								return _Utils_update(
+									state,
+									{visibility: $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden});
+							default:
+								return state;
+						}
+					}),
+				cardStates));
+		var needsSub = A2(
+			$elm$core$List$any,
+			function (_v2) {
+				var state = _v2.b;
+				return A2(
+					$elm$core$List$member,
+					state.visibility,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Accordion$StartDown, $rundis$elm_bootstrap$Bootstrap$Accordion$StartUp]));
+			},
+			$elm$core$Dict$toList(cardStates));
+		return needsSub ? $elm$browser$Browser$Events$onAnimationFrame(
+			function (_v1) {
+				return toMsg(updState);
+			}) : $elm$core$Platform$Sub$none;
+	});
+var $rundis$elm_bootstrap$Bootstrap$Dropdown$ListenClicks = {$: 'ListenClicks'};
 var $elm$browser$Browser$Events$Document = {$: 'Document'};
 var $elm$browser$Browser$Events$MySub = F3(
 	function (a, b, c) {
@@ -8035,46 +8135,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$AnimatingUp = {$: 'AnimatingUp'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Closed = {$: 'Closed'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$ListenClicks = {$: 'ListenClicks'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Open = {$: 'Open'};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2($elm$core$Dict$map, func, left),
-				A2($elm$core$Dict$map, func, right));
-		}
-	});
 var $rundis$elm_bootstrap$Bootstrap$Navbar$dropdownSubscriptions = F2(
 	function (state, toMsg) {
 		var dropdowns = state.a.dropdowns;
@@ -8195,6 +8255,7 @@ var $author$project$Main$subscriptions = function (model) {
 			_List_fromArray(
 				[
 					A2($rundis$elm_bootstrap$Bootstrap$Navbar$subscriptions, model.navState, $author$project$Main$NavMsg),
+					A2($rundis$elm_bootstrap$Bootstrap$Accordion$subscriptions, model.instructionsToggleState, $author$project$Main$ToggleInstructions),
 					$author$project$Ports$retrieve(
 					function (data) {
 						return $author$project$Main$RetrievedData(data);
@@ -9300,11 +9361,18 @@ var $author$project$Main$update = F2(
 							storageTestData: $elm$core$Maybe$Just(data.value)
 						}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'RequestRetrieval':
 				var key = msg.a;
 				return _Utils_Tuple2(
 					model,
 					$author$project$Ports$requestRetrieval(key));
+			default:
+				var state = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{instructionsToggleState: state}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -10490,6 +10558,428 @@ var $author$project$Main$createMixedSetCard = function (model) {
 									]))
 							]))))));
 };
+var $rundis$elm_bootstrap$Bootstrap$Accordion$block = $rundis$elm_bootstrap$Bootstrap$Card$Internal$block;
+var $rundis$elm_bootstrap$Bootstrap$Accordion$Card = function (a) {
+	return {$: 'Card', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$card = function (rec) {
+	return $rundis$elm_bootstrap$Bootstrap$Accordion$Card(
+		{blocks: rec.blocks, header: rec.header, id: rec.id, options: rec.options});
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$Config = function (a) {
+	return {$: 'Config', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$cards = F2(
+	function (cards_, _v0) {
+		var configRec = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Accordion$Config(
+			_Utils_update(
+				configRec,
+				{cards: cards_}));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$config = function (toMsg) {
+	return $rundis$elm_bootstrap$Bootstrap$Accordion$Config(
+		{cards: _List_Nil, onlyOneOpen: false, toMsg: toMsg, withAnimation: false});
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$Header = function (a) {
+	return {$: 'Header', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$headerPrivate = F3(
+	function (elemFn, attributes, toggle_) {
+		return $rundis$elm_bootstrap$Bootstrap$Accordion$Header(
+			{attributes: attributes, childrenPostToggle: _List_Nil, childrenPreToggle: _List_Nil, elemFn: elemFn, toggle: toggle_});
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$header = $rundis$elm_bootstrap$Bootstrap$Accordion$headerPrivate($elm$html$Html$div);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml1Sm = $elm$html$Html$Attributes$class('ml-sm-1');
+var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $rundis$elm_bootstrap$Bootstrap$Card$Block$text = F2(
+	function (attributes, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem(
+			A2(
+				$elm$html$Html$p,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('card-text')
+						]),
+					attributes),
+				children));
+	});
+var $author$project$Main$instructions = A2(
+	$rundis$elm_bootstrap$Bootstrap$Card$Block$text,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-weight-bold')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Custom dice sets')
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml1Sm]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(' - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the \'Create new set\' box and use the buttons below to add dice to the set. Afterwards click the \'Add\' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the \'X\' button in the top right corner of a card to delete a custom set.')
+						]))
+				])),
+			A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-weight-bold')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Explode')
+						])),
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml1Sm]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(' - you can set the option for dice to \'explode\'. This will cause a die to be rolled again if its maximum face count has been rolled (can trigger multiple times for a single row).')
+						]))
+				]))
+		]));
+var $rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$mb3 = $elm$html$Html$Attributes$class('mb-3');
+var $rundis$elm_bootstrap$Bootstrap$Accordion$Toggle = function (a) {
+	return {$: 'Toggle', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$toggle = F2(
+	function (attributes, children) {
+		return $rundis$elm_bootstrap$Bootstrap$Accordion$Toggle(
+			{attributes: attributes, children: children});
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $rundis$elm_bootstrap$Bootstrap$Accordion$getOrInitCardState = F2(
+	function (id, _v0) {
+		var cardStates = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			{height: $elm$core$Maybe$Nothing, visibility: $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden},
+			A2($elm$core$Dict$get, id, cardStates));
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $rundis$elm_bootstrap$Bootstrap$Accordion$transitionStyle = F2(
+	function (withAnimation_, height) {
+		return _Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'position', 'relative'),
+					A2($elm$html$Html$Attributes$style, 'height', height),
+					A2($elm$html$Html$Attributes$style, 'overflow', 'hidden')
+				]),
+			withAnimation_ ? _List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, '-webkit-transition-timing-function', 'ease'),
+					A2($elm$html$Html$Attributes$style, '-o-transition-timing-function', 'ease'),
+					A2($elm$html$Html$Attributes$style, 'transition-timing-function', 'ease'),
+					A2($elm$html$Html$Attributes$style, '-webkit-transition-duration', '0.35s'),
+					A2($elm$html$Html$Attributes$style, '-o-transition-duration', '0.35s'),
+					A2($elm$html$Html$Attributes$style, 'transition-duration', '0.35s'),
+					A2($elm$html$Html$Attributes$style, '-webkit-transition-property', 'height'),
+					A2($elm$html$Html$Attributes$style, '-o-transition-property', 'height'),
+					A2($elm$html$Html$Attributes$style, 'transition-property', 'height')
+				]) : _List_Nil);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$animationAttributes = F3(
+	function (state, configRec, _v0) {
+		var id = _v0.a.id;
+		var styles = $rundis$elm_bootstrap$Bootstrap$Accordion$transitionStyle(configRec.withAnimation);
+		var cardState = A2($rundis$elm_bootstrap$Bootstrap$Accordion$getOrInitCardState, id, state);
+		var pixelHeight = A2(
+			$elm$core$Maybe$withDefault,
+			'0',
+			A2(
+				$elm$core$Maybe$map,
+				function (v) {
+					return $elm$core$String$fromFloat(v) + 'px';
+				},
+				cardState.height));
+		var _v1 = cardState.visibility;
+		switch (_v1.$) {
+			case 'Hidden':
+				return styles('0px');
+			case 'StartDown':
+				return styles('0px');
+			case 'StartUp':
+				return styles(pixelHeight);
+			default:
+				var _v2 = cardState.height;
+				if (_v2.$ === 'Just') {
+					var x = _v2.a;
+					return styles(pixelHeight);
+				} else {
+					return styles('100%');
+				}
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$renderCardBlock = F3(
+	function (state, configRec, card_) {
+		var id = card_.a.id;
+		var blocks = card_.a.blocks;
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id(id)
+					]),
+				A3($rundis$elm_bootstrap$Bootstrap$Accordion$animationAttributes, state, configRec, card_)),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					$rundis$elm_bootstrap$Bootstrap$Card$Internal$renderBlocks(blocks))
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$visibilityTransition = F2(
+	function (withAnimation_, visibility) {
+		var _v0 = _Utils_Tuple2(withAnimation_, visibility);
+		if (_v0.a) {
+			switch (_v0.b.$) {
+				case 'Hidden':
+					var _v1 = _v0.b;
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$StartDown;
+				case 'StartDown':
+					var _v2 = _v0.b;
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$Shown;
+				case 'Shown':
+					var _v3 = _v0.b;
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$StartUp;
+				default:
+					var _v4 = _v0.b;
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden;
+			}
+		} else {
+			switch (_v0.b.$) {
+				case 'Hidden':
+					var _v5 = _v0.b;
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$Shown;
+				case 'Shown':
+					var _v6 = _v0.b;
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden;
+				default:
+					return $rundis$elm_bootstrap$Bootstrap$Accordion$Shown;
+			}
+		}
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$clickHandler = F4(
+	function (state, configRec, decoder, _v0) {
+		var cardStates = state.a;
+		var id = _v0.a.id;
+		var currentCardState = A2(
+			$elm$core$Maybe$withDefault,
+			{height: $elm$core$Maybe$Nothing, visibility: $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden},
+			A2($elm$core$Dict$get, id, cardStates));
+		var initStates = A3($elm$core$Dict$insert, id, currentCardState, cardStates);
+		var updOthersHidden = function (h) {
+			return $rundis$elm_bootstrap$Bootstrap$Accordion$State(
+				A2(
+					$elm$core$Dict$map,
+					F2(
+						function (i, c) {
+							return _Utils_eq(i, id) ? {
+								height: $elm$core$Maybe$Just(h),
+								visibility: A2($rundis$elm_bootstrap$Bootstrap$Accordion$visibilityTransition, configRec.withAnimation, c.visibility)
+							} : ((_Utils_eq(c.visibility, $rundis$elm_bootstrap$Bootstrap$Accordion$Shown) && (configRec.withAnimation && configRec.onlyOneOpen)) ? _Utils_update(
+								c,
+								{visibility: $rundis$elm_bootstrap$Bootstrap$Accordion$StartUp}) : ((_Utils_eq(c.visibility, $rundis$elm_bootstrap$Bootstrap$Accordion$Shown) && ((!configRec.withAnimation) && configRec.onlyOneOpen)) ? _Utils_update(
+								c,
+								{visibility: $rundis$elm_bootstrap$Bootstrap$Accordion$Hidden}) : c));
+						}),
+					initStates));
+		};
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			function (v) {
+				return $elm$json$Json$Decode$succeed(
+					{
+						message: configRec.toMsg(
+							updOthersHidden(v)),
+						preventDefault: true,
+						stopPropagation: true
+					});
+			},
+			decoder);
+	});
+var $elm$virtual_dom$VirtualDom$Custom = function (a) {
+	return {$: 'Custom', a: a};
+};
+var $elm$html$Html$Events$custom = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Custom(decoder));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode = function (idx) {
+	return $elm$json$Json$Decode$at(
+		_List_fromArray(
+			[
+				'childNodes',
+				$elm$core$String$fromInt(idx)
+			]));
+};
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling = function (decoder) {
+	return A2($elm$json$Json$Decode$field, 'nextSibling', decoder);
+};
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight = A2($elm$json$Json$Decode$field, 'offsetHeight', $elm$json$Json$Decode$float);
+var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$parentElement = function (decoder) {
+	return A2($elm$json$Json$Decode$field, 'parentElement', decoder);
+};
+var $rundis$elm_bootstrap$Bootstrap$Accordion$heightDecoder = A2(
+	$elm$json$Json$Decode$field,
+	'currentTarget',
+	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$parentElement(
+		$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling(
+			A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode, 0, $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight))));
+var $rundis$elm_bootstrap$Bootstrap$Accordion$renderToggle = F3(
+	function (state, configRec, card_) {
+		var cardRec = card_.a;
+		var _v0 = cardRec.header;
+		var headerRec = _v0.a;
+		var _v1 = headerRec.toggle;
+		var attributes = _v1.a.attributes;
+		var children = _v1.a.children;
+		return A2(
+			$elm$html$Html$button,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('btn btn-link'),
+						A2(
+						$elm$html$Html$Events$custom,
+						'click',
+						A4($rundis$elm_bootstrap$Bootstrap$Accordion$clickHandler, state, configRec, $rundis$elm_bootstrap$Bootstrap$Accordion$heightDecoder, card_))
+					]),
+				attributes),
+			children);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$renderCardHeader = F3(
+	function (state, configRec, card_) {
+		var cardRec = card_.a;
+		var _v0 = cardRec.header;
+		var headerRec = _v0.a;
+		return A2(
+			headerRec.elemFn,
+			_Utils_ap(
+				headerRec.attributes,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('card-header')
+					])),
+			_Utils_ap(
+				headerRec.childrenPreToggle,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							A3($rundis$elm_bootstrap$Bootstrap$Accordion$renderToggle, state, configRec, card_)
+						]),
+					headerRec.childrenPostToggle)));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$renderCard = F3(
+	function (state, configRec, card_) {
+		var options = card_.a.options;
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				$rundis$elm_bootstrap$Bootstrap$Card$Internal$cardAttributes(options),
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('card')
+					])),
+			_List_fromArray(
+				[
+					A3($rundis$elm_bootstrap$Bootstrap$Accordion$renderCardHeader, state, configRec, card_),
+					A3($rundis$elm_bootstrap$Bootstrap$Accordion$renderCardBlock, state, configRec, card_)
+				]));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$view = F2(
+	function (state, _v0) {
+		var configRec = _v0.a;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('accordion')
+				]),
+			A2(
+				$elm$core$List$map,
+				A2($rundis$elm_bootstrap$Bootstrap$Accordion$renderCard, state, configRec),
+				configRec.cards));
+	});
+var $rundis$elm_bootstrap$Bootstrap$Accordion$withAnimation = function (_v0) {
+	var configRec = _v0.a;
+	return $rundis$elm_bootstrap$Bootstrap$Accordion$Config(
+		_Utils_update(
+			configRec,
+			{withAnimation: true}));
+};
+var $author$project$Main$instructionsAccordion = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$mb3]),
+		_List_fromArray(
+			[
+				A2(
+				$rundis$elm_bootstrap$Bootstrap$Accordion$view,
+				model.instructionsToggleState,
+				A2(
+					$rundis$elm_bootstrap$Bootstrap$Accordion$cards,
+					_List_fromArray(
+						[
+							$rundis$elm_bootstrap$Bootstrap$Accordion$card(
+							{
+								blocks: _List_fromArray(
+									[
+										A2(
+										$rundis$elm_bootstrap$Bootstrap$Accordion$block,
+										_List_Nil,
+										_List_fromArray(
+											[$author$project$Main$instructions]))
+									]),
+								header: A2(
+									$rundis$elm_bootstrap$Bootstrap$Accordion$header,
+									_List_Nil,
+									A2(
+										$rundis$elm_bootstrap$Bootstrap$Accordion$toggle,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Click here to expand instructions.')
+											]))),
+								id: 'instruction',
+								options: _List_Nil
+							})
+						]),
+					$rundis$elm_bootstrap$Bootstrap$Accordion$withAnimation(
+						$rundis$elm_bootstrap$Bootstrap$Accordion$config($author$project$Main$ToggleInstructions))))
+			]));
+};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4 = {$: 'Col4'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColWidth = function (a) {
 	return {$: 'ColWidth', a: a};
@@ -10590,7 +11080,6 @@ var $rundis$elm_bootstrap$Bootstrap$Alert$isDismissable = function (configRec) {
 		return false;
 	}
 };
-var $elm$html$Html$span = _VirtualDom_node('span');
 var $rundis$elm_bootstrap$Bootstrap$Alert$maybeAddDismissButton = F3(
 	function (visibilty, configRec, children_) {
 		return $rundis$elm_bootstrap$Bootstrap$Alert$isDismissable(configRec) ? A2(
@@ -10620,8 +11109,6 @@ var $rundis$elm_bootstrap$Bootstrap$Alert$maybeAddDismissButton = F3(
 					])),
 			children_) : children_;
 	});
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $rundis$elm_bootstrap$Bootstrap$Alert$viewAttributes = F2(
 	function (visibility, configRec) {
 		var visibiltyAttributes = _Utils_eq(visibility, $rundis$elm_bootstrap$Bootstrap$Alert$Closed) ? _List_fromArray(
@@ -11063,7 +11550,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$dropdownAttributes = F2(
 				$rundis$elm_bootstrap$Bootstrap$Dropdown$dropDir(config.dropDirection),
 				config.attributes));
 	});
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $rundis$elm_bootstrap$Bootstrap$Dropdown$menuStyles = F2(
 	function (_v0, config) {
 		var status = _v0.a.status;
@@ -11246,8 +11732,6 @@ var $rundis$elm_bootstrap$Bootstrap$Dropdown$nextStatus = function (status) {
 			return $rundis$elm_bootstrap$Bootstrap$Dropdown$Open;
 	}
 };
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight = A2($elm$json$Json$Decode$field, 'offsetHeight', $elm$json$Json$Decode$float);
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth = A2($elm$json$Json$Decode$field, 'offsetWidth', $elm$json$Json$Decode$float);
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetLeft = A2($elm$json$Json$Decode$field, 'offsetLeft', $elm$json$Json$Decode$float);
@@ -11302,17 +11786,6 @@ var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$boundingArea = A4(
 	A2($rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$position, 0, 0),
 	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetWidth,
 	$rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$offsetHeight);
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$childNode = function (idx) {
-	return $elm$json$Json$Decode$at(
-		_List_fromArray(
-			[
-				'childNodes',
-				$elm$core$String$fromInt(idx)
-			]));
-};
-var $rundis$elm_bootstrap$Bootstrap$Utilities$DomHelper$nextSibling = function (decoder) {
-	return A2($elm$json$Json$Decode$field, 'nextSibling', decoder);
-};
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
@@ -13467,7 +13940,7 @@ var $author$project$Main$pageHome = function (model) {
 						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs]),
 					_List_fromArray(
 						[
-							A2($elm$html$Html$div, _List_Nil, _List_Nil)
+							$author$project$Main$instructionsAccordion(model)
 						]))
 				])),
 			A2(
@@ -13687,7 +14160,7 @@ var $author$project$Main$menu = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('mb-4')
+				$elm$html$Html$Attributes$class('mb-3')
 			]),
 		_List_Nil);
 };
