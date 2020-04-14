@@ -11020,10 +11020,9 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$width = F2(
 			A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$Width, size, count));
 	});
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
 var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
-var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
 var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Danger = {$: 'Danger'};
 var $rundis$elm_bootstrap$Bootstrap$Alert$Shown = {$: 'Shown'};
 var $rundis$elm_bootstrap$Bootstrap$Alert$Config = function (a) {
@@ -11252,9 +11251,10 @@ var $author$project$DebugOutput$messageAsAlert = function (message) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12 = {$: 'Col12'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
-var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md12 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col12);
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5 = {$: 'Col5'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col5);
 var $author$project$Main$ClearMixedCardResults = function (a) {
 	return {$: 'ClearMixedCardResults', a: a};
 };
@@ -13913,6 +13913,7 @@ var $author$project$Main$SetSingleDieExplode = function (a) {
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col3 = {$: 'Col3'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg3 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col3);
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
 var $author$project$Main$singleDieResult = F2(
 	function (i, roll) {
 		return A4(
@@ -14005,7 +14006,7 @@ var $author$project$Main$pageHome = function (model) {
 					A2(
 					$rundis$elm_bootstrap$Bootstrap$Grid$col,
 					_List_fromArray(
-						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md4]),
+						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
 					_List_fromArray(
 						[
 							$author$project$Main$singleDieCard(model)
@@ -14013,7 +14014,7 @@ var $author$project$Main$pageHome = function (model) {
 					A2(
 					$rundis$elm_bootstrap$Bootstrap$Grid$col,
 					_List_fromArray(
-						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
+						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
 					_List_fromArray(
 						[
 							$author$project$Main$multiDiceCard(model)
@@ -14021,7 +14022,7 @@ var $author$project$Main$pageHome = function (model) {
 					A2(
 					$rundis$elm_bootstrap$Bootstrap$Grid$col,
 					_List_fromArray(
-						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md5, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
+						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs12, $rundis$elm_bootstrap$Bootstrap$Grid$Col$sm6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$md6, $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4]),
 					_List_fromArray(
 						[
 							$author$project$Main$createMixedSetCard(model)

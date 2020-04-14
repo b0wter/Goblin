@@ -469,15 +469,15 @@ pageHome model =
             ]
         ]
     , Grid.row []
-        [ Grid.col [ Col.xs12, Col.sm6, Col.md4 ]
+        [ Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
             [
                 singleDieCard model
             ]
-        , Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
             [
                 multiDiceCard model
             ]
-        , Grid.col [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
             [
                 createMixedSetCard model
             ]
