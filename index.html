@@ -26,7 +26,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" id="light" title="Light" disabled="true">
+    <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/cyborg/bootstrap.min.css" rel="stylesheet" integrity="sha384-l7xaoY0cJM4h9xh1RfazbgJVUZvdtyLWPueWNtLAphf/UbBgOVzqbOTogxPwYLHM" crossorigin="anonymous" id="dark" title="Dark">
+    <!-- self-written css -->
     <link rel="stylesheet" href="custom.css">
     <link rel="stylesheet" href="dice.css">
     <link rel="manifest" href="/manifest.json">
@@ -57,6 +59,7 @@
         var app = Elm.Main.init({
           flags: { serializedMixedCards : serializedMixedCards }
         });
+
         app.ports.store.subscribe(function({key, value}) {
           saveToLocalStorage(key, value);
         });
@@ -65,6 +68,30 @@
           const item = loadFromLocalStorage(key);
           app.ports.retrieve.send({key: key, value: item});
         });
+
+        app.ports.toggleTheme.subscribe(function() {
+          toggleTheme();
+        });
+
+    </script>
+    <script>
+      function toggleTheme() {
+        const dark = document.getElementById("dark");
+        const light = document.getElementById("light");
+        const button = document.getElementById("theme-button");
+        
+        if(dark !== undefined && dark.disabled !== undefined && dark.disabled === true) {
+          dark.removeAttribute("disabled");
+          light.setAttribute("disabled", true);
+          button.innerText = "Dark";
+        }
+        else
+        {
+          light.removeAttribute("disabled");
+          dark.setAttribute("disabled", true);
+          button.innerText = "Light";
+        }
+      }
     </script>
   </body>
 </html>

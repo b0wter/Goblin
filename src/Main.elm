@@ -142,6 +142,7 @@ type Msg
     --
     -- Messages not fitting into other categories
     | ToggleInstructions Accordion.State
+    | ToggleTheme
 
 
 subscriptions : Model -> Sub Msg
@@ -325,6 +326,10 @@ update msg model =
             ( {model | instructionsToggleState = state }
             , Cmd.none)
 
+        ToggleTheme ->
+            ( model
+            , Ports.toggleTheme () )
+
 addNewSet : Model -> (Model, Cmd Msg)
 addNewSet model =
     let 
@@ -457,9 +462,10 @@ mainContent model =
 pageHome : Model -> List (Html Msg)
 pageHome model =
     [ Grid.row []
-        [ Grid.col [ Col.xs ]
+        [ Grid.col [ Col.xs, Col.attrs [ class "d-flex" ] ]
             [
-                instructionsAccordion model
+                instructionsAccordion model,
+                Button.button [ Button.light, Button.small, Button.attrs [ onClick ToggleTheme, class "mb-3 ml-1", id "theme-button" ] ] [ text "Theme" ]
                 {- Put debug elements here :)
                 [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
                 , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
@@ -867,7 +873,7 @@ instructionsAccordion model =
                 { id = "instruction"
                 , options = []
                 , header =
-                    Accordion.header [] <| Accordion.toggle [] [ text "Click here to expand instructions." ]
+                    Accordion.header [] <| Accordion.toggle [ ] [ text "Click here to expand instructions." ]
                 , blocks =
                     [ Accordion.block [] [ instructions ]
                     ]

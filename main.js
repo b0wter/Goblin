@@ -9035,6 +9035,12 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Ports$toggleTheme = _Platform_outgoingPort(
+	'toggleTheme',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
 var $author$project$Main$addNewSet = function (model) {
 	var isComplete = $author$project$MixedCard$isComplete(model.newMixedCard);
 	var modelWithNewSet = isComplete ? A2($author$project$Main$addMixedSet, model.newMixedCard, model) : model;
@@ -9392,13 +9398,17 @@ var $author$project$Main$update = F2(
 					return _Utils_Tuple2(
 						model,
 						$author$project$Ports$requestRetrieval(key));
-				default:
+				case 'ToggleInstructions':
 					var state = msg.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{instructionsToggleState: state}),
 						$elm$core$Platform$Cmd$none);
+				default:
+					return _Utils_Tuple2(
+						model,
+						$author$project$Ports$toggleTheme(_Utils_Tuple0));
 			}
 		}
 	});
@@ -9658,6 +9668,13 @@ var $author$project$Main$pageGettingStarted = function (_v0) {
 					$elm$html$Html$text('Click me')
 				]))
 		]);
+};
+var $author$project$Main$ToggleTheme = {$: 'ToggleTheme'};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs = function (a) {
+	return {$: 'ColAttrs', a: a};
+};
+var $rundis$elm_bootstrap$Bootstrap$Grid$Col$attrs = function (attrs_) {
+	return $rundis$elm_bootstrap$Bootstrap$Grid$Internal$ColAttrs(attrs_);
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Column = function (a) {
 	return {$: 'Column', a: a};
@@ -11020,6 +11037,9 @@ var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$width = F2(
 			A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$Width, size, count));
 	});
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$lg4 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$LG, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col4);
+var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Light = {$: 'Light'};
+var $rundis$elm_bootstrap$Bootstrap$Button$light = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
+	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Button$Light));
 var $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6 = {$: 'Col6'};
 var $rundis$elm_bootstrap$Bootstrap$General$Internal$MD = {$: 'MD'};
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$md6 = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$MD, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col6);
@@ -13995,10 +14015,35 @@ var $author$project$Main$pageHome = function (model) {
 					A2(
 					$rundis$elm_bootstrap$Bootstrap$Grid$col,
 					_List_fromArray(
-						[$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs]),
+						[
+							$rundis$elm_bootstrap$Bootstrap$Grid$Col$xs,
+							$rundis$elm_bootstrap$Bootstrap$Grid$Col$attrs(
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('d-flex')
+								]))
+						]),
 					_List_fromArray(
 						[
-							$author$project$Main$instructionsAccordion(model)
+							$author$project$Main$instructionsAccordion(model),
+							A2(
+							$rundis$elm_bootstrap$Bootstrap$Button$button,
+							_List_fromArray(
+								[
+									$rundis$elm_bootstrap$Bootstrap$Button$light,
+									$rundis$elm_bootstrap$Bootstrap$Button$small,
+									$rundis$elm_bootstrap$Bootstrap$Button$attrs(
+									_List_fromArray(
+										[
+											$elm$html$Html$Events$onClick($author$project$Main$ToggleTheme),
+											$elm$html$Html$Attributes$class('mb-3 ml-1'),
+											$elm$html$Html$Attributes$id('theme-button')
+										]))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Theme')
+								]))
 						]))
 				])),
 			A2(
