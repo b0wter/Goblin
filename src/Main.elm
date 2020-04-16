@@ -662,7 +662,7 @@ multiDiceCard model =
 
 createMixedSetCard: Model -> Html Msg
 createMixedSetCard model =
-    let createAddDieButton index faceCount = Button.button [ Button.attrs [ class (if index == 0 then "" else "ml-1")], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  faceCount) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] 
+    let createAddDieButton faceCount = Button.button [ Button.attrs [ class "mt-2" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  faceCount) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] 
         in
         Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
             |> Card.headerH4 [] [ text "Create new set" ]
@@ -681,7 +681,7 @@ createMixedSetCard model =
                         [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newMixedCard.name, Input.attrs [ placeholder "Name" ] ]
                         ]
                     , div [] [ text "Add die" ]
-                    , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ] (Roll.dieTypes |> List.indexedMap createAddDieButton)
+                    , Form.group [ Form.attrs [ class "d-flex justify-content-between flex-wrap" ] ] (Roll.dieTypes |> List.map createAddDieButton)
                     ]
                 , Block.custom <| div [] [div [] [ text "Current set"], model |> newDiceSetList]
                 ]
