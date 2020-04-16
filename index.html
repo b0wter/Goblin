@@ -29,11 +29,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" id="light" title="Light" disabled="true">
     <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.4.1/cyborg/bootstrap.min.css" rel="stylesheet" integrity="sha384-l7xaoY0cJM4h9xh1RfazbgJVUZvdtyLWPueWNtLAphf/UbBgOVzqbOTogxPwYLHM" crossorigin="anonymous" id="dark" title="Dark">
     <!-- self-written css -->
-    <link rel="stylesheet" href="custom.css">
-    <link rel="stylesheet" href="dice.css">
+    <link rel="stylesheet" href="static/css/custom.css">
+    <link rel="stylesheet" href="static/css/dice.css">
     <link rel="manifest" href="/manifest.json">
 
-    <script src="localstorage.js"></script>
+    <script src="static/js/localstorage.js"></script>
+    <script src="static/js/theme.js"></script>
     <script src="main.js"></script>
     <script>
         navigator.serviceWorker.register('service-worker.js', {
@@ -73,25 +74,6 @@
           toggleTheme();
         });
 
-    </script>
-    <script>
-      function toggleTheme() {
-        const dark = document.getElementById("dark");
-        const light = document.getElementById("light");
-        const button = document.getElementById("theme-button");
-        
-        if(dark !== undefined && dark.disabled !== undefined && dark.disabled === true) {
-          dark.removeAttribute("disabled");
-          light.setAttribute("disabled", true);
-          button.innerText = "Dark";
-        }
-        else
-        {
-          light.removeAttribute("disabled");
-          dark.setAttribute("disabled", true);
-          button.innerText = "Light";
-        }
-      }
     </script>
   </body>
 </html>
