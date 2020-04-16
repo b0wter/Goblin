@@ -13711,7 +13711,10 @@ var $author$project$Main$diceResultList = F2(
 				])) : A2(
 			$elm$html$Html$div,
 			_List_fromArray(
-				[$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$mt3]),
+				[
+					$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$mt3,
+					$elm$html$Html$Attributes$class('d-flex flex-wrap justify-content-center')
+				]),
 			A2($elm$core$List$indexedMap, elementRenderer, rolls));
 	});
 var $author$project$Main$dieResult = F4(

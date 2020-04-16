@@ -751,7 +751,7 @@ diceResultList rolls elementRenderer =
     if rolls |> List.isEmpty then
         Html.div [ Spacing.mt3 ] [ text "No dice rolled." ]
     else
-        Html.div [ Spacing.mt3 ] (rolls |> List.indexedMap elementRenderer)
+        Html.div [ Spacing.mt3, class "d-flex flex-wrap justify-content-center" ] (rolls |> List.indexedMap elementRenderer)
 
 multiDiceResultList: Model -> Html Msg
 multiDiceResultList model =
