@@ -1,6 +1,9 @@
-module Roll exposing (Single, Multi, Mixed, Roll, singleRandomGenerator, multiRandomGenerator, die, asSingleRoll, asMultiRoll, asMixedRoll)
+module Roll exposing (Single, Multi, Mixed, Roll, singleRandomGenerator, multiRandomGenerator, die, asSingleRoll, asMultiRoll, asMixedRoll, dieTypes)
 
 import Random
+
+dieTypes : List Int
+dieTypes = [ 4, 6, 8, 10, 12, 20, 100 ]
 
 type alias Single =
     { die : Int

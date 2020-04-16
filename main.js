@@ -9897,6 +9897,8 @@ var $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem = function (a) {
 var $rundis$elm_bootstrap$Bootstrap$Card$Block$custom = function (element) {
 	return $rundis$elm_bootstrap$Bootstrap$Card$Internal$BlockItem(element);
 };
+var $author$project$Roll$dieTypes = _List_fromArray(
+	[4, 6, 8, 10, 12, 20, 100]);
 var $rundis$elm_bootstrap$Bootstrap$Card$Footer = function (a) {
 	return {$: 'Footer', a: a};
 };
@@ -10509,11 +10511,7 @@ var $author$project$Main$createMixedSetCard = function (model) {
 												$elm$html$Html$Attributes$class('d-flex justify-content-between')
 											]))
 									]),
-								A2(
-									$elm$core$List$indexedMap,
-									createAddDieButton,
-									_List_fromArray(
-										[4, 6, 8, 10, 12, 20])))
+								A2($elm$core$List$indexedMap, createAddDieButton, $author$project$Roll$dieTypes))
 							]))),
 					$rundis$elm_bootstrap$Bootstrap$Card$Block$custom(
 					A2(
@@ -13886,15 +13884,7 @@ var $author$project$Main$multiDiceTable = $rundis$elm_bootstrap$Bootstrap$Table$
 		tbody: A2(
 			$rundis$elm_bootstrap$Bootstrap$Table$tbody,
 			_List_Nil,
-			_List_fromArray(
-				[
-					$author$project$Main$multiDieButtonRow(4),
-					$author$project$Main$multiDieButtonRow(6),
-					$author$project$Main$multiDieButtonRow(8),
-					$author$project$Main$multiDieButtonRow(10),
-					$author$project$Main$multiDieButtonRow(12),
-					$author$project$Main$multiDieButtonRow(20)
-				])),
+			A2($elm$core$List$map, $author$project$Main$multiDieButtonRow, $author$project$Roll$dieTypes)),
 		thead: $rundis$elm_bootstrap$Bootstrap$Table$simpleThead(
 			_List_fromArray(
 				[
@@ -13992,15 +13982,7 @@ var $author$project$Main$singleDieCard = function (model) {
 	var buttons = A2(
 		$rundis$elm_bootstrap$Bootstrap$Grid$row,
 		_List_Nil,
-		_List_fromArray(
-			[
-				button(4),
-				button(6),
-				button(8),
-				button(10),
-				button(12),
-				button(20)
-			]));
+		A2($elm$core$List$map, button, $author$project$Roll$dieTypes));
 	return A9($author$project$Main$diceCard, model.singleDie.name, $author$project$Main$singleRollMaxElementsDropdown, 'single-die', model.singleDie.explodes, $author$project$Main$SetSingleDieExplode, $author$project$Main$ClearSingleDieResults, buttons, $author$project$Main$singleDieResultList, model);
 };
 var $rundis$elm_bootstrap$Bootstrap$Grid$Col$xs = A2($rundis$elm_bootstrap$Bootstrap$Grid$Internal$width, $rundis$elm_bootstrap$Bootstrap$General$Internal$XS, $rundis$elm_bootstrap$Bootstrap$Grid$Internal$Col);

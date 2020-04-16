@@ -650,7 +650,7 @@ singleDieCard model =
                           [ Button.outlinePrimary, Button.small, Button.attrs [ onClick (RollSingleDie  n), class "dice-roll-button disable-dbl-tap-zoom" ] ] 
                           [ text ("d" ++ (n |> String.fromInt)) ] ] in
     let buttons =
-         Grid.row [] [ button 4, button 6, button 8, button 10, button 12, button 20 ]
+         Grid.row [] (Roll.dieTypes |> List.map button)
     in 
         diceCard model.singleDie.name singleRollMaxElementsDropdown "single-die" model.singleDie.explodes SetSingleDieExplode ClearSingleDieResults buttons singleDieResultList model
 
@@ -681,7 +681,7 @@ createMixedSetCard model =
                         [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newMixedCard.name, Input.attrs [ placeholder "Name" ] ]
                         ]
                     , div [] [ text "Add die" ]
-                    , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ] ([4, 6, 8, 10, 12, 20] |> List.indexedMap createAddDieButton)
+                    , Form.group [ Form.attrs [ class "d-flex justify-content-between" ] ] (Roll.dieTypes |> List.indexedMap createAddDieButton)
                     ]
                 , Block.custom <| div [] [div [] [ text "Current set"], model |> newDiceSetList]
                 ]
@@ -815,14 +815,7 @@ multiDiceTable =
             [ Table.th [] [ text "#"] 
             , Table.th [ Table.cellAttr (colspan 8) ] [ text "dice count" ]
             ]
-        , tbody = Table.tbody []
-            [ multiDieButtonRow 4
-            , multiDieButtonRow 6
-            , multiDieButtonRow 8
-            , multiDieButtonRow 10
-            , multiDieButtonRow 12
-            , multiDieButtonRow 20
-            ]
+        , tbody = Table.tbody [] (Roll.dieTypes |> List.map multiDieButtonRow)
         }
 {- ----------------------------------------------------------------- -}
 
