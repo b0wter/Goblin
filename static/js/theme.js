@@ -6,12 +6,10 @@ function toggleTheme() {
     if(dark !== undefined && dark.disabled !== undefined && dark.disabled === true) {
       dark.removeAttribute("disabled");
       light.setAttribute("disabled", true);
-      button.innerText = "Dark";
     }
     else
     {
       light.removeAttribute("disabled");
       dark.setAttribute("disabled", true);
-      button.innerText = "Light";
     }
   }

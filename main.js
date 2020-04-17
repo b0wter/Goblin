@@ -13744,28 +13744,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$brand = F3(
 			},
 			config_);
 	});
-var $rundis$elm_bootstrap$Bootstrap$Navbar$updateOptions = F2(
-	function (mapper, _v0) {
-		var conf = _v0.a;
-		return $rundis$elm_bootstrap$Bootstrap$Navbar$Config(
-			_Utils_update(
-				conf,
-				{
-					options: mapper(conf.options)
-				}));
-	});
-var $rundis$elm_bootstrap$Bootstrap$Navbar$toggleAt = F2(
-	function (size, conf) {
-		return A2(
-			$rundis$elm_bootstrap$Bootstrap$Navbar$updateOptions,
-			function (opt) {
-				return _Utils_update(
-					opt,
-					{toggleAt: size});
-			},
-			conf);
-	});
-var $rundis$elm_bootstrap$Bootstrap$Navbar$collapseSmall = $rundis$elm_bootstrap$Bootstrap$Navbar$toggleAt($rundis$elm_bootstrap$Bootstrap$General$Internal$SM);
 var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Light = {$: 'Light'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Light = {$: 'Light'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Roled = function (a) {
@@ -13792,6 +13770,16 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$config = function (toMsg) {
 			withAnimation: false
 		});
 };
+var $rundis$elm_bootstrap$Bootstrap$Navbar$updateOptions = F2(
+	function (mapper, _v0) {
+		var conf = _v0.a;
+		return $rundis$elm_bootstrap$Bootstrap$Navbar$Config(
+			_Utils_update(
+				conf,
+				{
+					options: mapper(conf.options)
+				}));
+	});
 var $rundis$elm_bootstrap$Bootstrap$Navbar$container = function (conf) {
 	return A2(
 		$rundis$elm_bootstrap$Bootstrap$Navbar$updateOptions,
@@ -13802,17 +13790,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$container = function (conf) {
 		},
 		conf);
 };
-var $rundis$elm_bootstrap$Bootstrap$Navbar$customItems = F2(
-	function (items_, config_) {
-		return A2(
-			$rundis$elm_bootstrap$Bootstrap$Navbar$updateConfig,
-			function (conf) {
-				return _Utils_update(
-					conf,
-					{customItems: items_});
-			},
-			config_);
-	});
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Top = {$: 'Top'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$fixTop = function (conf) {
 	return A2(
@@ -13826,20 +13803,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$fixTop = function (conf) {
 		},
 		conf);
 };
-var $rundis$elm_bootstrap$Bootstrap$Navbar$CustomItem = function (a) {
-	return {$: 'CustomItem', a: a};
-};
-var $rundis$elm_bootstrap$Bootstrap$Navbar$formItem = F2(
-	function (attributes, children) {
-		return $rundis$elm_bootstrap$Bootstrap$Navbar$CustomItem(
-			A2(
-				$elm$html$Html$form,
-				A2(
-					$elm$core$List$cons,
-					$elm$html$Html$Attributes$class('form-inline'),
-					attributes),
-				children));
-	});
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -13865,10 +13828,6 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$items = F2(
 			},
 			config_);
 	});
-var $rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml2Sm = $elm$html$Html$Attributes$class('ml-sm-2');
-var $rundis$elm_bootstrap$Bootstrap$Internal$Button$Dark = {$: 'Dark'};
-var $rundis$elm_bootstrap$Bootstrap$Button$outlineDark = $rundis$elm_bootstrap$Bootstrap$Internal$Button$Coloring(
-	$rundis$elm_bootstrap$Bootstrap$Internal$Button$Outlined($rundis$elm_bootstrap$Bootstrap$Internal$Button$Dark));
 var $rundis$elm_bootstrap$Bootstrap$Navbar$Dark = {$: 'Dark'};
 var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Primary = {$: 'Primary'};
 var $rundis$elm_bootstrap$Bootstrap$Navbar$scheme = F3(
@@ -14600,68 +14559,47 @@ var $author$project$Main$menu = function (model) {
 		$rundis$elm_bootstrap$Bootstrap$Navbar$view,
 		model.navState,
 		A2(
-			$rundis$elm_bootstrap$Bootstrap$Navbar$customItems,
+			$rundis$elm_bootstrap$Bootstrap$Navbar$items,
 			_List_fromArray(
 				[
 					A2(
-					$rundis$elm_bootstrap$Bootstrap$Navbar$formItem,
+					$rundis$elm_bootstrap$Bootstrap$Navbar$itemLink,
 					_List_fromArray(
 						[
-							$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml2Sm,
-							$elm$html$Html$Attributes$class('muted')
+							$elm$html$Html$Attributes$href('#instructions')
 						]),
 					_List_fromArray(
 						[
-							A2(
-							$rundis$elm_bootstrap$Bootstrap$Button$button,
-							_List_fromArray(
-								[
-									$rundis$elm_bootstrap$Bootstrap$Button$outlineDark,
-									$rundis$elm_bootstrap$Bootstrap$Button$attrs(
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$id('theme-button'),
-											$rundis$elm_bootstrap$Bootstrap$Utilities$Spacing$ml2Sm,
-											$elm$html$Html$Events$onClick($author$project$Main$ToggleTheme)
-										]))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Theme')
-								]))
+							$elm$html$Html$text('Instructions')
+						])),
+					A2(
+					$rundis$elm_bootstrap$Bootstrap$Navbar$itemLink,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(''),
+							$elm$html$Html$Attributes$href(''),
+							$elm$html$Html$Events$onClick($author$project$Main$ToggleTheme)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Switch theme')
 						]))
 				]),
-			A2(
-				$rundis$elm_bootstrap$Bootstrap$Navbar$items,
+			A3(
+				$rundis$elm_bootstrap$Bootstrap$Navbar$brand,
 				_List_fromArray(
 					[
-						A2(
-						$rundis$elm_bootstrap$Bootstrap$Navbar$itemLink,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$href('#instructions')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Instructions')
-							]))
+						$elm$html$Html$Attributes$href('#')
 					]),
-				A3(
-					$rundis$elm_bootstrap$Bootstrap$Navbar$brand,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$href('#')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Home')
-						]),
-					$rundis$elm_bootstrap$Bootstrap$Navbar$fixTop(
-						$rundis$elm_bootstrap$Bootstrap$Navbar$container(
-							$rundis$elm_bootstrap$Bootstrap$Navbar$primary(
-								$rundis$elm_bootstrap$Bootstrap$Navbar$collapseSmall(
-									$rundis$elm_bootstrap$Bootstrap$Navbar$withAnimation(
-										$rundis$elm_bootstrap$Bootstrap$Navbar$config($author$project$Main$NavMsg))))))))));
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Home')
+					]),
+				$rundis$elm_bootstrap$Bootstrap$Navbar$fixTop(
+					$rundis$elm_bootstrap$Bootstrap$Navbar$container(
+						$rundis$elm_bootstrap$Bootstrap$Navbar$primary(
+							$rundis$elm_bootstrap$Bootstrap$Navbar$withAnimation(
+								$rundis$elm_bootstrap$Bootstrap$Navbar$config($author$project$Main$NavMsg))))))));
 };
 var $author$project$Main$CloseModal = {$: 'CloseModal'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$Body = function (a) {

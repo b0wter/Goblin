@@ -428,18 +428,16 @@ view model =
 
 menu : Model -> Html Msg
 menu model =
-    --div [ class "mb-3" ] []
     Navbar.config NavMsg
         |> Navbar.withAnimation
-        |> Navbar.collapseSmall
         |> Navbar.primary
         |> Navbar.container
         |> Navbar.fixTop
         |> Navbar.brand [ href "#" ] [ text "Home" ]
         |> Navbar.items
             [ Navbar.itemLink [ href "#instructions" ] [ text "Instructions" ]
+            , Navbar.itemLink [ class "", href "", onClick ToggleTheme ] [ text "Switch theme"]
             ]
-        |> Navbar.customItems [ Navbar.formItem [ Spacing.ml2Sm, class "muted" ] [ Button.button [ Button.outlineDark, Button.attrs [ id "theme-button", Spacing.ml2Sm, onClick ToggleTheme ] ] [ text "Theme"] ] ]
         |> Navbar.view model.navState
 
 
