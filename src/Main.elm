@@ -54,7 +54,7 @@ type alias Model =
 
 type Page
     = Home
-    | GettingStarted
+    | Instructions
     | Modules
     | NotFound
 
@@ -407,7 +407,7 @@ routeParser : Parser (Page -> a) a
 routeParser =
     UrlParser.oneOf
         [ UrlParser.map Home top
-        , UrlParser.map GettingStarted (UrlParser.s "getting-started")
+        , UrlParser.map Instructions (UrlParser.s "instructions")
         , UrlParser.map Modules (UrlParser.s "modules")
         ]
 
@@ -427,36 +427,40 @@ view model =
 
 
 menu : Model -> Html Msg
-menu _ =
-    div [ class "mb-3" ] []
-    {-
+menu model =
+    --div [ class "mb-3" ] []
     Navbar.config NavMsg
         |> Navbar.withAnimation
+        |> Navbar.collapseSmall
+        |> Navbar.primary
         |> Navbar.container
-        |> Navbar.brand [ href "#" ] [ text "Elm Bootstrap" ]
+        |> Navbar.fixTop
+        |> Navbar.brand [ href "#" ] [ text "Home" ]
         |> Navbar.items
-            [ Navbar.itemLink [ href "#getting-started" ] [ text "Getting started" ]
-            , Navbar.itemLink [ href "#modules" ] [ text "Modules" ]
+            [ Navbar.itemLink [ href "#instructions" ] [ text "Instructions" ]
             ]
+        |> Navbar.customItems [ Navbar.formItem [ Spacing.ml2Sm, class "muted" ] [ Button.button [ Button.outlineDark, Button.attrs [ id "theme-button", Spacing.ml2Sm, onClick ToggleTheme ] ] [ text "Theme"] ] ]
         |> Navbar.view model.navState
-    -}
 
 
 mainContent : Model -> Html Msg
 mainContent model =
-    Grid.container [] <|
+    div [ class "large-top-margin" ] [
+    Grid.container [ ] <|
         case model.page of
             Home ->
                 pageHome model
 
-            GettingStarted ->
-                pageGettingStarted model
+            Instructions ->
+                pageInstructions model
 
             Modules ->
-                pageModules model
+                pageNotFound
+                --pageModules model
 
             NotFound ->
                 pageNotFound
+    ]
 
 
 pageHome : Model -> List (Html Msg)
@@ -464,8 +468,7 @@ pageHome model =
     [ Grid.row []
         [ Grid.col [ Col.xs, Col.attrs [ class "d-flex" ] ]
             [
-                instructionsAccordion model,
-                Button.button [ Button.light, Button.small, Button.attrs [ onClick ToggleTheme, class "mb-3 ml-1", id "theme-button" ] ] [ text "Theme" ]
+                --Button.button [ Button.light, Button.small, Button.attrs [ onClick ToggleTheme, class "mb-3 ml-1", id "theme-button" ] ] [ text "Theme" ]
                 {- Put debug elements here :)
                 [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
                 , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
@@ -498,9 +501,13 @@ pageHome model =
     ]
 
 
-pageGettingStarted : Model -> List (Html Msg)
-pageGettingStarted _ =
-    [ h2 [] [ text "Getting started" ]
+pageInstructions : Model -> List (Html Msg)
+pageInstructions _ =
+    [ p [ class "mt-3" ] [ span [ class "font-weight-bold" ] [ text "Custom dice sets"  ], span [ Spacing.ml1Sm ] [ text " - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the 'Create new set' box and use the buttons below to add dice to the set. Afterwards click the 'Add' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the 'X' button in the top right corner of a card to delete a custom set."] ]
+    , p [] [ span [ class "font-weight-bold" ] [ text "Explode"  ], span [ Spacing.ml1Sm ] [ text " - you can set the option for dice to 'explode'. This will cause a die to be rolled again if its maximum face count has been rolled (can trigger multiple times for a single row)."] ]
+    ]
+    {-
+    [ h2 [] [ text "Instructions" ]
     , Button.button
         [ Button.success
         , Button.large
@@ -509,8 +516,10 @@ pageGettingStarted _ =
         ]
         [ text "Click me" ]
     ]
+    -}
 
 
+{-
 pageModules : Model -> List (Html Msg)
 pageModules _ =
     [ h1 [] [ text "Modules" ]
@@ -520,6 +529,7 @@ pageModules _ =
         , Listgroup.li [] [ text "Card" ]
         ]
     ]
+-}
 
 
 pageNotFound : List (Html Msg)
@@ -855,29 +865,3 @@ explodeCheckbox id val cmd =
 addDebugMessage : DebugOutput.Message -> Model -> Model
 addDebugMessage text model =
     { model | debugMessages = text :: model.debugMessages }
-
-instructionsAccordion : Model -> Html Msg
-instructionsAccordion model =
-    div [ Spacing.mb3 ]
-    [ Accordion.config ToggleInstructions
-        |> Accordion.withAnimation
-        |> Accordion.cards
-            [ Accordion.card
-                { id = "instruction"
-                , options = []
-                , header =
-                    Accordion.header [] <| Accordion.toggle [ ] [ text "Click here to expand instructions." ]
-                , blocks =
-                    [ Accordion.block [] [ instructions ]
-                    ]
-                }
-            ]
-        |> Accordion.view model.instructionsToggleState
-    ]
-
-instructions : Block.Item msg
-instructions =
-    Block.text []
-    [ p [] [ span [ class "font-weight-bold" ] [ text "Custom dice sets"  ], span [ Spacing.ml1Sm ] [ text " - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the 'Create new set' box and use the buttons below to add dice to the set. Afterwards click the 'Add' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the 'X' button in the top right corner of a card to delete a custom set."] ]
-    , p [] [ span [ class "font-weight-bold" ] [ text "Explode"  ], span [ Spacing.ml1Sm ] [ text " - you can set the option for dice to 'explode'. This will cause a die to be rolled again if its maximum face count has been rolled (can trigger multiple times for a single row)."] ]
-    ]
