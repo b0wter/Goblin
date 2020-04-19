@@ -675,7 +675,7 @@ createMixedSetCard model =
 mixedSetCards: Model -> Html Msg
 mixedSetCards model =
     let 
-        regularSize =  [ Col.xs12, Col.sm6, Col.md5, Col.lg4 ]
+        regularSize =  [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
 
         largeSize = [ Col.xs12, Col.sm12, Col.md12, Col.lg6 ]
 
