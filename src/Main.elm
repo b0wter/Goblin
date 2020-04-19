@@ -554,7 +554,7 @@ pageHome model =
             [
                 singleDieCard model
             ]
-        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg8 ]
             [
                 multiDiceCard model
             ]
