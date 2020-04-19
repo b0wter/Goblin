@@ -13,8 +13,8 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Card as Card
 import Bootstrap.Card.Block as Block
 import Bootstrap.Button as Button
-import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Modal as Modal
+import Bootstrap.ListGroup as Listgroup
 import Bootstrap.Table as Table
 import Bootstrap.Dropdown as Dropdown
 import Bootstrap.Form as Form
@@ -33,6 +33,26 @@ import DiceModel
 import MixedCard
 import DebugOutput
 
+
+-- MAIN
+
+main : Program Flags Model Msg
+main =
+    Browser.application
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        , onUrlRequest = ClickedLink
+        , onUrlChange = UrlChange
+        }
+        
+
+
+
+
+-- MODEL ----------------------------------------------------------------------------------------------------------------
+
 type alias Flags =
     {
         serializedMixedCards : Decode.Value
@@ -42,7 +62,7 @@ type alias Model =
     { navKey : Navigation.Key
     , page : Page
     , navState : Navbar.State
-    , modalVisibility : Modal.Visibility
+    , modelNewMixedCardVisibility : Modal.Visibility
     , singleDie : DiceModel.DiceModel Roll.Single
     , multiDice : DiceModel.DiceModel Roll.Multi
     , mixedCards : List MixedCard.MixedCard
@@ -59,16 +79,6 @@ type Page
     | NotFound
 
 
-main : Program Flags Model Msg
-main =
-    Browser.application
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        , onUrlRequest = ClickedLink
-        , onUrlChange = UrlChange
-        }
 
 init : Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init flags url key =
@@ -85,7 +95,7 @@ init flags url key =
             urlUpdate url { navKey = key
                           , navState = navState
                           , page = Home
-                          , modalVisibility = Modal.hidden
+                          , modelNewMixedCardVisibility = Modal.hidden
                           , singleDie = DiceModel.withName "Roll single die"
                           , multiDice = DiceModel.withName "Roll multiple dice"
                           , mixedCards = serializedMixedCards
@@ -98,12 +108,16 @@ init flags url key =
         ( model, Cmd.batch [ urlCmd, navCmd, Random.generate ResetNewMixedCard UUID.generator ] )
 
 
+
+
+
+-- UPDATE ----------------------------------------------------------------------------------------------------------------
+
 type Msg
     = UrlChange Url
     | ClickedLink UrlRequest
     | NavMsg Navbar.State
     | CloseModal
-    | ShowModal
     --
     | NewSingleDieResult Roll.Single
     | RollSingleDie Int
@@ -134,6 +148,7 @@ type Msg
     | AddNewDieToSet Int
     | RemoveDieFromNewSet Int
     | NewDieSetNameChanged String
+    | ShowMixedSetModal
     --
     -- Ports related messages
     | StoreData Ports.StorageObject
@@ -143,7 +158,6 @@ type Msg
     -- Messages not fitting into other categories
     | ToggleInstructions Accordion.State
     | ToggleTheme
-
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -178,12 +192,7 @@ update msg model =
             )
 
         CloseModal ->
-            ( { model | modalVisibility = Modal.hidden }
-            , Cmd.none
-            )
-
-        ShowModal ->
-            ( { model | modalVisibility = Modal.shown }
+            ( { model | modelNewMixedCardVisibility = Modal.hidden }
             , Cmd.none
             )
 
@@ -271,8 +280,6 @@ update msg model =
                 newModel = model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
             in
                 update (saveMixedCardsToLocalStorage newModel) newModel
-            --( model |> setForMixedSet (\c -> MixedCard.setHistoryLength length c) id
-            --, Cmd.none)
 
         ClearMixedCardResults id -> 
             ( model |> setForMixedSet (\c -> c |> MixedCard.clearHistory) id
@@ -290,6 +297,11 @@ update msg model =
         ResetNewMixedCard id ->
             ( { model | newMixedCard = MixedCard.empty id }
             , Cmd.none)
+
+        ShowMixedSetModal ->
+            ( { model | modelNewMixedCardVisibility = Modal.shown }
+            , Cmd.none
+            )
 
         ClearNewSet -> 
             ( { model | newMixedCard = MixedCard.empty model.newMixedCard.id }
@@ -339,7 +351,8 @@ addNewSet model =
         -- Update the model to include the new mixed set. 
         modelWithNewSet = 
             if isComplete then 
-                model |> addMixedSet model.newMixedCard 
+                let addedSet = model |> addMixedSet model.newMixedCard
+                in { addedSet | modelNewMixedCardVisibility = Modal.hidden }
             else 
                 model
 
@@ -412,156 +425,6 @@ routeParser =
         ]
 
 
-view : Model -> Browser.Document Msg
-view model =
-    { title = "Goblin - Pen & Paper Tools"
-    , body =
-        [ div []
-            [ menu model
-            , mainContent model
-            , modal model
-            ]
-        ]
-    }
-
-
-
-menu : Model -> Html Msg
-menu model =
-    Navbar.config NavMsg
-        |> Navbar.withAnimation
-        |> Navbar.primary
-        |> Navbar.container
-        |> Navbar.fixTop
-        |> Navbar.brand [ href "#" ] [ text "Home" ]
-        |> Navbar.items
-            [ Navbar.itemLink [ href "#instructions" ] [ text "Instructions" ]
-            , Navbar.itemLink [ class "", href "", onClick ToggleTheme ] [ text "Switch theme"]
-            ]
-        |> Navbar.view model.navState
-
-
-mainContent : Model -> Html Msg
-mainContent model =
-    div [ class "large-top-margin" ] [
-    Grid.container [ ] <|
-        case model.page of
-            Home ->
-                pageHome model
-
-            Instructions ->
-                pageInstructions model
-
-            Modules ->
-                pageNotFound
-                --pageModules model
-
-            NotFound ->
-                pageNotFound
-    ]
-
-
-pageHome : Model -> List (Html Msg)
-pageHome model =
-    [ Grid.row []
-        [ Grid.col [ Col.xs, Col.attrs [ class "d-flex" ] ]
-            [
-                --Button.button [ Button.light, Button.small, Button.attrs [ onClick ToggleTheme, class "mb-3 ml-1", id "theme-button" ] ] [ text "Theme" ]
-                {- Put debug elements here :)
-                [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
-                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
-                , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
-                ]
-                -}
-            ]
-        ]
-    , Grid.row []
-        [ Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
-            [
-                singleDieCard model
-            ]
-        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
-            [
-                multiDiceCard model
-            ]
-        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
-            [
-                createMixedSetCard model
-            ]
-        , Grid.col [ Col.xs12 ]
-            [
-                model |> mixedSetCards
-            ]
-        ]
-    , Grid.row []
-        [ Grid.col [ Col.xs12 ] (model.debugMessages |> List.map DebugOutput.messageAsAlert)
-        ]
-    ]
-
-
-pageInstructions : Model -> List (Html Msg)
-pageInstructions _ =
-    [ p [ class "mt-3" ] [ span [ class "font-weight-bold" ] [ text "Custom dice sets"  ], span [ Spacing.ml1Sm ] [ text " - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the 'Create new set' box and use the buttons below to add dice to the set. Afterwards click the 'Add' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the 'X' button in the top right corner of a card to delete a custom set."] ]
-    , p [] [ span [ class "font-weight-bold" ] [ text "Explode"  ], span [ Spacing.ml1Sm ] [ text " - you can set the option for dice to 'explode'. This will cause a die to be rolled again if its maximum face count has been rolled (can trigger multiple times for a single row)."] ]
-    ]
-    {-
-    [ h2 [] [ text "Instructions" ]
-    , Button.button
-        [ Button.success
-        , Button.large
-        , Button.block
-        , Button.attrs [ onClick ShowModal ]
-        ]
-        [ text "Click me" ]
-    ]
-    -}
-
-
-{-
-pageModules : Model -> List (Html Msg)
-pageModules _ =
-    [ h1 [] [ text "Modules" ]
-    , Listgroup.ul
-        [ Listgroup.li [] [ text "Alert" ]
-        , Listgroup.li [] [ text "Badge" ]
-        , Listgroup.li [] [ text "Card" ]
-        ]
-    ]
--}
-
-
-pageNotFound : List (Html Msg)
-pageNotFound =
-    [ h1 [] [ text "Not found" ]
-    , text "SOrry couldn't find that page"
-    ]
-
-
-modal : Model -> Html Msg
-modal model =
-    Modal.config CloseModal
-        |> Modal.small
-        |> Modal.h4 [] [ text "Getting started ?" ]
-        |> Modal.body []
-            [ Grid.containerFluid []
-                [ Grid.row [] 
-                    [ Grid.col 
-                        [ Col.xs ]
-                        [ text "nice!"]
-                    ]
-                , Grid.row []
-                    [ Grid.col
-                        [ Col.xs6 ]
-                        [ text "Col 1" ]
-                    , Grid.col
-                        [ Col.xs6 ]
-                        [ text "Col 2" ]
-                    ]
-                ]
-            ]
-        |> Modal.view model.modalVisibility
-
-
 saveMixedCardsToLocalStorage : Model -> Msg
 saveMixedCardsToLocalStorage model =
     StoreData (model.mixedCards |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")
@@ -621,6 +484,127 @@ rollMixedSet id explode dice =
     in
         Random.map (\results -> (id, results |> List.map2 (\x y -> { die = x, result = y }) dice)) generator
 
+
+
+
+
+-- VIEW -------------------------------------------------------------------------------------
+
+view : Model -> Browser.Document Msg
+view model =
+    { title = "Goblin - Pen & Paper Tools"
+    , body =
+        [ div []
+            [ menu model
+            , mainContent model
+            , modal model
+            ]
+        ]
+    }
+
+menu : Model -> Html Msg
+menu model =
+    Navbar.config NavMsg
+        |> Navbar.withAnimation
+        |> Navbar.primary
+        |> Navbar.container
+        |> Navbar.fixTop
+        |> Navbar.brand [ href "#" ] [ text "Home" ]
+        |> Navbar.items
+            [ Navbar.itemLink [ href "#instructions" ] [ text "Instructions" ]
+            , Navbar.itemLink [ class "", href "#", onClick ShowMixedSetModal ] [ text "Create mixed set"]
+            , Navbar.itemLink [ class "", href "#", onClick ToggleTheme ] [ text "Switch theme"]
+            ]
+        |> Navbar.view model.navState
+
+mainContent : Model -> Html Msg
+mainContent model =
+    div [ class "large-top-margin" ] [
+    Grid.container [ ] <|
+        case model.page of
+            Home ->
+                pageHome model
+
+            Instructions ->
+                pageInstructions model
+
+            Modules ->
+                pageModules model
+
+            NotFound ->
+                pageNotFound
+    ]
+
+
+pageHome : Model -> List (Html Msg)
+pageHome model =
+    [ Grid.row []
+        [ Grid.col [ Col.xs, Col.attrs [ class "d-flex" ] ]
+            [
+                --Button.button [ Button.light, Button.small, Button.attrs [ onClick ToggleTheme, class "mb-3 ml-1", id "theme-button" ] ] [ text "Theme" ]
+                {- Put debug elements here :)
+                [ Button.button [ Button.primary, Button.small, Button.onClick (StoreData (model.mixedDice |> MixedCard.encodeMultiple |> Ports.createStorageObject "serializedMixedCards")) ] [ text "Add" ] 
+                , Button.button [ Button.primary, Button.small, Button.onClick (RequestRetrieval "serializedMixedCards") ] [ text "Get" ] 
+                , div [] [ text (model.storageTestData |> Maybe.withDefault "<>") ]
+                ]
+                -}
+            ]
+        ]
+    , Grid.row []
+        [ Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
+            [
+                singleDieCard model
+            ]
+        , Grid.col [ Col.xs12, Col.sm6, Col.md6, Col.lg4 ]
+            [
+                multiDiceCard model
+            ]
+        , Grid.col [ Col.xs12 ]
+            [
+                model |> mixedSetCards
+            ]
+        ]
+    , Grid.row []
+        [ Grid.col [ Col.xs12 ] (model.debugMessages |> List.map DebugOutput.messageAsAlert)
+        ]
+    ]
+
+
+pageInstructions : Model -> List (Html Msg)
+pageInstructions _ =
+    [ p [ class "mt-3" ] [ span [ class "font-weight-bold" ] [ text "Custom dice sets"  ], span [ Spacing.ml1Sm ] [ text " - you can create custom sets of mixed dice. To do so you have to enter a name for the set in the 'Create new set' box and use the buttons below to add dice to the set. Afterwards click the 'Add' button and a new box is created. Customs sets are persisted between visits to this site. This happens automatically. You can use the 'X' button in the top right corner of a card to delete a custom set."] ]
+    , p [] [ span [ class "font-weight-bold" ] [ text "Explode"  ], span [ Spacing.ml1Sm ] [ text " - you can set the option for dice to 'explode'. This will cause a die to be rolled again if its maximum face count has been rolled (can trigger multiple times for a single row)."] ]
+    ]
+
+
+pageModules : Model -> List (Html Msg)
+pageModules _ =
+    [ h1 [] [ text "Modules" ]
+    , Listgroup.ul
+        [ Listgroup.li [] [ text "Alert" ]
+        , Listgroup.li [] [ text "Badge" ]
+        , Listgroup.li [] [ text "Card" ]
+        ]
+    ]
+
+
+pageNotFound : List (Html Msg)
+pageNotFound =
+    [ h1 [] [ text "Not found" ]
+    , text "SOrry couldn't find that page"
+    ]
+
+
+modal : Model -> Html Msg
+modal model =
+    Modal.config CloseModal
+        |> Modal.small
+        |> Modal.h5 [] [ text "Create custom set" ]
+        |> Modal.body []
+            [ createMixedSetCard model ] 
+        |> Modal.view model.modelNewMixedCardVisibility
+    
+
 {- Creates cards for single and multi-dice rolls.
 -}
 diceCard: String -> (Model -> Html Msg) -> String -> Bool -> (Bool -> Msg) -> Msg -> Html Msg -> (Model -> Html Msg) -> Model -> Html Msg
@@ -670,30 +654,23 @@ multiDiceCard model =
 
 createMixedSetCard: Model -> Html Msg
 createMixedSetCard model =
-    let createAddDieButton faceCount = Button.button [ Button.attrs [ class "mt-2" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  faceCount) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] 
-        in
-        Card.config [ Card.attrs [ Html.Attributes.class "mb-4" ]]
-            |> Card.headerH4 [] [ text "Create new set" ]
-            |> Card.footer [] 
-                [ div [ class "d-flex flex-row-reverse"] 
-                    [ div [ class ""]
-                        [ Button.button [ Button.primary, Button.small, Button.onClick AddNewSet ] [ text "Add" ] 
-                        , Button.button [ Button.secondary, Button.small, Button.onClick ClearNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
-                        ]
-                    ]
+    let 
+        createAddDieButton faceCount = 
+            Button.button [ Button.attrs [ class "mt-2" ], Button.outlinePrimary, Button.small, Button.onClick (AddNewDieToSet  faceCount) ] [ text ("d" ++ (faceCount |> String.fromInt)) ] 
+    in
+        div []
+        [ Form.group [] [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newMixedCard.name, Input.attrs [ placeholder "Name" ] ] ]
+        , div [] [ text "Add die" ]
+        , Form.group [ Form.attrs [ class "d-flex justify-content-between flex-wrap" ] ] (Roll.dieTypes |> List.map createAddDieButton)
+        , div [] [ text "Current set"], model |> newDiceSetList
+        , div [ class "d-flex flex-row-reverse" ] 
+            [ div [ class "" ]
+                [ Button.button [ Button.primary, Button.small, Button.onClick AddNewSet ] [ text "Add" ] 
+                , Button.button [ Button.secondary, Button.small, Button.onClick ClearNewSet, Button.attrs [ class "ml-3" ] ] [ text "Clear" ] 
                 ]
-            |> Card.block [ Block.attrs [ class ""] ]
-                [ Block.custom <| div [] []
-                , Block.custom <| Form.form [] 
-                    [ Form.group []
-                        [ Input.text [ Input.id "dice-set-name", Input.onInput NewDieSetNameChanged, Input.value model.newMixedCard.name, Input.attrs [ placeholder "Name" ] ]
-                        ]
-                    , div [] [ text "Add die" ]
-                    , Form.group [ Form.attrs [ class "d-flex justify-content-between flex-wrap" ] ] (Roll.dieTypes |> List.map createAddDieButton)
-                    ]
-                , Block.custom <| div [] [div [] [ text "Current set"], model |> newDiceSetList]
-                ]
-            |> Card.view  
+            ]
+        ]
+
 
 mixedSetCards: Model -> Html Msg
 mixedSetCards model =
@@ -755,7 +732,10 @@ newDiceSetList model =
     let dieButton i d =
          Button.button [ Button.secondary, Button.small, Button.onClick (RemoveDieFromNewSet i), Button.attrs [ Spacing.mb1, Spacing.mr1 ] ] [ text ("d" ++ (d |> String.fromInt)), text " ❌￼"]
     in
-        div [] (model.newMixedCard.dieFaces |> List.indexedMap dieButton)
+        if (model.newMixedCard.dieFaces |> List.length) == 0 then
+            div [ Spacing.mb1, Spacing.mt1 ] [ text "Add dice using the buttons above." ]
+        else
+            div [] (model.newMixedCard.dieFaces |> List.indexedMap dieButton)
 
 {- ----------------------------------------------------------------- -}
 
