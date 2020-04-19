@@ -13493,6 +13493,26 @@ var $rundis$elm_bootstrap$Bootstrap$Navbar$items = F2(
 			},
 			config_);
 	});
+var $rundis$elm_bootstrap$Bootstrap$Navbar$Dark = {$: 'Dark'};
+var $rundis$elm_bootstrap$Bootstrap$Internal$Role$Primary = {$: 'Primary'};
+var $rundis$elm_bootstrap$Bootstrap$Navbar$scheme = F3(
+	function (modifier, bgColor, conf) {
+		return A2(
+			$rundis$elm_bootstrap$Bootstrap$Navbar$updateOptions,
+			function (opt) {
+				return _Utils_update(
+					opt,
+					{
+						scheme: $elm$core$Maybe$Just(
+							{bgColor: bgColor, modifier: modifier})
+					});
+			},
+			conf);
+	});
+var $rundis$elm_bootstrap$Bootstrap$Navbar$primary = A2(
+	$rundis$elm_bootstrap$Bootstrap$Navbar$scheme,
+	$rundis$elm_bootstrap$Bootstrap$Navbar$Dark,
+	$rundis$elm_bootstrap$Bootstrap$Navbar$Roled($rundis$elm_bootstrap$Bootstrap$Internal$Role$Primary));
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -14227,7 +14247,7 @@ var $author$project$Main$menu = function (model) {
 					$rundis$elm_bootstrap$Bootstrap$Navbar$itemLink,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('text-muted'),
+							$elm$html$Html$Attributes$class(''),
 							$elm$html$Html$Attributes$href('#instructions')
 						]),
 					_List_fromArray(
@@ -14238,7 +14258,7 @@ var $author$project$Main$menu = function (model) {
 					$rundis$elm_bootstrap$Bootstrap$Navbar$itemLink,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('text-muted'),
+							$elm$html$Html$Attributes$class(''),
 							$elm$html$Html$Attributes$href('#'),
 							$elm$html$Html$Events$onClick($author$project$Main$ToggleTheme)
 						]),
@@ -14267,10 +14287,11 @@ var $author$project$Main$menu = function (model) {
 								$elm$html$Html$text('Home')
 							]))
 					]),
-				$rundis$elm_bootstrap$Bootstrap$Navbar$fixTop(
-					$rundis$elm_bootstrap$Bootstrap$Navbar$container(
-						$rundis$elm_bootstrap$Bootstrap$Navbar$withAnimation(
-							$rundis$elm_bootstrap$Bootstrap$Navbar$config($author$project$Main$NavMsg)))))));
+				$rundis$elm_bootstrap$Bootstrap$Navbar$primary(
+					$rundis$elm_bootstrap$Bootstrap$Navbar$fixTop(
+						$rundis$elm_bootstrap$Bootstrap$Navbar$container(
+							$rundis$elm_bootstrap$Bootstrap$Navbar$withAnimation(
+								$rundis$elm_bootstrap$Bootstrap$Navbar$config($author$project$Main$NavMsg))))))));
 };
 var $author$project$Main$CloseModal = {$: 'CloseModal'};
 var $rundis$elm_bootstrap$Bootstrap$Modal$Body = function (a) {
