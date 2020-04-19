@@ -506,14 +506,13 @@ menu : Model -> Html Msg
 menu model =
     Navbar.config NavMsg
         |> Navbar.withAnimation
-        |> Navbar.primary
         |> Navbar.container
         |> Navbar.fixTop
-        |> Navbar.brand [ href "#" ] [ text "Home" ]
+        |> Navbar.brand [ href "#" ] [ img [ src "static/images/icons.png", class "brand-image" ] [text "Home"] ]
         |> Navbar.items
-            [ Navbar.itemLink [ href "#instructions" ] [ text "Instructions" ]
-            , Navbar.itemLink [ class "", href "#", onClick ShowMixedSetModal ] [ text "Create mixed set"]
-            , Navbar.itemLink [ class "", href "#", onClick ToggleTheme ] [ text "Switch theme"]
+            [ Navbar.itemLink [ class "font-weight-bold", href "#", onClick ShowMixedSetModal ] [ text "Create mixed set"]
+            , Navbar.itemLink [ class "text-muted", href "#instructions" ] [ text "Instructions" ]
+            , Navbar.itemLink [ class "text-muted", href "#", onClick ToggleTheme ] [ text "Switch theme"]
             ]
         |> Navbar.view model.navState
 
