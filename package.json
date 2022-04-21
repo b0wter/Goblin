@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "elm-live": "^4.0.2",
+    "follow-redirects": "^1.14.9",
+    "glob-parent": ">=5.1.2",
+    "http-proxy": "^1.18.1",
+    "ws": ">=7.4.6"
+  }
+}
